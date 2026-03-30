@@ -1,16 +1,19 @@
 import express from 'express';
 import cors from 'cors';
+import dotenv from 'dotenv';
 
-const PORT = 3000;
+import { connectDB } from './lib/db';
+
+dotenv.config();
+
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-})
-
-app.listen(PORT, () => {
-  console.log(`Сервер запущен на порту ${PORT}`);
-})
+connectDB().then(() => {
+  app.listen(+PORT, () => {
+    console.log(`Сервер запущен на порту ${PORT}`);
+  });
+});
