@@ -13,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 connectDB().then(() => {
-  app.listen(+PORT, () => {
-    console.log(`Сервер запущен на порту ${PORT}`);
-  });
+	app.listen(+PORT, () => {
+		console.log(`Сервер запущен на порту ${PORT}`);
+	});
 });
