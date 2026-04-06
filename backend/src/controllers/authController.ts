@@ -21,7 +21,7 @@ export const registerUser = async (req: Request, res: Response) => {
 			friends: [],
 		});
 
-    // Создаем токен
+		// Создаем токен
 		const token = jwt.sign(
 			{ userId: newUser._id },
 			process.env.JWT_SECRET_KEY as string,
@@ -32,30 +32,26 @@ export const registerUser = async (req: Request, res: Response) => {
 		const { password: _, ...userData } = newUser.toObject();
 
 		return res
-      .status(201)
-      .cookie('jwt', token, {
-        httpOnly: true,
+			.status(201)
+			.cookie('jwt', token, {
+				httpOnly: true,
 				sameSite: true,
 				maxAge: 7 * 24 * 3600 * 1000,
-      })
-      .json({ message: 'Регистрация выполнена успешно ', user: userData });
+			})
+			.json({ message: 'Регистрация выполнена успешно ', user: userData });
 	} catch (err: unknown) {
 		// Ошибка валидации
 		if (err instanceof Error && err.name === 'ValidationError') {
-			return res
-				.status(400)
-				.json({
-					message: 'Переданы некорректные данные при создании пользователя',
-				});
+			return res.status(400).json({
+				message: 'Переданы некорректные данные при создании пользователя',
+			});
 		}
 
 		// Ошибка уникальности
 		if (err instanceof Error && 'code' in err && err.code === 11000) {
-			return res
-				.status(409)
-				.json({
-					message: 'Пользователь с таким email или никнеймом уже существует',
-				});
+			return res.status(409).json({
+				message: 'Пользователь с таким email или никнеймом уже существует',
+			});
 		}
 
 		console.error('Ошибка:', err);
@@ -63,7 +59,7 @@ export const registerUser = async (req: Request, res: Response) => {
 	}
 };
 
-// Вход пользователя
+// Функция входа пользователя
 export const login = async (req: Request, res: Response) => {
 	const { email, password } = req.body;
 
@@ -98,4 +94,14 @@ export const login = async (req: Request, res: Response) => {
 		console.error('Ошибка:', err);
 		return res.status(500).json({ message: 'Ошибка сервера' });
 	}
+};
+
+// Функция выхода пользователя
+export const logout = (req: Request, res: Response) => {
+	res.clearCookie('jwt', {
+		httpOnly: true,
+		sameSite: true,
+	});
+
+	return res.status(200).json({ message: 'Выход выполнен успешно' });
 };
