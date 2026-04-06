@@ -21,10 +21,24 @@ export const registerUser = async (req: Request, res: Response) => {
 			friends: [],
 		});
 
+    // Создаем токен
+		const token = jwt.sign(
+			{ userId: newUser._id },
+			process.env.JWT_SECRET_KEY as string,
+			{ expiresIn: '7d' }
+		);
+
 		// Убираем хеш пароля
 		const { password: _, ...userData } = newUser.toObject();
 
-		return res.status(201).json(userData);
+		return res
+      .status(201)
+      .cookie('jwt', token, {
+        httpOnly: true,
+				sameSite: true,
+				maxAge: 7 * 24 * 3600 * 1000,
+      })
+      .json({ message: 'Регистрация выполнена успешно ', user: userData });
 	} catch (err: unknown) {
 		// Ошибка валидации
 		if (err instanceof Error && err.name === 'ValidationError') {
