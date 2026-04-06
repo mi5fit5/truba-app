@@ -13,11 +13,9 @@
     "types": ["react", "react-dom"],
 
     "moduleResolution": "bundler",
-    
+
     "strict": true,
     "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,

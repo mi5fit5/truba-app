@@ -7,6 +7,9 @@ import eslintConfigPrettier from "eslint-config-prettier";
 
 export default [
   {
+    ignores: ["webpack.config.js"]
+  },
+  {
     files: ["src/**/*.{js,mjs,cjs,ts,jsx,tsx}"]
   },
   {
