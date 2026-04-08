@@ -1,0 +1,43 @@
+import { useNavigate } from 'react-router-dom';
+
+import authIcon from '../../assets/images/auth_icon.png';
+import styles from './Login.module.scss';
+
+import { LoginForm } from '../../components/forms/LoginForm';
+import { Window } from '../../components/ui/Window';
+import { WindowFooter } from '../../components/ui/WindowFooter';
+import { Text } from '../../components/ui/Text';
+import { Button } from '../../components/ui/Button';
+import { Separator } from '../../components/ui/Separator';
+
+// Страница входа
+export const Login = () => {
+	const navigate = useNavigate();
+
+	return (
+		<div className={styles.container}>
+			<Window
+				title='вход - тРУба.exe'
+				icon={<img src={authIcon} alt='Иконка в виде связки ключей' />}>
+				<Text as='h1' size={40} align='center'>
+					проект &quot;тРУба&quot;
+				</Text>
+				<Separator />
+				<Text as='p' size={26} align='center' lowercase={true}>
+					Пожалуйста, введите данные
+					<br />
+					для входа
+				</Text>
+				<LoginForm />
+				<WindowFooter>
+					<Button type='submit' form='auth-form'>
+						Войти
+					</Button>
+					<Button type='button' onClick={() => navigate('/register')}>
+						Регистрация
+					</Button>
+				</WindowFooter>
+			</Window>
+		</div>
+	);
+};

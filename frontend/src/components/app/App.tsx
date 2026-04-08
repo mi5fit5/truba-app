@@ -1,9 +1,13 @@
-const App = () => {
+import { Routes, Route } from 'react-router-dom';
+
+import { Login } from '../../pages/Login';
+import { Register } from '../../pages/Register';
+
+export const App = () => {
 	return (
-		<div>
-			<h1>Проект Труба</h1>
-		</div>
+		<Routes>
+			<Route path='/login' element={<Login />} />
+			<Route path='/register' element={<Register />}></Route>
+		</Routes>
 	);
 };
-
-export default App;

@@ -1,0 +1,24 @@
+@use '../assets/fonts/fonts.scss';
+
+body {
+	margin: 0;
+	font-family: 'Fixedsys', 'MS Sans Serif', monospace;
+	font-size: 22px;
+	font-smooth: never;
+	background-color: #004aad;
+	background-image: url('../assets/images/xp_wallpaper.jpg');
+	background-position: center;
+	background-size: cover;
+	background-attachment: fixed;
+	cursor: url('../assets/cursors/arrow.cur'), auto;
+	-webkit-font-smoothing: none;
+}
+
+button,
+a,
+input,
+textarea {
+	font-family: inherit;
+	font-size: inherit;
+	cursor: url('../assets/cursors/pointer.cur'), pointer;
+}

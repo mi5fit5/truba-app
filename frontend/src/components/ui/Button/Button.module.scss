@@ -1,0 +1,38 @@
+.button {
+	justify-content: center;
+	align-items: center;
+	width: 200px;
+	height: 50px;
+	border: 2px solid;
+	border-color: #fff #262626 #262626 #fff;
+	box-shadow:
+		inset 1px 1px #fff,
+		inset -2px -2px #7e7e7e;
+	outline: none;
+	color: #000;
+	text-align: center;
+	text-decoration: none;
+	text-transform: lowercase;
+	background-color: #c3c3c3;
+	cursor: pointer;
+
+	&:focus-visible {
+		outline: 2px dotted #000;
+		outline-offset: -10px;
+	}
+
+	&:active {
+		border-color: #262626 #fff #fff #262626;
+		padding: 5px 13px 3px 15px;
+	}
+
+	&:disabled {
+		color: #808080;
+		text-shadow: 1px 1px 0 #fff;
+		cursor: not-allowed;
+
+		&:focus {
+			outline: none;
+		}
+	}
+}

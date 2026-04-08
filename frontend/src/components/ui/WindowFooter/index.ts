@@ -1,0 +1,1 @@
+export { WindowFooter } from './WindowFooter';

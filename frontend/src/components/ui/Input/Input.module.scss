@@ -1,0 +1,25 @@
+.fieldGroup {
+	display: flex;
+	flex-direction: column;
+	text-transform: lowercase;
+}
+
+.label {
+	margin-bottom: 4px;
+}
+
+.input {
+	border: 2px solid;
+	border-color: #262626 #f0f0f0 #f0f0f0 #262626;
+	padding: 12px;
+	box-shadow:
+		inset 1px 1px #262626,
+		inset -2px -2px #c3c3c3;
+	outline: none;
+	color: #000;
+	background-color: #fff;
+
+	&:focus {
+		background-color: #e4e4e4;
+	}
+}
