@@ -1,13 +1,5 @@
 import { api } from './api';
-
-export interface LoginData {
-	email: string;
-	password: string;
-}
-
-export interface RegisterData extends LoginData {
-	username: string;
-}
+import type { LoginData, RegisterData } from '../types';
 
 // Объект с запросами
 export const authRequests = {
