@@ -1,15 +1,15 @@
 import { api } from './api';
-import type { LoginData, RegisterData } from '../types';
+import type { TLoginData, TRegisterData } from '../types';
 
 // Объект с запросами
 export const authRequests = {
 	// Регистрация
-	register: (data: RegisterData) => {
+	register: (data: TRegisterData) => {
 		return api.post('/auth/register', data).then((res) => res.data);
 	},
 
 	// Вход
-	login: (data: LoginData) => {
+	login: (data: TLoginData) => {
 		return api.post('/auth/login', data).then((res) => res.data);
 	},
 
