@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 import User from '../models/User';
+import { AuthRequest } from '../middlewares/auth';
 
 // Регистрация нового пользователя
 export const registerUser = async (req: Request, res: Response) => {
@@ -23,7 +24,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
 		// Создаем токен
 		const token = jwt.sign(
-			{ userId: newUser._id },
+			{ _id: newUser._id },
 			process.env.JWT_SECRET_KEY as string,
 			{ expiresIn: '7d' }
 		);
@@ -73,7 +74,7 @@ export const login = async (req: Request, res: Response) => {
 
 		// Создаем токен
 		const token = jwt.sign(
-			{ userId: user._id },
+			{ _id: user._id },
 			process.env.JWT_SECRET_KEY as string,
 			{ expiresIn: '7d' }
 		);
@@ -104,4 +105,24 @@ export const logout = (req: Request, res: Response) => {
 	});
 
 	return res.status(200).json({ message: 'Выход выполнен успешно' });
+};
+
+// Получение данных текущего пользователя
+export const getCurrentUser = async (req: AuthRequest, res: Response) => {
+	const userId = req.user?._id;
+
+	try {
+		const user = await User.findById(userId);
+
+		if (!user) {
+			return res
+				.status(404)
+				.json({ message: 'Пользователь по данному id не найден' });
+		}
+
+		return res.status(200).json({ user });
+	} catch (err) {
+		console.error('Ошибка:', err);
+		return res.status(500).json({ message: 'Ошибка сервера' });
+	}
 };

@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 
 export interface AuthRequest extends Request {
-	user?: JwtPayload & { userId: string };
+	user?: JwtPayload & { _id: string };
 }
 
 // Проверка подлинности пользователя перед тем, как запрос дойдёт до маршрута
@@ -24,7 +24,7 @@ export const authMiddleware = (
 		const decodedToken = jwt.verify(
 			token,
 			process.env.JWT_SECRET_KEY as string
-		) as JwtPayload & { userId: string };
+		) as JwtPayload & { _id: string };
 
 		// Записываем данные в объект запроса
 		req.user = decodedToken;
