@@ -30,7 +30,7 @@ export const Register = () => {
 				</Text>
 				<RegisterForm />
 				<WindowFooter>
-					<Button type='submit' form='auth-form'>
+					<Button type='submit' form='register-form'>
 						Регистрация
 					</Button>
 					<Button type='button' onClick={() => navigate('/login')}>

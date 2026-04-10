@@ -87,8 +87,8 @@ export const fetchCurrentUser = createAsyncThunk(
 		const responce = await authRequests.getUser();
 
 		// Обработка ошибок при неуспешном запросе
-		if (!responce.success) {
-			return rejectWithValue(responce.message);
+		if (!responce.user) {
+			return rejectWithValue('Такой пользователь не найден');
 		}
 
 		return responce.user;
