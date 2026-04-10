@@ -80,6 +80,21 @@ export const logoutUser = createAsyncThunk(
 	}
 );
 
+// Санка получения данных текущего пользователя
+export const fetchCurrentUser = createAsyncThunk(
+	'user/fetch',
+	async (_, { rejectWithValue }) => {
+		const responce = await authRequests.getUser();
+
+		// Обработка ошибок при неуспешном запросе
+		if (!responce.success) {
+			return rejectWithValue(responce.message);
+		}
+
+		return responce.user;
+	}
+);
+
 // Слайс
 const userSlice = createSlice({
 	name: 'user',
@@ -126,6 +141,17 @@ const userSlice = createSlice({
 			.addCase(logoutUser.fulfilled, (state) => {
 				state.data = null;
 				state.isAuth = false;
+			})
+
+			// Получение данных текущего пользователя
+			.addCase(fetchCurrentUser.rejected, (state) => {
+        state.isInit = true;
+				state.isAuth = false;
+			})
+			.addCase(fetchCurrentUser.fulfilled, (state, action) => {
+				state.isInit = true;
+				state.isAuth = true;
+        state.data = action.payload;
 			});
 	},
 });

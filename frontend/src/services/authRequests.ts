@@ -17,4 +17,9 @@ export const authRequests = {
 	logout: () => {
 		return api.post('/auth/logout').then((res) => res.data);
 	},
+
+	// Получение данных текущего пользователя
+	getUser: () => {
+		return api.get('/auth/user/me').then((res) => res.data);
+	},
 };
