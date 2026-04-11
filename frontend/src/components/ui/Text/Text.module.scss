@@ -18,6 +18,10 @@
 	font-size: 22px;
 }
 
+.size14 {
+	font-size: 14px;
+}
+
 .left {
 	text-align: left;
 }
@@ -28,4 +32,8 @@
 
 .lowercase {
 	text-transform: lowercase;
+}
+
+.invert {
+	filter: invert(1);
 }

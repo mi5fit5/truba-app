@@ -21,7 +21,7 @@
 		outline-offset: -10px;
 	}
 
-	&:active {
+	&:not(:disabled):active {
 		border-color: #262626 #fff #fff #262626;
 		padding: 5px 13px 3px 15px;
 	}
