@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-import { authRequests } from '../../authRequests';
+import { authRequests } from '../../../utils/authRequests';
 import type { TLoginData, TRegisterData, TUser } from '../../../types';
 import { deleteCookie, setCookie } from '../../../utils/cookie';
 
@@ -29,7 +29,7 @@ export const registerUser = createAsyncThunk<TUser, TRegisterData>(
 		const responce = await authRequests.register(data);
 
 		// Обработка ошибок при неуспешном запросе
-		if (!responce.success) {
+		if (!responce.user) {
 			return rejectWithValue(responce.message);
 		}
 
@@ -50,7 +50,7 @@ export const loginUser = createAsyncThunk<TUser, TLoginData>(
 		const responce = await authRequests.login(data);
 
 		// Обработка ошибок при неуспешном запросе
-		if (!responce.success) {
+		if (!responce.user) {
 			return rejectWithValue(responce.message);
 		}
 
@@ -70,7 +70,7 @@ export const logoutUser = createAsyncThunk(
 		const responce = await authRequests.logout();
 
 		// Обработка ошибок при неуспешном запросе
-		if (!responce.success) {
+		if (responce.error) {
 			return rejectWithValue(responce.message);
 		}
 
@@ -118,10 +118,9 @@ const userSlice = createSlice({
 				state.loginError = action.payload as string;
 			})
 			.addCase(loginUser.fulfilled, (state, action) => {
-				state.loginError = null;
-				state.data = action.payload;
 				state.isAuth = true;
 				state.loginError = null;
+				state.data = action.payload;
 			})
 
 			// Регистрация
@@ -132,9 +131,9 @@ const userSlice = createSlice({
 				state.registerError = action.payload as string;
 			})
 			.addCase(registerUser.fulfilled, (state, action) => {
-				state.data = action.payload;
 				state.isAuth = true;
 				state.registerError = null;
+				state.data = action.payload;
 			})
 
 			// Выход (удаляем данные пользователя из стейта)
@@ -145,13 +144,13 @@ const userSlice = createSlice({
 
 			// Получение данных текущего пользователя
 			.addCase(fetchCurrentUser.rejected, (state) => {
-        state.isInit = true;
+				state.isInit = true;
 				state.isAuth = false;
 			})
 			.addCase(fetchCurrentUser.fulfilled, (state, action) => {
 				state.isInit = true;
 				state.isAuth = true;
-        state.data = action.payload;
+				state.data = action.payload;
 			});
 	},
 });
