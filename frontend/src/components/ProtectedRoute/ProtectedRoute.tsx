@@ -23,9 +23,8 @@ export const ProtectedRoute = ({
 	const isAuth = useSelector(selectUserIsAuth);
 	const location = useLocation();
 
-  // TODO: Сделать компонент прелоадера
 	if (!isInit) {
-    return <Preloader />;
+		return <Preloader />;
 	}
 
 	// Если пользователь авторизован, то отправляем его на страницу, которую он зашёл изначально

@@ -10,13 +10,12 @@ import { HomePage } from '../../pages/HomePage';
 
 import { fetchCurrentUser } from '../../services/slices/user/userSlice';
 
-
 export const App = () => {
-  const dispatch = useDispatch();
+	const dispatch = useDispatch();
 
-  useEffect(() => {
-    dispatch(fetchCurrentUser());
-  }, [dispatch]);
+	useEffect(() => {
+		dispatch(fetchCurrentUser());
+	}, [dispatch]);
 
 	return (
 		<Routes>
