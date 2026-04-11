@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 import authIcon from '../../assets/images/auth_icon.png';
 import styles from './Login.module.scss';
@@ -12,6 +13,7 @@ import { Separator } from '../../components/ui/Separator';
 
 // Страница входа
 export const Login = () => {
+	const [isFormValid, setIsFormValid] = useState(false);
 	const navigate = useNavigate();
 
 	return (
@@ -23,14 +25,14 @@ export const Login = () => {
 					проект &quot;тРУба&quot;
 				</Text>
 				<Separator />
-				<Text as='p' size={26} align='center' lowercase={true}>
+				<Text as='p' size={26} align='center' lowercase>
 					Пожалуйста, введите данные
 					<br />
 					для входа
 				</Text>
-				<LoginForm />
+				<LoginForm onValidationChange={setIsFormValid} />
 				<WindowFooter>
-					<Button type='submit' form='auth-form'>
+					<Button type='submit' form='auth-form' disabled={!isFormValid}>
 						Войти
 					</Button>
 					<Button type='button' onClick={() => navigate('/register')}>

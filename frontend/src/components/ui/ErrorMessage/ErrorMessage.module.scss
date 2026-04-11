@@ -1,0 +1,27 @@
+.container {
+	visibility: hidden;
+	padding: 0 2px;
+	display: block;
+	min-height: 20px;
+	margin-top: 4px;
+	opacity: 0;
+	color: #fff;
+	background-color: #000;
+	font-size: 14px;
+	transition: opacity 0.3s ease-in-out;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.errorAlert {
+	width: 2px;
+	height: 14px;
+	background-color: #ff6b6b;
+	flex-shrink: 0;
+}
+
+.visible {
+	visibility: visible;
+	opacity: 1;
+}

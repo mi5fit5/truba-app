@@ -1,47 +1,69 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
+
+import type { TLoginData } from '../../../types';
+import { useDispatch } from '../../../services/store';
+import { useFormWithValidation } from '../../../hooks/useFormWithValidation';
+import { loginUser } from '../../../services/slices/user/userSlice';
+import { loginValidators } from '../../../utils/validators';
 
 import { Input } from '../../ui/Input';
-import { useDispatch } from '../../../services/store';
-import { loginUser } from '../../../services/slices/user/userSlice';
+import { ErrorMessage } from '../../ui/ErrorMessage';
 
-export const LoginForm = () => {
-	// Локальное состояние формы
-	const [formState, setFormState] = useState({ email: '', password: '' });
+type TLoginFormProps = {
+	onValidationChange: (isValid: boolean) => void;
+};
+
+// Форма входа
+export const LoginForm = ({ onValidationChange }: TLoginFormProps) => {
 	const dispatch = useDispatch();
+	const { inputValues, errors, isValid, handleChange } =
+		useFormWithValidation<TLoginData>(
+			{ email: '', password: '' },
+			loginValidators
+		);
 
-	// Обработчик полей ввода
-	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const { name, value } = e.target;
+	useEffect(() => {
+		onValidationChange(isValid);
+	}, [isValid, onValidationChange]);
 
-		setFormState((prev) => ({ ...prev, [name]: value }));
-	};
-
-  // Обработчик отправки формы
+	// Обработчик отправки формы
 	const handleSubmit = (e: React.SubmitEvent) => {
 		e.preventDefault();
-		dispatch(loginUser(formState));
+
+		if (isValid) {
+			dispatch(loginUser(inputValues));
+		}
 	};
 
 	return (
-		<form id='auth-form' onSubmit={handleSubmit}>
-			<Input
-				label='почта:'
-				name='email'
-				value={formState.email}
-				onChange={handleChange}
-				type='email'
-				placeholder='nickname'
-				required
-			/>
-			<Input
-				label='пароль:'
-				name='password'
-				value={formState.password}
-				onChange={handleChange}
-				type='password'
-				placeholder='password'
-				required
-			/>
+		<form
+			id='auth-form'
+			onSubmit={handleSubmit}
+			style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+			<div>
+				<Input
+					label='почта:'
+					name='email'
+					value={inputValues.email}
+					onChange={handleChange}
+					type='email'
+					placeholder='nickname'
+					required
+				/>
+				<ErrorMessage error={errors.email} />
+			</div>
+			<div>
+				<Input
+					label='пароль:'
+					name='password'
+					value={inputValues.password}
+					onChange={handleChange}
+					type='password'
+					placeholder='password'
+					required
+				/>
+				<ErrorMessage error={errors.password} />
+			</div>
 		</form>
 	);
 };
