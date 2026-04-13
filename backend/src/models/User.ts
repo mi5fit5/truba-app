@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
 
-// Интерфейс для TS
+// Типизация
 export interface IUser extends Document {
 	username: string; // Никнейм
 	email: string; // Почта

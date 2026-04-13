@@ -55,12 +55,12 @@ export const registerUser = async (req: Request, res: Response) => {
 			});
 		}
 
-		console.error('Ошибка:', err);
+		console.error('Ошибка при регистрации пользователя:', err);
 		return res.status(500).json({ message: 'Ошибка сервера' });
 	}
 };
 
-// Функция входа пользователя
+// Вход пользователя
 export const login = async (req: Request, res: Response) => {
 	const { email, password } = req.body;
 
@@ -91,13 +91,13 @@ export const login = async (req: Request, res: Response) => {
 			})
 			.status(200)
 			.json({ message: 'Вход выполнен успешно ', user: userData });
-	} catch (err) {
-		console.error('Ошибка:', err);
+	} catch (err: unknown) {
+		console.error('Ошибка при логине пользователя:', err);
 		return res.status(500).json({ message: 'Ошибка сервера' });
 	}
 };
 
-// Функция выхода пользователя
+// Выход пользователя
 export const logout = (req: Request, res: Response) => {
 	res.clearCookie('jwt', {
 		httpOnly: true,
@@ -121,8 +121,8 @@ export const getCurrentUser = async (req: AuthRequest, res: Response) => {
 		}
 
 		return res.status(200).json({ user });
-	} catch (err) {
-		console.error('Ошибка:', err);
+	} catch (err: unknown) {
+		console.error('Ошибка при получении данных пользователя:', err);
 		return res.status(500).json({ message: 'Ошибка сервера' });
 	}
 };

@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 
 import { connectDB } from './lib/db';
 import authRoutes from './routes/authRoutes';
+import userRoutes from './routes/userRoutes';
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.use(cookieParser());
 
 // Маршруты
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 
 connectDB().then(() => {
 	app.listen(+PORT, () => {
