@@ -3,6 +3,26 @@ import { AuthRequest } from '../middlewares/auth';
 import FriendRequest from '../models/FriendRequest';
 import User from '../models/User';
 
+// Получение данных текущего пользователя
+export const getCurrentUser = async (req: AuthRequest, res: Response) => {
+  const userId = req.user?._id;
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: 'Пользователь по данному id не найден' });
+    }
+
+    return res.status(200).json({ user });
+  } catch (err: unknown) {
+    console.error('Ошибка при получении данных пользователя:', err);
+    return res.status(500).json({ message: 'Ошибка сервера' });
+  }
+};
+
 // Получение списка друзей текущего пользователя
 export const getCurrentUserFriends = async (
 	req: AuthRequest,

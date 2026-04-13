@@ -5,6 +5,7 @@ import {
 	getIncomingFriendRequests,
 	rejectFriendRequest,
 	sendFriendRequest,
+  getCurrentUser,
 } from '../controllers/userController';
 import { authMiddleware } from '../middlewares/auth';
 
@@ -13,6 +14,7 @@ const router = express.Router();
 router.use(authMiddleware);
 
 // Маршруты
+router.get('/me', getCurrentUser);
 router.get('/friends', getCurrentUserFriends);
 
 router.get('/friend-requests', getIncomingFriendRequests);

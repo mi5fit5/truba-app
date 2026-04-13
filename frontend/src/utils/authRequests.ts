@@ -20,6 +20,6 @@ export const authRequests = {
 
 	// Получение данных текущего пользователя
 	getUser: () => {
-		return api.get('/auth/user/me').then((res) => res.data);
+		return api.get('/users/me').then((res) => res.data);
 	},
 };
