@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
-import authIcon from '../../assets/images/auth_icon.png';
+import authIcon from '../../assets/icons/auth_icon.png';
 import styles from './Login.module.scss';
 
 import { LoginForm } from '../../components/forms/LoginForm';
@@ -20,7 +20,9 @@ export const Login = () => {
 		<div className={styles.container}>
 			<Window
 				title='вход - тРУба.exe'
-				icon={<img src={authIcon} alt='Иконка в виде связки ключей' />}>
+				icon={<img src={authIcon} alt='Иконка в виде связки ключей' />}
+				className={styles.authWindow}
+				bodyClassName={styles.authWindowBody}>
 				<Text as='h1' size={40} align='center'>
 					проект &quot;тРУба&quot;
 				</Text>

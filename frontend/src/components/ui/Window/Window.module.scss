@@ -1,9 +1,6 @@
 .window {
 	display: flex;
 	flex-direction: column;
-	gap: 20px;
-	width: 450px;
-	min-height: 464px;
 	border: 2px solid;
 	border-color: #fff #262626 #262626 #fff;
 	box-shadow:
@@ -11,11 +8,10 @@
 		inset -2px -2px #7e7e7e;
 	color: #000;
 	background-color: #c0c0c0;
-}
 
-.windowBody {
-	display: flex;
-	flex-direction: column;
-	gap: 20px;
-	padding: 0 20px;
+	.windowBody {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+	}
 }

@@ -1,0 +1,23 @@
+.avatarWrapper {
+	display: flex;
+	justify-self: center;
+	align-items: center;
+	flex-shrink: 0;
+	overflow: hidden;
+}
+
+.image {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.large {
+	width: 50px;
+	aspect-ratio: 1;
+}
+
+.medium {
+	width: 40px;
+	aspect-ratio: 1;
+}

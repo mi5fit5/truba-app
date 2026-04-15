@@ -1,0 +1,52 @@
+.container {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	border: 2px solid;
+	border-color: #fff #262626 #262626 #fff;
+	padding: 8px;
+	box-shadow:
+		inset 1px 1px #fff,
+		inset -2px -2px #7e7e7e;
+	background-color: #c0c0c0;
+}
+
+.userInfo {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.userAvatar {
+	width: 50px;
+	object-fit: cover;
+	aspect-ratio: 1;
+}
+
+.letterAvatar {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 50px;
+	text-transform: uppercase;
+	text-shadow: 1px 1px 0 #000;
+	aspect-ratio: 1;
+}
+
+.statusContainer {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+
+	.status {
+		width: 8px;
+		border: 1px solid #000;
+		background-color: #09ad09;
+		aspect-ratio: 1;
+	}
+}
+
+.profileActions {
+	display: flex;
+	gap: 10px;
+}

@@ -9,14 +9,21 @@ interface WindowProps {
 	title: string;
 	icon?: ReactNode;
 	className?: string;
+	bodyClassName?: string;
 	children: ReactNode;
 }
 
-export const Window = ({ title, icon, className, children }: WindowProps) => {
+export const Window = ({
+	title,
+	icon,
+	className,
+	bodyClassName,
+	children,
+}: WindowProps) => {
 	return (
 		<div className={clsx(styles.window, className)}>
 			<TitleBar title={title} icon={icon} />
-			<div className={styles.windowBody}>{children}</div>
+			<div className={clsx(styles.windowBody, bodyClassName)}>{children}</div>
 		</div>
 	);
 };
