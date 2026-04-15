@@ -2,7 +2,7 @@ import { Window } from '../ui/Window';
 
 import styles from './AppLayout.module.scss';
 import appLogo from '../../assets/icons/main_app-logo.png';
-import { ProfileSection } from '../ProfileSection/ProfileSection';
+import { ProfileSection } from '../ProfileSection';
 
 export const AppLayout = () => {
 	return (

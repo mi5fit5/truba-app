@@ -5,7 +5,7 @@ import {
 	getIncomingFriendRequests,
 	rejectFriendRequest,
 	sendFriendRequest,
-  getCurrentUser,
+	getCurrentUser,
 } from '../controllers/userController';
 import { authMiddleware } from '../middlewares/auth';
 
