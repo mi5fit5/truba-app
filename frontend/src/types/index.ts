@@ -9,6 +9,7 @@ export type TRegisterData = {
 	password: string;
 };
 
+// Тип пользователя
 export type TUser = {
 	_id: string;
 	username: string;
@@ -16,6 +17,17 @@ export type TUser = {
 	avatar: string;
 	friends: string[];
 };
+
+// Тип друга
+export type TFriend = Omit<TUser, 'friends'>;
+
+// Тип для входящего запроса дружбы
+export type TFriendRequest = {
+  _id: string;
+  sender: TFriend;
+  recipient: string;
+  status: 'pending' | 'accepted';
+}
 
 // Тип для любых объектов валидации
 export type TFormValidators<T> = {

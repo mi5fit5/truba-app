@@ -1,8 +1,9 @@
+import axios from 'axios';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-import { authRequests } from '../../../utils/authRequests';
-import type { TLoginData, TRegisterData, TUser } from '../../../types';
-import { deleteCookie, setCookie } from '../../../utils/cookie';
+import { authRequests } from '../../utils/api/authRequests';
+import type { TLoginData, TRegisterData, TUser } from '../../types';
+import { deleteCookie, setCookie } from '../../utils/cookie';
 
 // Типизация стейта
 type TUserState = {
@@ -26,20 +27,24 @@ const initialState: TUserState = {
 export const registerUser = createAsyncThunk<TUser, TRegisterData>(
 	'auth/register',
 	async (data, { rejectWithValue }) => {
-		const responce = await authRequests.register(data);
+		try {
+			const response = await authRequests.register(data);
+			const { user, refreshToken, accessToken } = response;
 
-		// Обработка ошибок при неуспешном запросе
-		if (!responce.user) {
-			return rejectWithValue(responce.message);
+			// Сохраняем токены
+			localStorage.setItem('refreshToken', refreshToken);
+			setCookie('accessToken', accessToken);
+
+			return user;
+		} catch (err: unknown) {
+			if (axios.isAxiosError(err)) {
+				return rejectWithValue(err.response?.data?.message);
+			}
+
+			if (err instanceof Error) {
+				return rejectWithValue(err.message);
+			}
 		}
-
-		const { user, refreshToken, accessToken } = responce;
-
-		// Сохраняем токены
-		localStorage.setItem('refreshToken', refreshToken);
-		setCookie('accessToken', accessToken);
-
-		return user;
 	}
 );
 
@@ -47,19 +52,23 @@ export const registerUser = createAsyncThunk<TUser, TRegisterData>(
 export const loginUser = createAsyncThunk<TUser, TLoginData>(
 	'auth/login',
 	async (data, { rejectWithValue }) => {
-		const responce = await authRequests.login(data);
+		try {
+			const response = await authRequests.login(data);
+			const { user, refreshToken, accessToken } = response;
 
-		// Обработка ошибок при неуспешном запросе
-		if (!responce.user) {
-			return rejectWithValue(responce.message);
+			localStorage.setItem('refreshToken', refreshToken);
+			setCookie('accessToken', accessToken);
+
+			return user;
+		} catch (err: unknown) {
+			if (axios.isAxiosError(err)) {
+				return rejectWithValue(err.response?.data?.message);
+			}
+
+			if (err instanceof Error) {
+				return rejectWithValue(err.message);
+			}
 		}
-
-		const { user, refreshToken, accessToken } = responce;
-
-		localStorage.setItem('refreshToken', refreshToken);
-		setCookie('accessToken', accessToken);
-
-		return user;
 	}
 );
 
@@ -67,16 +76,21 @@ export const loginUser = createAsyncThunk<TUser, TLoginData>(
 export const logoutUser = createAsyncThunk(
 	'auth/logout',
 	async (_, { rejectWithValue }) => {
-		const responce = await authRequests.logout();
+		try {
+			await authRequests.logout();
 
-		// Обработка ошибок при неуспешном запросе
-		if (responce.error) {
-			return rejectWithValue(responce.message);
+			// Очищаем токены
+			localStorage.removeItem('refreshToken');
+			deleteCookie('accessToken');
+		} catch (err: unknown) {
+			if (axios.isAxiosError(err)) {
+				return rejectWithValue(err.response?.data?.message);
+			}
+
+			if (err instanceof Error) {
+				return rejectWithValue(err.message);
+			}
 		}
-
-		// Очищаем токены
-		localStorage.removeItem('refreshToken');
-		deleteCookie('accessToken');
 	}
 );
 
@@ -84,14 +98,19 @@ export const logoutUser = createAsyncThunk(
 export const fetchCurrentUser = createAsyncThunk(
 	'user/fetch',
 	async (_, { rejectWithValue }) => {
-		const responce = await authRequests.getUser();
+		try {
+			const response = await authRequests.getUser();
 
-		// Обработка ошибок при неуспешном запросе
-		if (!responce.user) {
-			return rejectWithValue('Такой пользователь не найден');
+			return response.user;
+		} catch (err: unknown) {
+			if (axios.isAxiosError(err)) {
+				return rejectWithValue(err.response?.data?.message);
+			}
+
+			if (err instanceof Error) {
+				return rejectWithValue(err.message);
+			}
 		}
-
-		return responce.user;
 	}
 );
 

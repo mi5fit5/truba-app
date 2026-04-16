@@ -5,12 +5,14 @@ import {
 	useSelector as selectorHook,
 } from 'react-redux';
 
-import userReducer from '../slices/user/userSlice';
+import userReducer from '../slices/userSlice';
+import friendsReducer from '../slices/friendsSlice';
 
 // Конфигурация стора
 const store = configureStore({
 	reducer: {
 		user: userReducer,
+    friends: friendsReducer,
 	},
 });
 
