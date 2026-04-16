@@ -5,22 +5,22 @@ import User from '../models/User';
 
 // Получение данных текущего пользователя
 export const getCurrentUser = async (req: AuthRequest, res: Response) => {
-  const userId = req.user?._id;
+	const userId = req.user?._id;
 
-  try {
-    const user = await User.findById(userId);
+	try {
+		const user = await User.findById(userId);
 
-    if (!user) {
-      return res
-        .status(404)
-        .json({ message: 'Пользователь по данному id не найден' });
-    }
+		if (!user) {
+			return res
+				.status(404)
+				.json({ message: 'Пользователь по данному id не найден' });
+		}
 
-    return res.status(200).json({ user });
-  } catch (err: unknown) {
-    console.error('Ошибка при получении данных пользователя:', err);
-    return res.status(500).json({ message: 'Ошибка сервера' });
-  }
+		return res.status(200).json({ user });
+	} catch (err: unknown) {
+		console.error('Ошибка при получении данных пользователя:', err);
+		return res.status(500).json({ message: 'Ошибка сервера' });
+	}
 };
 
 // Получение списка друзей текущего пользователя
@@ -57,20 +57,21 @@ export const sendFriendRequest = async (req: AuthRequest, res: Response) => {
 		}
 
 		const senderId = req.user._id; // Id отправителя
-		const recipientId = req.params.id as string; // Id получателя
+		const targetUsername = req.params.id as string; // Никнейм получателя
 
-		// Проверка на отправку запроса самому себе
-		if (senderId === recipientId) {
-			return res.status(400).json({
-				message: 'Вы не можете отправить запрос в друзья самому себе',
-			});
-		}
-
-		// Проверка существования пользователя с таким id
-		const recipient = await User.findById(recipientId);
+		// Ищем пользователя по никнейму
+		const recipient = await User.findOne({ username: targetUsername });
 
 		if (!recipient) {
 			return res.status(404).json({ message: 'Пользователь не найден' });
+		}
+
+		const recipientId = recipient._id.toString();
+
+		if (senderId.toString() === recipientId) {
+			return res.status(400).json({
+				message: 'Вы не можете отправить запрос в друзья самому себе',
+			});
 		}
 
 		// Проверка на наличие данного пользователя в списке своих друзей
