@@ -1,0 +1,18 @@
+.container {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 4px;
+	border: 2px solid;
+	border-color: #fff #262626 #262626 #fff;
+	padding: 8px;
+	box-shadow:
+		inset 1px 1px #fff,
+		inset -2px -2px #7e7e7e;
+	background-color: #c0c0c0;
+}
+
+.inputWrapper {
+	flex: 1;
+	min-width: 0;
+}

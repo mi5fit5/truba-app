@@ -1,0 +1,14 @@
+.container {
+  display: flex;
+	flex-direction: column;
+	flex: 0.55;
+	gap: 14px;
+	min-height: 120px;
+	padding: 8px;
+}
+
+.listWrapper {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}

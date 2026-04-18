@@ -1,0 +1,59 @@
+.container {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 4px;
+	cursor: pointer;
+	user-select: none;
+
+	&:focus {
+		outline: none;
+	}
+
+	&:focus-visible,
+	&:hover {
+		background: linear-gradient(
+			90deg,
+			rgba(2, 0, 127, 1) 0%,
+			rgba(9, 73, 172, 1) 50%,
+			rgba(16, 130, 207, 1) 100%
+		);
+		* {
+			color: #fff;
+		}
+	}
+}
+
+.userInfo {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 2px;
+
+	p {
+		max-width: 140px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+}
+
+.statusWrapper {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.statusIndicator {
+	width: 7px;
+	border: 1px solid #000;
+	aspect-ratio: 1;
+}
+
+.online {
+	background-color: #09ad09;
+}
+
+.offline {
+	background-color: #d80808;
+}
