@@ -1,8 +1,10 @@
 import { clsx } from 'clsx';
+
 import styles from './Avatar.module.scss';
+import defaultAvatar from '../../../assets/images/default_avatar.jpg';
 
 interface AvatarProps {
-	src: string;
+	src?: string;
 	name: string;
 	size?: 'large' | 'medium';
 	className?: string;
@@ -16,7 +18,11 @@ export const Avatar = ({
 }: AvatarProps) => {
 	return (
 		<div className={clsx(styles.avatarWrapper, styles[size], className)}>
-			<img src={src} alt={`Аватар ${name}`} className={styles.image} />
+			{src && src.trim() !== '' ? (
+				<img src={src} alt={`Аватар ${name}`} />
+			) : (
+				<img src={defaultAvatar} alt={`Аватар ${name}`} />
+			)}
 		</div>
 	);
 };

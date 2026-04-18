@@ -6,7 +6,7 @@ import styles from './Text.module.scss';
 interface TextProps {
 	children: ReactNode;
 	as?: ElementType;
-	size?: 14 | 22 | 26 | 30 | 40;
+	size?: 12 | 14 | 22 | 26 | 30 | 40;
 	align?: 'left' | 'center';
 	lowercase?: boolean;
 	invert?: boolean;
