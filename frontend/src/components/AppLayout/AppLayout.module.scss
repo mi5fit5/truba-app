@@ -28,9 +28,8 @@
 	.placeholder {
 		flex: 1;
 
-		border: 2px solid;
+		border: 1px solid;
 		border-color: #262626 #f0f0f0 #f0f0f0 #262626;
-		padding: 10x;
 		box-shadow:
 			inset 1px 1px #262626,
 			inset -2px -2px #c3c3c3;
@@ -50,5 +49,6 @@
 		flex: 1;
 		justify-content: center;
 		align-items: center;
+
 	}
 }

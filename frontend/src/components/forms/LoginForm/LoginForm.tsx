@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import type { TLoginData } from '../../../types';
 import { useDispatch } from '../../../services/store';
 import { useFormWithValidation } from '../../../hooks/useFormWithValidation';
-import { loginUser } from '../../../services/slices/user/userSlice';
+import { loginUser } from '../../../services/slices/userSlice';
 import { loginValidators } from '../../../utils/validators';
 
 import { Input } from '../../ui/Input';

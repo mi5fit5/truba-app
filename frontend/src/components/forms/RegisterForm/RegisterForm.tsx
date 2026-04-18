@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import type { TRegisterData } from '../../../types';
 import { useDispatch } from '../../../services/store';
 import { useFormWithValidation } from '../../../hooks/useFormWithValidation';
-import { registerUser } from '../../../services/slices/user/userSlice';
+import { registerUser } from '../../../services/slices/userSlice';
 import { registerValidators } from '../../../utils/validators';
 
 import { Input } from '../../ui/Input';

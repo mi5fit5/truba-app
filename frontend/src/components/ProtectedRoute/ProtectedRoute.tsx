@@ -5,7 +5,7 @@ import { useSelector } from '../../services/store';
 import {
 	selectUserIsAuth,
 	selectUserIsInit,
-} from '../../services/slices/user/userSlice';
+} from '../../services/slices/userSlice';
 import { Preloader } from '../ui/Preloader';
 
 // Типизация

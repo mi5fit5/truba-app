@@ -1,7 +1,7 @@
 import {
 	logoutUser,
 	selectUserData,
-} from '../../services/slices/user/userSlice';
+} from '../../services/slices/userSlice';
 import { useDispatch, useSelector } from '../../services/store';
 
 import { Button } from '../ui/Button';
