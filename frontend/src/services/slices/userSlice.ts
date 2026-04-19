@@ -1,9 +1,9 @@
-import axios from 'axios';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 import { authRequests } from '../../utils/api/authRequests';
 import type { TLoginData, TRegisterData, TUser } from '../../types';
 import { deleteCookie, setCookie } from '../../utils/cookie';
+import { getErrorMessage } from '../../utils/getErrorMessage';
 
 // Типизация стейта
 type TUserState = {
@@ -24,56 +24,46 @@ const initialState: TUserState = {
 };
 
 // Санка регистрации
-export const registerUser = createAsyncThunk<TUser, TRegisterData>(
-	'auth/register',
-	async (data, { rejectWithValue }) => {
-		try {
-			const response = await authRequests.register(data);
-			const { user, refreshToken, accessToken } = response;
+export const registerUser = createAsyncThunk<
+	TUser,
+	TRegisterData,
+	{ rejectValue: string }
+>('auth/register', async (data, { rejectWithValue }) => {
+	try {
+		const response = await authRequests.register(data);
+		const { user, refreshToken, accessToken } = response;
 
-			// Сохраняем токены
-			localStorage.setItem('refreshToken', refreshToken);
-			setCookie('accessToken', accessToken);
+		// Сохраняем токены
+		localStorage.setItem('refreshToken', refreshToken);
+		setCookie('accessToken', accessToken);
 
-			return user;
-		} catch (err: unknown) {
-			if (axios.isAxiosError(err)) {
-				return rejectWithValue(err.response?.data?.message);
-			}
-
-			if (err instanceof Error) {
-				return rejectWithValue(err.message);
-			}
-		}
+		return user;
+	} catch (err: unknown) {
+		rejectWithValue(getErrorMessage(err));
 	}
-);
+});
 
 // Санка входа
-export const loginUser = createAsyncThunk<TUser, TLoginData>(
-	'auth/login',
-	async (data, { rejectWithValue }) => {
-		try {
-			const response = await authRequests.login(data);
-			const { user, refreshToken, accessToken } = response;
+export const loginUser = createAsyncThunk<
+	TUser,
+	TLoginData,
+	{ rejectValue: string }
+>('auth/login', async (data, { rejectWithValue }) => {
+	try {
+		const response = await authRequests.login(data);
+		const { user, refreshToken, accessToken } = response;
 
-			localStorage.setItem('refreshToken', refreshToken);
-			setCookie('accessToken', accessToken);
+		localStorage.setItem('refreshToken', refreshToken);
+		setCookie('accessToken', accessToken);
 
-			return user;
-		} catch (err: unknown) {
-			if (axios.isAxiosError(err)) {
-				return rejectWithValue(err.response?.data?.message);
-			}
-
-			if (err instanceof Error) {
-				return rejectWithValue(err.message);
-			}
-		}
+		return user;
+	} catch (err: unknown) {
+		rejectWithValue(getErrorMessage(err));
 	}
-);
+});
 
 // Санка выхода
-export const logoutUser = createAsyncThunk(
+export const logoutUser = createAsyncThunk<void, void, { rejectValue: string }>(
 	'auth/logout',
 	async (_, { rejectWithValue }) => {
 		try {
@@ -83,36 +73,25 @@ export const logoutUser = createAsyncThunk(
 			localStorage.removeItem('refreshToken');
 			deleteCookie('accessToken');
 		} catch (err: unknown) {
-			if (axios.isAxiosError(err)) {
-				return rejectWithValue(err.response?.data?.message);
-			}
-
-			if (err instanceof Error) {
-				return rejectWithValue(err.message);
-			}
+			rejectWithValue(getErrorMessage(err));
 		}
 	}
 );
 
 // Санка получения данных текущего пользователя
-export const fetchCurrentUser = createAsyncThunk(
-	'user/fetch',
-	async (_, { rejectWithValue }) => {
-		try {
-			const response = await authRequests.getUser();
+export const fetchCurrentUser = createAsyncThunk<
+	TUser,
+	void,
+	{ rejectValue: string }
+>('user/fetch', async (_, { rejectWithValue }) => {
+	try {
+		const response = await authRequests.getUser();
 
-			return response.user;
-		} catch (err: unknown) {
-			if (axios.isAxiosError(err)) {
-				return rejectWithValue(err.response?.data?.message);
-			}
-
-			if (err instanceof Error) {
-				return rejectWithValue(err.message);
-			}
-		}
+		return response.user;
+	} catch (err: unknown) {
+		rejectWithValue(getErrorMessage(err));
 	}
-);
+});
 
 // Слайс
 const userSlice = createSlice({
@@ -134,7 +113,7 @@ const userSlice = createSlice({
 				state.loginError = null;
 			})
 			.addCase(loginUser.rejected, (state, action) => {
-				state.loginError = action.payload as string;
+				state.loginError = action.payload || 'Ошибка при входе';
 			})
 			.addCase(loginUser.fulfilled, (state, action) => {
 				state.isAuth = true;
@@ -147,7 +126,7 @@ const userSlice = createSlice({
 				state.registerError = null;
 			})
 			.addCase(registerUser.rejected, (state, action) => {
-				state.registerError = action.payload as string;
+				state.registerError = action.payload || 'Ошибка при регистрации';
 			})
 			.addCase(registerUser.fulfilled, (state, action) => {
 				state.isAuth = true;

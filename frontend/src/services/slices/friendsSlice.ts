@@ -1,8 +1,8 @@
-import axios from 'axios';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 import type { TFriend, TFriendRequest } from '../../types';
 import { friendsRequests } from '../../utils/api/friendsRequests';
+import { getErrorMessage } from '../../utils/getErrorMessage';
 
 // Типизация стейта
 type TFriendsState = {
@@ -25,67 +25,56 @@ const initialState: TFriendsState = {
 };
 
 // Санка получения списка друзей
-export const fetchFriends = createAsyncThunk(
-	'friends/fetchFriends',
-	async (_, { rejectWithValue }) => {
-		try {
-			const response = await friendsRequests.getFriends();
+export const fetchFriends = createAsyncThunk<
+	TFriend[],
+	void,
+	{ rejectValue: string }
+>('friends/fetchFriends', async (_, { rejectWithValue }) => {
+	try {
+		const response = await friendsRequests.getFriends();
 
-			return response.data;
-		} catch (err: unknown) {
-			if (axios.isAxiosError(err)) {
-				return rejectWithValue(err.response?.data?.message);
-			}
-
-			if (err instanceof Error) {
-				return rejectWithValue(err.message);
-			}
-		}
+		return response.data;
+	} catch (err: unknown) {
+		return rejectWithValue(getErrorMessage(err));
 	}
-);
+});
 
 // Санка получения списка входящих заявок в друзья
-export const fetchFriendRequests = createAsyncThunk(
-	'friends/fetchFriendRequests',
-	async (_, { rejectWithValue }) => {
-		try {
-			const response = await friendsRequests.getIncomingRequests();
+export const fetchFriendRequests = createAsyncThunk<
+	TFriendRequest[],
+	void,
+	{ rejectValue: string }
+>('friends/fetchFriendRequests', async (_, { rejectWithValue }) => {
+	try {
+		const response = await friendsRequests.getIncomingRequests();
 
-			return response.data;
-		} catch (err: unknown) {
-			if (axios.isAxiosError(err)) {
-				return rejectWithValue(err.response?.data?.message);
-			}
-
-			if (err instanceof Error) {
-				return rejectWithValue(err.message);
-			}
-		}
+		return response.data;
+	} catch (err: unknown) {
+		return rejectWithValue(getErrorMessage(err));
 	}
-);
+});
 
 // Санка отправки заявки в друзья
-export const sendFriendRequest = createAsyncThunk(
-	'friends/sendRequest',
-	async (username: string, { rejectWithValue }) => {
-		try {
-			const response = await friendsRequests.sendRequest(username);
+export const sendFriendRequest = createAsyncThunk<
+	void,
+	string,
+	{ rejectValue: string }
+>('friends/sendRequest', async (username: string, { rejectWithValue }) => {
+	try {
+		const response = await friendsRequests.sendRequest(username);
 
-			return response.data;
-		} catch (err: unknown) {
-			if (axios.isAxiosError(err)) {
-				return rejectWithValue(err.response?.data?.message);
-			}
-
-			if (err instanceof Error) {
-				return rejectWithValue(err.message);
-			}
-		}
+		return response.data;
+	} catch (err: unknown) {
+		return rejectWithValue(getErrorMessage(err));
 	}
-);
+});
 
 // Санка принятия заявки в друзья
-export const acceptRequest = createAsyncThunk(
+export const acceptRequest = createAsyncThunk<
+	string,
+	string,
+	{ rejectValue: string }
+>(
 	'friends/acceptRequest',
 	async (requestId: string, { rejectWithValue, dispatch }) => {
 		try {
@@ -97,19 +86,17 @@ export const acceptRequest = createAsyncThunk(
 
 			return requestId;
 		} catch (err: unknown) {
-			if (axios.isAxiosError(err)) {
-				return rejectWithValue(err.response?.data?.message);
-			}
-
-			if (err instanceof Error) {
-				return rejectWithValue(err.message);
-			}
+			return rejectWithValue(getErrorMessage(err));
 		}
 	}
 );
 
 // Санка отмены заявки в друзья
-export const rejectRequest = createAsyncThunk(
+export const rejectRequest = createAsyncThunk<
+	string,
+	string,
+	{ rejectValue: string }
+>(
 	'friends/rejectRequest',
 	async (requestId: string, { rejectWithValue, dispatch }) => {
 		try {
@@ -119,13 +106,7 @@ export const rejectRequest = createAsyncThunk(
 
 			return requestId;
 		} catch (err: unknown) {
-			if (axios.isAxiosError(err)) {
-				return rejectWithValue(err.response?.data?.message);
-			}
-
-			if (err instanceof Error) {
-				return rejectWithValue(err.message);
-			}
+			return rejectWithValue(getErrorMessage(err));
 		}
 	}
 );
@@ -152,7 +133,7 @@ const friendsSlice = createSlice({
 			})
 			.addCase(fetchFriends.rejected, (state, action) => {
 				state.isFriendsLoading = false;
-				state.error = action.payload as string;
+				state.error = action.payload || 'Ошибка при получении списка друзей';
 			})
 			.addCase(fetchFriends.fulfilled, (state, action) => {
 				state.isFriendsLoading = false;
@@ -165,7 +146,9 @@ const friendsSlice = createSlice({
 			})
 			.addCase(fetchFriendRequests.rejected, (state, action) => {
 				state.isRequestsLoading = false;
-				state.error = action.payload as string;
+				state.error =
+					action.payload ||
+					'Ошибка при получении списка входящих запросов дружбы';
 			})
 			.addCase(fetchFriendRequests.fulfilled, (state, action) => {
 				state.isRequestsLoading = false;
@@ -179,7 +162,7 @@ const friendsSlice = createSlice({
 			})
 			.addCase(sendFriendRequest.rejected, (state, action) => {
 				state.isActionLoading = false;
-				state.error = action.payload as string;
+				state.error = action.payload || 'Ошибка при отправке запроса дружбы';
 			})
 			.addCase(sendFriendRequest.fulfilled, (state) => {
 				state.isActionLoading = false;
@@ -192,7 +175,7 @@ const friendsSlice = createSlice({
 			})
 			.addCase(acceptRequest.rejected, (state, action) => {
 				state.isActionLoading = false;
-				state.error = action.payload as string;
+				state.error = action.payload || 'Ошибка при принятии запроса дружбы';
 			})
 			.addCase(acceptRequest.fulfilled, (state) => {
 				state.isActionLoading = false;
@@ -205,7 +188,7 @@ const friendsSlice = createSlice({
 			})
 			.addCase(rejectRequest.rejected, (state, action) => {
 				state.isActionLoading = false;
-				state.error = action.payload as string;
+				state.error = action.payload || 'Ошибка при отказе запроса дружбы';
 			})
 			.addCase(rejectRequest.fulfilled, (state) => {
 				state.isActionLoading = false;
