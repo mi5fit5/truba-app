@@ -7,12 +7,14 @@ import {
 
 import userReducer from '../slices/userSlice';
 import friendsReducer from '../slices/friendsSlice';
+import chatReducer from '../slices/chatSlice';
 
 // Конфигурация стора
 const store = configureStore({
 	reducer: {
 		user: userReducer,
-    friends: friendsReducer,
+		friends: friendsReducer,
+		chat: chatReducer,
 	},
 });
 

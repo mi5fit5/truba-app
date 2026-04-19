@@ -23,11 +23,21 @@ export type TFriend = Omit<TUser, 'friends'>;
 
 // Тип для входящего запроса дружбы
 export type TFriendRequest = {
-  _id: string;
-  sender: TFriend;
-  recipient: string;
-  status: 'pending' | 'accepted';
-}
+	_id: string;
+	sender: TFriend;
+	recipient: string;
+	status: 'pending' | 'accepted';
+};
+
+// Тип для сообщения в чате
+export type TMessage = {
+	_id: string;
+	sender: string;
+	recipient: string;
+	text: string;
+	createdAt: string;
+	updatedAt: string;
+};
 
 // Тип для любых объектов валидации
 export type TFormValidators<T> = {
