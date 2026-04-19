@@ -39,7 +39,7 @@ export const registerUser = createAsyncThunk<
 
 		return user;
 	} catch (err: unknown) {
-		rejectWithValue(getErrorMessage(err));
+		return rejectWithValue(getErrorMessage(err));
 	}
 });
 
@@ -58,7 +58,7 @@ export const loginUser = createAsyncThunk<
 
 		return user;
 	} catch (err: unknown) {
-		rejectWithValue(getErrorMessage(err));
+		return rejectWithValue(getErrorMessage(err));
 	}
 });
 
@@ -73,7 +73,7 @@ export const logoutUser = createAsyncThunk<void, void, { rejectValue: string }>(
 			localStorage.removeItem('refreshToken');
 			deleteCookie('accessToken');
 		} catch (err: unknown) {
-			rejectWithValue(getErrorMessage(err));
+			return rejectWithValue(getErrorMessage(err));
 		}
 	}
 );
@@ -89,7 +89,7 @@ export const fetchCurrentUser = createAsyncThunk<
 
 		return response.user;
 	} catch (err: unknown) {
-		rejectWithValue(getErrorMessage(err));
+		return rejectWithValue(getErrorMessage(err));
 	}
 });
 
