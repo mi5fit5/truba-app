@@ -1,14 +1,17 @@
 .container {
 	display: flex;
 	flex-direction: column;
-	flex: 1;
 	gap: 14px;
-	min-height: 120px;
-	padding: 8px;
+  flex: 1;
+  min-height: 0;
 }
 
 .listWrapper {
 	display: flex;
 	flex-direction: column;
-	gap: 14px;
+	gap: 8px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  margin-right: -8px;
+  padding-right: 4px;
 }

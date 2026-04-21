@@ -12,9 +12,9 @@ import { SearchBar } from './SearchBar/SearchBar';
 import { FriendList } from './FriendList/FriendList';
 import { AddFriend } from './AddFriend/AddFriend';
 import { RequestList } from './RequestList';
-import { Separator } from '../ui/Separator';
 
 import styles from './Sidebar.module.scss';
+import { ProfileSection } from './ProfileSection';
 
 export const Sidebar = () => {
 	const dispatch = useDispatch();
@@ -34,11 +34,19 @@ export const Sidebar = () => {
 
 	return (
 		<div className={styles.sidebar}>
-			<SearchBar onSearch={setSearchQuery} />
-			<FriendList friends={filteredFriends} />
-			<Separator />
-			<RequestList requests={requests} />
-			<AddFriend />
+			<div className={`${styles.panel} ${styles.friendsGroup}`}>
+				<SearchBar onSearch={setSearchQuery} />
+				<div className={styles.innerList}>
+					<FriendList friends={filteredFriends} />
+				</div>
+			</div>
+			<div className={`${styles.panel} ${styles.requestsGroup}`}>
+				<AddFriend />
+        <div className={styles.innerList}>
+          <RequestList requests={requests} />
+        </div>
+			</div>
+			<ProfileSection />
 		</div>
 	);
 };

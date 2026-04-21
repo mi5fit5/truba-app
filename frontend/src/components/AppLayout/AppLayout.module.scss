@@ -17,24 +17,16 @@
 	flex: 1;
 	gap: 10px;
 	padding: 10px;
+  min-height: 0;
+  box-sizing: border-box;
 }
 
 .leftSide {
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
-	width: 250px;
-
-	.placeholder {
-		flex: 1;
-
-		border: 1px solid;
-		border-color: #262626 #f0f0f0 #f0f0f0 #262626;
-		box-shadow:
-			inset 1px 1px #262626,
-			inset -2px -2px #c3c3c3;
-		background: #fff;
-	}
+	width: 280px;
+  min-height: 0;
 }
 
 .rightSide {

@@ -37,7 +37,7 @@ export const FriendItem = ({
 							isOnline ? styles.online : styles.offline
 						)}
 					/>
-					<Text as='span' size={14} lowercase align='left'>
+					<Text as='span' size={12} lowercase align='left'>
 						{isOnline ? 'онлайн' : 'офлайн'}
 					</Text>
 				</div>

@@ -14,23 +14,21 @@
 .userInfo {
 	display: flex;
 	align-items: center;
-	gap: 10px;
+	gap: 8px;
+  overflow: hidden;
 }
 
-.userAvatar {
-	width: 50px;
-	object-fit: cover;
-	aspect-ratio: 1;
+.textWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
 }
 
-.letterAvatar {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	width: 50px;
-	text-transform: uppercase;
-	text-shadow: 1px 1px 0 #000;
-	aspect-ratio: 1;
+.username {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .statusContainer {
@@ -41,12 +39,13 @@
 	.status {
 		width: 8px;
 		border: 1px solid #000;
-		background-color: #09ad09;
+		background-color: #33FF00;
 		aspect-ratio: 1;
 	}
 }
 
 .profileActions {
 	display: flex;
-	gap: 10px;
+  flex-shrink: 0;
+	gap: 6px;
 }

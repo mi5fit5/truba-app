@@ -27,7 +27,7 @@ export const RequestItem = ({
 	const dispatch = useDispatch();
 
 	return (
-		<div className={styles.container} tabIndex={0}>
+		<div className={styles.container}>
 			<div className={styles.infoWrapper}>
 				<Avatar src={avatar} name={username} size='medium' />
 				<div className={styles.senderInfo}>

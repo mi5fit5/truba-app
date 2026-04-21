@@ -6,10 +6,11 @@ import styles from './Text.module.scss';
 interface TextProps {
 	children: ReactNode;
 	as?: ElementType;
-	size?: 12 | 14 | 22 | 26 | 30 | 40;
+	size?: 12 | 14 | 18 | 22 | 26 | 30 | 40;
 	align?: 'left' | 'center';
 	lowercase?: boolean;
 	invert?: boolean;
+	className?: string;
 }
 
 export const Text = ({
@@ -19,14 +20,16 @@ export const Text = ({
 	align = 'left',
 	lowercase = false,
 	invert = false,
+	className,
 }: TextProps) => {
-	const className = clsx(
+	const classes = clsx(
 		styles.text,
 		styles[`size${size}`],
 		styles[`${align}`],
 		{ [styles.lowercase]: lowercase },
-		{ [styles.invert]: invert }
+		{ [styles.invert]: invert },
+		className
 	);
 
-	return <Tag className={className}>{children}</Tag>;
+	return <Tag className={classes}>{children}</Tag>;
 };
