@@ -24,7 +24,7 @@ const messageSchema = new Schema<IMessage>(
 		},
 		text: {
 			type: String,
-      required: true,
+			required: true,
 		},
 	},
 	{

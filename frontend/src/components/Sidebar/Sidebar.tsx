@@ -42,9 +42,9 @@ export const Sidebar = () => {
 			</div>
 			<div className={`${styles.panel} ${styles.requestsGroup}`}>
 				<AddFriend />
-        <div className={styles.innerList}>
-          <RequestList requests={requests} />
-        </div>
+				<div className={styles.innerList}>
+					<RequestList requests={requests} />
+				</div>
 			</div>
 			<ProfileSection />
 		</div>

@@ -31,7 +31,8 @@ const userSchema = new Schema<IUser>({
 	},
 	avatar: {
 		type: String,
-		default: 'https://i.pinimg.com/1200x/0b/92/46/0b92463dca2aa16d08e58ee05871c878.jpg',
+		default:
+			'https://i.pinimg.com/1200x/0b/92/46/0b92463dca2aa16d08e58ee05871c878.jpg',
 	},
 	friends: [
 		{

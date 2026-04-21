@@ -1,8 +1,8 @@
 .sidebar {
 	display: flex;
 	flex-direction: column;
-  height: 666px;
-  justify-content: space-between;
+	height: 666px;
+	justify-content: space-between;
 }
 
 .panel {
@@ -26,16 +26,16 @@
 		inset 1px 1px #262626,
 		inset -2px -2px #c3c3c3;
 	background-color: #fff;
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
 }
 
 .friendsGroup {
-  height: 340px;
+	height: 340px;
 }
 
 .requestsGroup {
-  height: 196px;
+	height: 196px;
 }

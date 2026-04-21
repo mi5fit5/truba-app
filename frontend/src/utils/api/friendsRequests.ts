@@ -9,7 +9,8 @@ export const friendsRequests = {
 	getIncomingRequests: () => api.get('/users/friend-requests'),
 
 	// Отправить запрос дружбы
-	sendRequest: (username: string) => api.post(`/users/friend-request/${username}`),
+	sendRequest: (username: string) =>
+		api.post(`/users/friend-request/${username}`),
 
 	// Принять запросы дружбы
 	acceptRequest: (requestId: string) =>

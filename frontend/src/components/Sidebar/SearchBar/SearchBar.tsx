@@ -14,14 +14,14 @@ export const SearchBar = ({ onSearch }: SearchBarProps) => {
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setQuery(e.target.value);
 
-    if (e.target.value === '') {
-      onSearch('');
-    }
+		if (e.target.value === '') {
+			onSearch('');
+		}
 	};
 
-  const handleSearchSubmit = () => {
-    onSearch(query);
-  }
+	const handleSearchSubmit = () => {
+		onSearch(query);
+	};
 
 	return (
 		<ActionInput
@@ -30,7 +30,7 @@ export const SearchBar = ({ onSearch }: SearchBarProps) => {
 			placeholder='поиск...'
 			iconSrc={searchIcon}
 			iconAlt='Иконка поиска: лупа'
-      onAction={handleSearchSubmit}
+			onAction={handleSearchSubmit}
 		/>
 	);
 };

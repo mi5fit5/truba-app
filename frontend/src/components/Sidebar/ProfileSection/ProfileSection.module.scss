@@ -15,20 +15,20 @@
 	display: flex;
 	align-items: center;
 	gap: 8px;
-  overflow: hidden;
+	overflow: hidden;
 }
 
 .textWrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	overflow: hidden;
 }
 
 .username {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .statusContainer {
@@ -39,13 +39,13 @@
 	.status {
 		width: 8px;
 		border: 1px solid #000;
-		background-color: #33FF00;
+		background-color: #33ff00;
 		aspect-ratio: 1;
 	}
 }
 
 .profileActions {
 	display: flex;
-  flex-shrink: 0;
+	flex-shrink: 0;
 	gap: 6px;
 }
