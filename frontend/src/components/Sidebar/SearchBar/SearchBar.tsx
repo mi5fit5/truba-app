@@ -30,6 +30,8 @@ export const SearchBar = ({ onSearch }: SearchBarProps) => {
 			placeholder='поиск...'
 			iconSrc={searchIcon}
 			iconAlt='Иконка поиска: лупа'
+      buttonTitle='Поиск по списку друзей'
+      buttonSize='small'
 			onAction={handleSearchSubmit}
 		/>
 	);

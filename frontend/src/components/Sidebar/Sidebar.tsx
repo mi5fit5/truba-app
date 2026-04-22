@@ -34,13 +34,13 @@ export const Sidebar = () => {
 
 	return (
 		<div className={styles.sidebar}>
-			<div className={`${styles.panel} ${styles.friendsGroup}`}>
+			<div className={styles.panel}>
 				<SearchBar onSearch={setSearchQuery} />
 				<div className={styles.innerList}>
 					<FriendList friends={filteredFriends} />
 				</div>
 			</div>
-			<div className={`${styles.panel} ${styles.requestsGroup}`}>
+			<div className={styles.panel}>
 				<AddFriend />
 				<div className={styles.innerList}>
 					<RequestList requests={requests} />

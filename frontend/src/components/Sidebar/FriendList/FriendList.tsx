@@ -1,3 +1,6 @@
+import { useDispatch, useSelector } from '../../../services/store';
+import { selectActiveFriendId, setActiveFriendId } from '../../../services/slices/chatSlice';
+
 import { Text } from '../../ui/Text';
 import { FriendItem } from '../../FriendItem';
 
@@ -10,6 +13,9 @@ interface FriendListProps {
 }
 
 export const FriendList = ({ friends }: FriendListProps) => {
+  const dispatch = useDispatch();
+  const activeFriendId = useSelector(selectActiveFriendId);
+
 	return (
 		<div className={styles.container}>
 			<Text as='p' size={30} lowercase>
@@ -23,6 +29,8 @@ export const FriendList = ({ friends }: FriendListProps) => {
 							username={friend.username}
 							avatar={friend.avatar}
 							isOnline={true} // TODO: Доделать статус
+              isSelected={activeFriendId === friend._id}
+              onClick={() => dispatch(setActiveFriendId(friend._id))}
 						/>
 					))
 				) : (

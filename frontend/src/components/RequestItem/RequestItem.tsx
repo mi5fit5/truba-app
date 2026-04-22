@@ -43,12 +43,14 @@ export const RequestItem = ({
 				<button
 					className={styles.iconButton}
 					disabled={isActionLoading}
+					title='Принять запрос дружбы'
 					onClick={() => dispatch(acceptRequest(requestId))}>
 					<img src={acceptIcon} alt='Принять запрос дружбы: галочка' />
 				</button>
 				<button
 					className={styles.iconButton}
 					disabled={isActionLoading}
+					title='Отклонить запрос дружбы'
 					onClick={() => dispatch(rejectRequest(requestId))}>
 					<img src={rejectIcon} alt='Отклонить запрос дружбы: крестик' />
 				</button>
