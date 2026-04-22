@@ -1,11 +1,16 @@
 import axios from 'axios';
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {
+	createSlice,
+	createAsyncThunk,
+	type PayloadAction,
+} from '@reduxjs/toolkit';
 
 import type { TMessage } from '../../types';
 import { chatRequests } from '../../utils/api/chatRequests';
 
 // Типизация стейта
 type TChatState = {
+	activeFriendId: string | null;
 	messages: TMessage[];
 	isLoadingHistory: boolean;
 	isSending: boolean;
@@ -14,6 +19,7 @@ type TChatState = {
 
 // Начальное состояние
 const initialState: TChatState = {
+	activeFriendId: null,
 	messages: [],
 	isLoadingHistory: false,
 	isSending: false,
@@ -66,9 +72,14 @@ export const sendMessage = createAsyncThunk<
 const chatSlice = createSlice({
 	name: 'chat',
 	initialState,
-	reducers: {},
+	reducers: {
+		setActiveFriendId: (state, action: PayloadAction<string | null>) => {
+			state.activeFriendId = action.payload;
+		},
+	},
 	selectors: {
 		// Селекторы
+		selectActiveFriendId: (state) => state.activeFriendId,
 		selectChatMessages: (state) => state.messages,
 		selectChatError: (state) => state.error,
 	},
@@ -105,6 +116,8 @@ const chatSlice = createSlice({
 	},
 });
 
-export const { selectChatMessages, selectChatError } = chatSlice.selectors;
+export const { setActiveFriendId } = chatSlice.actions;
+export const { selectActiveFriendId, selectChatMessages, selectChatError } =
+	chatSlice.selectors;
 
 export default chatSlice.reducer;
