@@ -12,9 +12,9 @@ interface ActionInputProps {
 	iconSrc?: string;
 	iconAlt?: string;
 	className?: string;
-  buttonTitle?: string;
-  buttonSize?: 'small' | 'medium' | 'large';
-  buttonText?: string;
+	buttonTitle?: string;
+	buttonSize?: 'small' | 'medium' | 'large';
+	buttonText?: string;
 	onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 	onAction?: () => void;
 }
@@ -25,9 +25,9 @@ export const ActionInput = ({
 	iconSrc,
 	iconAlt,
 	className,
-  buttonTitle,
-  buttonSize,
-  buttonText,
+	buttonTitle,
+	buttonSize,
+	buttonText,
 	onChange,
 	onAction,
 }: ActionInputProps) => {
@@ -40,8 +40,8 @@ export const ActionInput = ({
 				containerClassName={styles.inputWrapper}
 			/>
 			<Button size={buttonSize} title={buttonTitle} onClick={onAction}>
-        {iconSrc && <img src={iconSrc} alt={iconAlt} />}
-        {buttonText && <span>{buttonText}</span>}
+				{iconSrc && <img src={iconSrc} alt={iconAlt} />}
+				{buttonText && <span>{buttonText}</span>}
 			</Button>
 		</div>
 	);

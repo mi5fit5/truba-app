@@ -17,7 +17,7 @@ export const AppLayout = () => {
 						<Sidebar />
 					</div>
 					<div className={styles.rightSide}>
-            <ChatArea />
+						<ChatArea />
 					</div>
 				</div>
 			</Window>

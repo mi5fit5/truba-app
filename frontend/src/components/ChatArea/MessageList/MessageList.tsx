@@ -9,53 +9,53 @@ import { Text } from '../../ui/Text';
 import styles from './MessageList.module.scss';
 
 interface MessageListProps {
-  messages: TMessage[];
-  currentUserId: string;
-  currentUsername: string;
-  friendUsername: string;
+	messages: TMessage[];
+	currentUserId: string;
+	currentUsername: string;
+	friendUsername: string;
 }
 
 export const MessageList = ({
-  messages,
-  currentUserId,
-  currentUsername,
-  friendUsername,
+	messages,
+	currentUserId,
+	currentUsername,
+	friendUsername,
 }: MessageListProps) => {
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+	const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+	useEffect(() => {
+		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+	}, [messages]);
 
-  return (
-    <div className={styles.container}>
-      <div className={styles.listWrapper}>
-        <div className={styles.contentWrapper}>
-          <Text as='p' size={30} lowercase>
-            Начало вашего общения:
-          </Text>
-          <div className={styles.messagesGroup}>
-            {messages.map((msg) => {
-              const isMe = msg.sender === currentUserId;
+	return (
+		<div className={styles.container}>
+			<div className={styles.listWrapper}>
+				<div className={styles.contentWrapper}>
+					<Text as='p' size={30} lowercase>
+						Начало вашего общения:
+					</Text>
+					<div className={styles.messagesGroup}>
+						{messages.map((msg) => {
+							const isMe = msg.sender === currentUserId;
 
-              const type = isMe ? 'me' : 'friend';
-              const senderName = isMe ? currentUsername : friendUsername;
+							const type = isMe ? 'me' : 'friend';
+							const senderName = isMe ? currentUsername : friendUsername;
 
-              return (
-                <MessageItem
-                  key={msg._id}
-                  type={type}
-                  timestamp={formatMessageDate(msg.createdAt)}
-                  senderName={senderName}
-                  text={msg.text}
-                />
-              );
-            })}
-          </div>
-        </div>
-      </div>
+							return (
+								<MessageItem
+									key={msg._id}
+									type={type}
+									timestamp={formatMessageDate(msg.createdAt)}
+									senderName={senderName}
+									text={msg.text}
+								/>
+							);
+						})}
+					</div>
+				</div>
+			</div>
 
-      <div ref={messagesEndRef} />
-    </div>
-  );
+			<div ref={messagesEndRef} />
+		</div>
+	);
 };

@@ -38,8 +38,8 @@ export const AddFriend = () => {
 			placeholder={isActionLoading ? 'отправка...' : 'добавить...'}
 			iconSrc={addFriendIcon}
 			iconAlt='Иконка отправки запроса дружбы: Земля и люди'
-      buttonTitle='Отправить запрос дружбы'
-      buttonSize='small'
+			buttonTitle='Отправить запрос дружбы'
+			buttonSize='small'
 			onAction={handleAdd}
 		/>
 	);

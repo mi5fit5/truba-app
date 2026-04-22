@@ -1,9 +1,9 @@
 .sidebar {
-  display: grid;
-  grid-template-rows: 1fr 216px auto;
-  gap: 10px;
-  height: 666px;
-  width: 100%;
+	display: grid;
+	grid-template-rows: 1fr 216px auto;
+	gap: 10px;
+	height: 666px;
+	width: 100%;
 }
 
 .panel {
@@ -17,8 +17,8 @@
 		inset 1px 1px #fff,
 		inset -2px -2px #7e7e7e;
 	background-color: #c0c0c0;
-  min-height: 0;
-  min-width: 0;
+	min-height: 0;
+	min-width: 0;
 }
 
 .innerList {

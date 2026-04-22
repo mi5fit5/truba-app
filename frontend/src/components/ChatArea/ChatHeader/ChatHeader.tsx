@@ -12,7 +12,7 @@ import videoIcon from '../../../assets/icons/video-call_icon.png';
 import searchIcon from '../../../assets/icons/find-message_icon.png';
 
 interface ChatHeaderProps {
-  friend: TFriend;
+	friend: TFriend;
 }
 
 export const ChatHeader = ({ friend }: ChatHeaderProps) => {
@@ -60,8 +60,8 @@ export const ChatHeader = ({ friend }: ChatHeaderProps) => {
 					placeholder='найти...'
 					iconSrc={searchIcon}
 					iconAlt='Иконка: поиск по чату'
-          buttonTitle='Поиск сообщений по истории чата'
-          buttonSize='small'
+					buttonTitle='Поиск сообщений по истории чата'
+					buttonSize='small'
 					onAction={handleSearchSubmit}
 				/>
 			</div>
