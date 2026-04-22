@@ -1,0 +1,38 @@
+.container {
+	display: flex;
+	align-items: flex-start;
+	gap: 2px;
+	padding: 3px 2px;
+	font-size: 14px;
+	line-height: auto;
+	text-align: left;
+	background-color: #000;
+}
+
+.icon {
+	flex-shrink: 0;
+	width: 14px;
+	aspect-ratio: 1;
+}
+
+.content {
+	word-break: break-word;
+}
+
+.meta {
+	&.me {
+		color: #0077ff;
+	}
+
+	&.friend {
+		color: #33ff00;
+	}
+
+	&.system {
+		color: #ff6b6b;
+	}
+}
+
+.text {
+	color: #fff;
+}

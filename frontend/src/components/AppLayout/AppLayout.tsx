@@ -3,7 +3,7 @@ import { Window } from '../ui/Window';
 import styles from './AppLayout.module.scss';
 import appLogo from '../../assets/icons/main_app-logo.png';
 import { Sidebar } from '../Sidebar/Sidebar';
-import { Text } from '../ui/Text';
+import { ChatArea } from '../ChatArea';
 
 export const AppLayout = () => {
 	return (
@@ -17,13 +17,7 @@ export const AppLayout = () => {
 						<Sidebar />
 					</div>
 					<div className={styles.rightSide}>
-						<div className={styles.placeholder}>
-							<Text as='p' size={40} lowercase align='center'>
-								выберите друга
-								<br />
-								для общения
-							</Text>
-						</div>
+            <ChatArea />
 					</div>
 				</div>
 			</Window>

@@ -1,0 +1,31 @@
+.container {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+}
+
+.listWrapper {
+	display: flex;
+	flex-direction: column;
+  padding: 10px;
+	margin-right: -8px;
+	padding-right: 4px;
+	overflow-y: auto;
+	scrollbar-gutter: stable;
+  flex: 1;
+  min-height: 0;
+}
+
+.contentWrapper {
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  gap: 14px;
+}
+
+.messagesGroup {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}

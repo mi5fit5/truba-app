@@ -1,0 +1,41 @@
+.chatArea {
+	display: grid;
+	flex: 1;
+	grid-template-rows: 1fr auto;
+	gap: 10px;
+	height: 666px;
+}
+
+.panel {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	border: 2px solid;
+	border-color: #fff #262626 #262626 #fff;
+	padding: 10px;
+	box-shadow:
+		inset 1px 1px #fff,
+		inset -2px -2px #7e7e7e;
+	background-color: #c0c0c0;
+}
+
+.messageListContainer {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	border: 2px solid;
+	border-color: #262626 #f0f0f0 #f0f0f0 #262626;
+	box-shadow:
+		inset 1px 1px #262626,
+		inset -2px -2px #c3c3c3;
+	overflow: hidden;
+	background-color: #fff;
+}
+
+.emptyText {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-color: #fff;
+}

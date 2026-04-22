@@ -1,0 +1,68 @@
+.container {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	// border: 2px solid;
+	// border-color: #fff #262626 #262626 #fff;
+	// padding: 10px;
+	// box-shadow:
+	// 	inset 1px 1px #fff,
+	// 	inset -2px -2px #7e7e7e;
+	// background-color: #c0c0c0;
+}
+
+.friendInfo {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	overflow: hidden;
+}
+
+.textWrapper {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	overflow: hidden;
+}
+
+.username {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.statusContainer {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+
+	.status {
+		width: 8px;
+		border: 1px solid #000;
+		aspect-ratio: 1;
+
+		&.online {
+			background-color: #33ff00;
+		}
+
+		&.offline {
+			background-color: #ff6b6b;
+		}
+	}
+}
+
+.chatTools {
+	display: flex;
+	flex-shrink: 0;
+	align-items: center;
+	gap: 6px;
+}
+
+.callButtons {
+	display: flex;
+	gap: 6px;
+}
+
+.searchBlock {
+	width: 260px;
+}
