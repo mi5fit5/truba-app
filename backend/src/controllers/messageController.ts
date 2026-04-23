@@ -51,3 +51,26 @@ export const getChatHistory = async (req: AuthRequest, res: Response) => {
 		return res.status(500).json({ message: 'Ошибка сервера' });
 	}
 };
+
+// Поиск сообщений по истории чата
+export const searchMessages = async (req: AuthRequest, res: Response) => {
+	try {
+		const currentUserId = req.user?._id;
+		const friendId = req.params.id;
+		const searchQuery = req.query.text as string;
+
+		// Поиск между двумя конкретными пользователями
+		const messages = await Message.find({
+			$or: [
+				{ sender: currentUserId, recipient: friendId },
+				{ sender: friendId, recipient: currentUserId },
+			],
+			text: { $regex: searchQuery, $options: 'i' }, // Совпадения по тексту + нечувствительность к регистру
+		}).sort({ createdAt: 1 });
+
+		return res.status(200).json(messages);
+	} catch (err: unknown) {
+		console.error('Ошибка при поиске сообщений:', err);
+		return res.status(500).json({ message: 'Ошибка сервера' });
+	}
+};
