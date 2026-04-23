@@ -19,7 +19,17 @@
 	color: #000;
 	background-color: #fff;
 
-	&:focus {
+	&:focus,
+	&:disabled {
 		background-color: #e4e4e4;
+	}
+
+	&:disabled {
+		cursor: not-allowed;
+	}
+
+	&:disabled::placeholder {
+		color: #808080;
+		text-shadow: 1px 1px 0 #fff;
 	}
 }

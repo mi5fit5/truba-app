@@ -1,25 +1,22 @@
 .preloader {
-	flex-grow: 1;
 	display: flex;
-	align-items: center;
+	flex-grow: 1;
 	justify-content: center;
+	align-items: center;
 
-	.preloader_circle {
-		display: block;
-		width: 70px;
-		height: 70px;
-		border: 1px solid;
-		border-color: #02007f #0949ac #2366ce #1082cf;
-
-		border-radius: 50%;
-
+	.preloaderCircle {
 		position: relative;
 		top: 0;
-		left: 0;
 		right: 0;
 		bottom: 0;
+		left: 0;
+		display: block;
+		width: 50px;
+		height: 50px;
 		margin: auto;
-
+		border: 2px solid;
+		border-color: #02007f #0949ac #2366ce #1082cf;
+		border-radius: 50%;
 		animation: spin 0.75s infinite linear;
 	}
 }

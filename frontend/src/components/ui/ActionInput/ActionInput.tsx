@@ -9,6 +9,7 @@ import styles from './ActionInput.module.scss';
 interface ActionInputProps {
 	value: string;
 	placeholder?: string;
+	disabled?: boolean;
 	iconSrc?: string;
 	iconAlt?: string;
 	className?: string;
@@ -22,6 +23,7 @@ interface ActionInputProps {
 export const ActionInput = ({
 	value,
 	placeholder,
+	disabled,
 	iconSrc,
 	iconAlt,
 	className,
@@ -31,15 +33,31 @@ export const ActionInput = ({
 	onChange,
 	onAction,
 }: ActionInputProps) => {
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === 'Enter' && !disabled) {
+			e.preventDefault();
+			onAction?.();
+		}
+	};
+
 	return (
-		<div className={clsx(styles.container, className)}>
+		<div
+			className={clsx(styles.container, className, {
+				[styles.disabled]: disabled,
+			})}>
 			<Input
 				placeholder={placeholder}
 				value={value}
 				onChange={onChange}
+				onKeyDown={handleKeyDown}
 				containerClassName={styles.inputWrapper}
+				disabled={disabled}
 			/>
-			<Button size={buttonSize} title={buttonTitle} onClick={onAction}>
+			<Button
+				size={buttonSize}
+				title={buttonTitle}
+				onClick={onAction}
+				disabled={disabled}>
 				{iconSrc && <img src={iconSrc} alt={iconAlt} />}
 				{buttonText && <span>{buttonText}</span>}
 			</Button>
