@@ -9,9 +9,12 @@ import { Register } from '../../pages/Register';
 import { HomePage } from '../../pages/HomePage';
 
 import { fetchCurrentUser } from '../../services/slices/userSlice';
+import { useSocket } from '../../hooks/useSocket';
 
 export const App = () => {
 	const dispatch = useDispatch();
+
+	useSocket();
 
 	useEffect(() => {
 		dispatch(fetchCurrentUser());

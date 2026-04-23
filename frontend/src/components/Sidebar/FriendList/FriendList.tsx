@@ -10,6 +10,7 @@ import { FriendItem } from '../../FriendItem';
 import type { TFriend } from '../../../types';
 
 import styles from './FriendList.module.scss';
+import { selectOnlineUsers } from '../../../services/slices/friendsSlice';
 
 interface FriendListProps {
 	friends: TFriend[];
@@ -18,6 +19,7 @@ interface FriendListProps {
 export const FriendList = ({ friends }: FriendListProps) => {
 	const dispatch = useDispatch();
 	const activeFriendId = useSelector(selectActiveFriendId);
+	const onlineUsers = useSelector(selectOnlineUsers);
 
 	return (
 		<div className={styles.container}>
@@ -26,16 +28,20 @@ export const FriendList = ({ friends }: FriendListProps) => {
 			</Text>
 			<div className={styles.listWrapper}>
 				{friends.length > 0 ? (
-					friends.map((friend) => (
-						<FriendItem
-							key={friend._id}
-							username={friend.username}
-							avatar={friend.avatar}
-							isOnline={true} // TODO: Доделать статус
-							isSelected={activeFriendId === friend._id}
-							onClick={() => dispatch(setActiveFriendId(friend._id))}
-						/>
-					))
+					friends.map((friend) => {
+						const isFriendOnline = onlineUsers.includes(friend._id);
+
+						return (
+							<FriendItem
+								key={friend._id}
+								username={friend.username}
+								avatar={friend.avatar}
+								isOnline={isFriendOnline}
+								isSelected={activeFriendId === friend._id}
+								onClick={() => dispatch(setActiveFriendId(friend._id))}
+							/>
+						);
+					})
 				) : (
 					<Text as='p' size={14} lowercase align='left'>
 						Пустовато тут однако...

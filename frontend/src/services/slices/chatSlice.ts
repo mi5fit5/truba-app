@@ -77,8 +77,18 @@ const chatSlice = createSlice({
 	name: 'chat',
 	initialState,
 	reducers: {
-		setActiveFriendId: (state, action: PayloadAction<string | null>) => {
+		setActiveFriendId: (state, action: PayloadAction<string>) => {
 			state.activeFriendId = action.payload;
+		},
+		addMessage: (state, action: PayloadAction<TMessage>) => {
+			const newMessage = action.payload;
+
+			if (
+				state.activeFriendId === newMessage.sender ||
+				state.activeFriendId === newMessage.recipient
+			) {
+				state.messages.push(newMessage);
+			}
 		},
 	},
 	selectors: {
@@ -139,7 +149,7 @@ const chatSlice = createSlice({
 	},
 });
 
-export const { setActiveFriendId } = chatSlice.actions;
+export const { setActiveFriendId, addMessage } = chatSlice.actions;
 export const {
 	selectActiveFriendId,
 	selectChatMessages,

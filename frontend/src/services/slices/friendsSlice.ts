@@ -1,4 +1,8 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {
+	createSlice,
+	createAsyncThunk,
+	type PayloadAction,
+} from '@reduxjs/toolkit';
 
 import type { TFriend, TFriendRequest } from '../../types';
 import { friendsRequests } from '../../utils/api/friendsRequests';
@@ -7,6 +11,7 @@ import { getErrorMessage } from '../../utils/getErrorMessage';
 // Типизация стейта
 type TFriendsState = {
 	friendList: TFriend[];
+	onlineUsers: string[];
 	incomingRequests: TFriendRequest[];
 	isFriendsLoading: boolean;
 	isRequestsLoading: boolean;
@@ -17,6 +22,7 @@ type TFriendsState = {
 // Начальное состояние
 const initialState: TFriendsState = {
 	friendList: [],
+	onlineUsers: [],
 	incomingRequests: [],
 	isFriendsLoading: false,
 	isRequestsLoading: false,
@@ -115,10 +121,15 @@ export const rejectRequest = createAsyncThunk<
 const friendsSlice = createSlice({
 	name: 'friends',
 	initialState,
-	reducers: {},
+	reducers: {
+		setOnlineUsers: (state, action: PayloadAction<string[]>) => {
+			state.onlineUsers = action.payload;
+		},
+	},
 	selectors: {
 		// Селекторы
 		selectFriends: (state) => state.friendList,
+		selectOnlineUsers: (state) => state.onlineUsers,
 		selectRequests: (state) => state.incomingRequests,
 		selectIsFriendsLoading: (state) => state.isFriendsLoading,
 		selectIsRequestsLoading: (state) => state.isRequestsLoading,
@@ -196,8 +207,10 @@ const friendsSlice = createSlice({
 	},
 });
 
+export const { setOnlineUsers } = friendsSlice.actions;
 export const {
 	selectFriends,
+	selectOnlineUsers,
 	selectRequests,
 	selectIsFriendsLoading,
 	selectIsRequestsLoading,
