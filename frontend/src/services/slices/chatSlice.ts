@@ -1,4 +1,3 @@
-import axios from 'axios';
 import {
 	createSlice,
 	createAsyncThunk,
@@ -7,6 +6,7 @@ import {
 
 import type { TMessage } from '../../types';
 import { chatRequests } from '../../utils/api/chatRequests';
+import { getErrorMessage } from '../../utils/getErrorMessage';
 
 // Типизация стейта
 type TChatState = {
@@ -14,6 +14,7 @@ type TChatState = {
 	messages: TMessage[];
 	isLoadingHistory: boolean;
 	isSending: boolean;
+	isSearchActive: boolean;
 	error: string | null;
 };
 
@@ -23,6 +24,7 @@ const initialState: TChatState = {
 	messages: [],
 	isLoadingHistory: false,
 	isSending: false,
+	isSearchActive: false,
 	error: null,
 };
 
@@ -37,13 +39,7 @@ export const fetchChatHistory = createAsyncThunk<
 
 		return response.data;
 	} catch (err: unknown) {
-		if (axios.isAxiosError(err)) {
-			return rejectWithValue(err.response?.data?.message);
-		}
-
-		if (err instanceof Error) {
-			return rejectWithValue(err.message);
-		}
+		rejectWithValue(getErrorMessage(err));
 	}
 });
 
@@ -58,13 +54,21 @@ export const sendMessage = createAsyncThunk<
 
 		return response.data;
 	} catch (err: unknown) {
-		if (axios.isAxiosError(err)) {
-			return rejectWithValue(err.response?.data?.message);
-		}
+		rejectWithValue(getErrorMessage(err));
+	}
+});
 
-		if (err instanceof Error) {
-			return rejectWithValue(err.message);
-		}
+export const fetchSearchedMessages = createAsyncThunk<
+	TMessage[],
+	{ friendId: string; text: string },
+	{ rejectValue: string }
+>('chat/searchMessages', async ({ friendId, text }, { rejectWithValue }) => {
+	try {
+		const response = await chatRequests.searchMessages(friendId, text);
+
+		return response.data;
+	} catch (err: unknown) {
+		rejectWithValue(getErrorMessage(err));
 	}
 });
 
@@ -81,6 +85,9 @@ const chatSlice = createSlice({
 		// Селекторы
 		selectActiveFriendId: (state) => state.activeFriendId,
 		selectChatMessages: (state) => state.messages,
+		selectIsLoadingHistory: (state) => state.isLoadingHistory,
+		selectIsSending: (state) => state.isSending,
+		selectIsSearchActive: (state) => state.isSearchActive,
 		selectChatError: (state) => state.error,
 	},
 	extraReducers: (builder) => {
@@ -97,6 +104,7 @@ const chatSlice = createSlice({
 			})
 			.addCase(fetchChatHistory.fulfilled, (state, action) => {
 				state.isLoadingHistory = false;
+				state.isSearchActive = false;
 				state.messages = action.payload;
 			})
 
@@ -112,12 +120,33 @@ const chatSlice = createSlice({
 			.addCase(sendMessage.fulfilled, (state, action) => {
 				state.isSending = false;
 				state.messages.push(action.payload);
+			})
+
+			// Поиск сообщений
+			.addCase(fetchSearchedMessages.pending, (state) => {
+				state.isLoadingHistory = true;
+				state.error = null;
+			})
+			.addCase(fetchSearchedMessages.rejected, (state, action) => {
+				state.isLoadingHistory = false;
+				state.error = action.payload || 'Ошибка при поиске сообщений';
+			})
+			.addCase(fetchSearchedMessages.fulfilled, (state, action) => {
+				state.isLoadingHistory = false;
+				state.isSearchActive = true;
+				state.messages = action.payload;
 			});
 	},
 });
 
 export const { setActiveFriendId } = chatSlice.actions;
-export const { selectActiveFriendId, selectChatMessages, selectChatError } =
-	chatSlice.selectors;
+export const {
+	selectActiveFriendId,
+	selectChatMessages,
+	selectIsLoadingHistory,
+	selectIsSending,
+	selectIsSearchActive,
+	selectChatError,
+} = chatSlice.selectors;
 
 export default chatSlice.reducer;

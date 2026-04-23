@@ -8,4 +8,8 @@ export const chatRequests = {
 	// Отправить новое сообщение
 	sendMessage: (friendId: string, text: string) =>
 		api.post(`/messages/send/${friendId}`, { text }),
+
+	// Поиск сообщений
+	searchMessages: (friendId: string, text: string) =>
+		api.get(`/messages/${friendId}/search?text=${text}`),
 };
