@@ -5,6 +5,8 @@ import {
 	fetchChatHistory,
 	selectActiveFriendId,
 	selectChatMessages,
+	selectIsLoadingHistory,
+	selectIsSearchActive,
 } from '../../services/slices/chatSlice';
 import { selectFriends } from '../../services/slices/friendsSlice';
 import { selectUserData } from '../../services/slices/userSlice';
@@ -24,6 +26,8 @@ export const ChatArea = () => {
 	const activeFriend = friends.find((friend) => friend._id === activeFriendId);
 
 	const messages = useSelector(selectChatMessages);
+	const isLoadingHistory = useSelector(selectIsLoadingHistory);
+	const isSearchActive = useSelector(selectIsSearchActive);
 
 	const currentUser = useSelector(selectUserData);
 
@@ -55,6 +59,8 @@ export const ChatArea = () => {
 						currentUserId={currentUser?._id || ''}
 						currentUsername={currentUser?.username || 'me'}
 						friendUsername={activeFriend.username}
+						isSearchActive={isSearchActive}
+						isLoadingHistory={isLoadingHistory}
 					/>
 				</div>
 			</div>

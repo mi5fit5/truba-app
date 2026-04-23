@@ -7,12 +7,15 @@ import { MessageItem } from '../../MessageItem';
 import { Text } from '../../ui/Text';
 
 import styles from './MessageList.module.scss';
+import { Preloader } from '../../ui/Preloader';
 
 interface MessageListProps {
 	messages: TMessage[];
 	currentUserId: string;
 	currentUsername: string;
 	friendUsername: string;
+	isSearchActive: boolean;
+	isLoadingHistory: boolean;
 }
 
 export const MessageList = ({
@@ -20,6 +23,8 @@ export const MessageList = ({
 	currentUserId,
 	currentUsername,
 	friendUsername,
+	isSearchActive,
+	isLoadingHistory,
 }: MessageListProps) => {
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -30,29 +35,48 @@ export const MessageList = ({
 	return (
 		<div className={styles.container}>
 			<div className={styles.listWrapper}>
-				<div className={styles.contentWrapper}>
-					<Text as='p' size={30} lowercase>
-						Начало вашего общения:
-					</Text>
-					<div className={styles.messagesGroup}>
-						{messages.map((msg) => {
-							const isMe = msg.sender === currentUserId;
-
-							const type = isMe ? 'me' : 'friend';
-							const senderName = isMe ? currentUsername : friendUsername;
-
-							return (
-								<MessageItem
-									key={msg._id}
-									type={type}
-									timestamp={formatMessageDate(msg.createdAt)}
-									senderName={senderName}
-									text={msg.text}
-								/>
-							);
-						})}
+				{isLoadingHistory ? (
+					<div className={styles.loaderWrapper}>
+						<Preloader />
 					</div>
-				</div>
+				) : (
+					<div className={styles.contentWrapper}>
+						<Text as='p' size={30} lowercase>
+							{isSearchActive ? 'результаты поиска:' : 'начало вашего общения:'}
+						</Text>
+						{messages.length === 0 ? (
+							<Text
+								as='p'
+								size={18}
+								lowercase
+								align='left'
+								className={styles.emptyState}>
+								{isSearchActive
+									? 'по вашему запросу ничего не найдено...'
+									: 'напишите первое сообщение!'}
+							</Text>
+						) : (
+							<div className={styles.messagesGroup}>
+								{messages.map((msg) => {
+									const isMe = msg.sender === currentUserId;
+
+									const type = isMe ? 'me' : 'friend';
+									const senderName = isMe ? currentUsername : friendUsername;
+
+									return (
+										<MessageItem
+											key={msg._id}
+											type={type}
+											timestamp={formatMessageDate(msg.createdAt)}
+											senderName={senderName}
+											text={msg.text}
+										/>
+									);
+								})}
+							</div>
+						)}
+					</div>
+				)}
 			</div>
 
 			<div ref={messagesEndRef} />

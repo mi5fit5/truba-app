@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { useDispatch } from '../../../services/store';
-import { sendMessage } from '../../../services/slices/chatSlice';
+import { useDispatch, useSelector } from '../../../services/store';
+import {
+	selectIsSending,
+	sendMessage,
+} from '../../../services/slices/chatSlice';
 
 import { ActionInput } from '../../ui/ActionInput';
 
@@ -12,12 +15,14 @@ export const MessageInput = ({ friendId }: MessageInputProps) => {
 	const dispatch = useDispatch();
 	const [message, setMessage] = useState('');
 
+	const isSending = useSelector(selectIsSending);
+
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setMessage(e.target.value);
 	};
 
 	const handleSend = () => {
-		if (!message.trim()) return;
+		if (!message.trim() || isSending) return;
 
 		dispatch(sendMessage({ friendId, text: message }));
 		setMessage('');
@@ -30,8 +35,9 @@ export const MessageInput = ({ friendId }: MessageInputProps) => {
 			placeholder='введите сообщение...'
 			buttonTitle='Отправить сообщение'
 			buttonSize='large'
-			buttonText='Отправить'
+			buttonText={isSending ? 'отправка...' : 'отправить'}
 			onAction={handleSend}
+			disabled={isSending}
 		/>
 	);
 };

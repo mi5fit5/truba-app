@@ -29,3 +29,15 @@
 	flex-direction: column;
 	gap: 4px;
 }
+
+.loaderWrapper {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex: 1;
+	min-height: 100%;
+}
+
+.emptyState {
+	color: #757575;
+}

@@ -1,4 +1,9 @@
 import React, { useState } from 'react';
+import { useDispatch } from '../../../services/store';
+import {
+	fetchChatHistory,
+	fetchSearchedMessages,
+} from '../../../services/slices/chatSlice';
 
 import { Avatar } from '../../ui/Avatar';
 import { Text } from '../../ui/Text';
@@ -16,15 +21,24 @@ interface ChatHeaderProps {
 }
 
 export const ChatHeader = ({ friend }: ChatHeaderProps) => {
+	const dispatch = useDispatch();
 	const [searchQuery, setSearchQuery] = useState('');
 	const isOnline = true;
 
 	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setSearchQuery(e.target.value);
+
+		if (e.target.value === '') {
+			dispatch(fetchChatHistory(friend._id));
+		}
 	};
 
 	const handleSearchSubmit = () => {
-		console.log('Ищем в чате:', searchQuery);
+		if (searchQuery.trim() !== '') {
+			dispatch(
+				fetchSearchedMessages({ friendId: friend._id, text: searchQuery })
+			);
+		}
 	};
 
 	return (
