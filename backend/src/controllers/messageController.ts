@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middlewares/auth';
 import Message from '../models/Message';
+import { getReceiverSocketId, io } from '../lib/socket';
 
 // Отправка нового сообщения
 export const sendMessage = async (req: AuthRequest, res: Response) => {
@@ -22,7 +23,12 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
 			text: text.trim(),
 		});
 
-		// TODO: Добавить логику Socket.IO
+		// Моментальная отправка сообщений
+		const receiverSocketId = getReceiverSocketId(recipientId);
+
+		if (receiverSocketId) {
+			io.to(receiverSocketId).emit('newMessage', newMessage); // Только конкретному пользователю
+		}
 
 		return res.status(201).json(newMessage);
 	} catch (err: unknown) {
