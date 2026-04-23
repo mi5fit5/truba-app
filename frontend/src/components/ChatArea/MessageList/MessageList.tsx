@@ -77,9 +77,8 @@ export const MessageList = ({
 						)}
 					</div>
 				)}
+				<div ref={messagesEndRef} />
 			</div>
-
-			<div ref={messagesEndRef} />
 		</div>
 	);
 };

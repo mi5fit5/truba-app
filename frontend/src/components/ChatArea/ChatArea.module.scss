@@ -1,7 +1,6 @@
 .chatArea {
 	display: grid;
-	flex: 1;
-	grid-template-rows: 1fr auto;
+	grid-template-rows: minmax(0, 1fr) auto;
 	gap: 10px;
 	height: 666px;
 }
@@ -9,6 +8,7 @@
 .panel {
 	display: flex;
 	flex-direction: column;
+	min-height: 0;
 	gap: 10px;
 	border: 2px solid;
 	border-color: #fff #262626 #262626 #fff;
