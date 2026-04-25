@@ -1,9 +1,9 @@
-import { useSelector } from '../../../services/store';
-import { selectIsActionLoading } from '../../../services/slices/friendsSlice';
-import type { TFriendRequest } from '../../../types';
+import type { TFriendRequest } from '@types';
+import { useSelector } from '@store';
+import { selectIsActionLoading } from '@slices';
 
-import { Text } from '../../ui/Text';
-import { RequestItem } from '../../RequestItem';
+import { Text } from '@ui';
+import { RequestItem } from '@items';
 
 import styles from './RequestList.module.scss';
 

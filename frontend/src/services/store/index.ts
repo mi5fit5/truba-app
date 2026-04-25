@@ -5,9 +5,9 @@ import {
 	useSelector as selectorHook,
 } from 'react-redux';
 
-import userReducer from '../slices/userSlice';
-import friendsReducer from '../slices/friendsSlice';
-import chatReducer from '../slices/chatSlice';
+import userReducer from '../slices/user';
+import friendsReducer from '../slices/friends';
+import chatReducer from '../slices/chat';
 
 // Конфигурация стора
 const store = configureStore({

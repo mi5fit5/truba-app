@@ -1,16 +1,15 @@
-import { useDispatch, useSelector } from '../../../services/store';
+import type { TFriend } from '@types';
+import { useDispatch, useSelector } from '@store';
 import {
 	selectActiveFriendId,
 	setActiveFriendId,
-} from '../../../services/slices/chatSlice';
+	selectOnlineUsers,
+} from '@slices';
 
-import { Text } from '../../ui/Text';
-import { FriendItem } from '../../FriendItem';
-
-import type { TFriend } from '../../../types';
+import { FriendItem } from '@items';
+import { Text } from '@ui';
 
 import styles from './FriendList.module.scss';
-import { selectOnlineUsers } from '../../../services/slices/friendsSlice';
 
 interface FriendListProps {
 	friends: TFriend[];

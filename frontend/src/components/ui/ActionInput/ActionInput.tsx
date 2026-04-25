@@ -1,8 +1,7 @@
 import type React from 'react';
 import { clsx } from 'clsx';
 
-import { Button } from '../Button';
-import { Input } from '../Input';
+import { Button, Input } from '@ui';
 
 import styles from './ActionInput.module.scss';
 

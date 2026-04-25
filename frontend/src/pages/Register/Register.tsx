@@ -1,15 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import authIcon from '../../assets/icons/auth_icon.png';
-import styles from './Register.module.scss';
+import { RegisterForm } from '@forms';
+import { Window, WindowFooter, Text, Button, Separator } from '@ui';
 
-import { RegisterForm } from '../../components/forms/RegisterForm';
-import { Window } from '../../components/ui/Window';
-import { WindowFooter } from '../../components/ui/WindowFooter';
-import { Text } from '../../components/ui/Text';
-import { Button } from '../../components/ui/Button';
-import { Separator } from '../../components/ui/Separator';
+import styles from './Register.module.scss';
+import { authIcon } from '@icons';
 
 // Страница регистрации
 export const Register = () => {

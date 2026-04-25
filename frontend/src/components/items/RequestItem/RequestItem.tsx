@@ -1,15 +1,10 @@
-import { useDispatch } from '../../services/store';
-import {
-	acceptRequest,
-	rejectRequest,
-} from '../../services/slices/friendsSlice';
+import { useDispatch } from '@store';
+import { acceptRequest, rejectRequest } from '@slices';
 
-import { Text } from '../ui/Text';
-import { Avatar } from '../ui/Avatar';
+import { Text, Avatar } from '@ui';
 
 import styles from './RequestItem.module.scss';
-import acceptIcon from '../../assets/icons/accept_icon.png';
-import rejectIcon from '../../assets/icons/reject_icon.png';
+import { acceptIcon, rejectIcon } from '@icons';
 
 interface RequestItemProps {
 	requestId: string;

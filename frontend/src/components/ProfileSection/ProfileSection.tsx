@@ -1,14 +1,12 @@
-import { logoutUser, selectUserData } from '../../../services/slices/userSlice';
-import { useDispatch, useSelector } from '../../../services/store';
+import { useDispatch, useSelector } from '@store';
+import { logoutUser, selectUserData } from '@slices';
 
-import { Button } from '../../ui/Button';
-import { Text } from '../../ui/Text';
-import { Avatar } from '../../ui/Avatar';
+import { Button, Text, Avatar } from '@ui';
 
 import styles from './ProfileSection.module.scss';
-import defaultAvatar from '../../../assets/images/default_avatar.jpg';
-import settingsIcon from '../../../assets/icons/settings_icon.png';
-import logoutIcon from '../../../assets/icons/logout_icon.png';
+
+import { settingsIcon, logoutIcon } from '@icons';
+import { defaultAvatar } from '@images';
 
 export const ProfileSection = () => {
 	const dispatch = useDispatch();

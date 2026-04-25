@@ -1,20 +1,12 @@
 import React, { useState } from 'react';
-import { useDispatch } from '../../../services/store';
-import {
-	fetchChatHistory,
-	fetchSearchedMessages,
-} from '../../../services/slices/chatSlice';
+import type { TFriend } from '@types';
+import { useDispatch } from '@store';
+import { fetchChatHistory, fetchSearchedMessages } from '@slices';
 
-import { Avatar } from '../../ui/Avatar';
-import { Text } from '../../ui/Text';
-import { Button } from '../../ui/Button';
-import { ActionInput } from '../../ui/ActionInput';
-import type { TFriend } from '../../../types';
+import { Avatar, Text, Button, ActionInput } from '@ui';
 
 import styles from './ChatHeader.module.scss';
-import phoneIcon from '../../../assets/icons/phone-call_icon.png';
-import videoIcon from '../../../assets/icons/video-call_icon.png';
-import searchIcon from '../../../assets/icons/find-message_icon.png';
+import { phoneCallIcon, videoCallIcon, findMessageIcon } from '@icons';
 
 interface ChatHeaderProps {
 	friend: TFriend;
@@ -61,10 +53,10 @@ export const ChatHeader = ({ friend }: ChatHeaderProps) => {
 			<div className={styles.chatTools}>
 				<div className={styles.callButtons}>
 					<Button size='small' title='Голосовой звонок'>
-						<img src={phoneIcon} alt='Иконка: голосовой звонок' />
+						<img src={phoneCallIcon} alt='Иконка: голосовой звонок' />
 					</Button>
 					<Button size='small' title='Видеозвонок'>
-						<img src={videoIcon} alt='Иконка: видеозвонок' />
+						<img src={videoCallIcon} alt='Иконка: видеозвонок' />
 					</Button>
 				</div>
 				<ActionInput
@@ -72,7 +64,7 @@ export const ChatHeader = ({ friend }: ChatHeaderProps) => {
 					value={searchQuery}
 					onChange={handleSearchChange}
 					placeholder='найти...'
-					iconSrc={searchIcon}
+					iconSrc={findMessageIcon}
 					iconAlt='Иконка: поиск по чату'
 					buttonTitle='Поиск сообщений по истории чата'
 					buttonSize='small'

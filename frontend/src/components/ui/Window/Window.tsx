@@ -3,7 +3,7 @@ import { clsx } from 'clsx';
 
 import styles from './Window.module.scss';
 
-import { TitleBar } from '../TitleBar';
+import { TitleBar } from '@ui';
 
 interface WindowProps {
 	title: string;

@@ -1,9 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { useDispatch, useSelector } from '../services/store';
-import { selectUserData } from '../services/slices/userSlice';
-import { setOnlineUsers } from '../services/slices/friendsSlice';
-import { addMessage } from '../services/slices/chatSlice';
+
+import { useDispatch, useSelector } from '@store';
+import { selectUserData, setOnlineUsers, addMessage } from '@slices';
 
 export const useSocket = () => {
 	const dispatch = useDispatch();

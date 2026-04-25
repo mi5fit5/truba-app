@@ -4,9 +4,9 @@ import {
 	type PayloadAction,
 } from '@reduxjs/toolkit';
 
-import type { TFriend, TFriendRequest } from '../../types';
-import { friendsRequests } from '../../utils/api/friendsRequests';
-import { getErrorMessage } from '../../utils/getErrorMessage';
+import type { TFriend, TFriendRequest } from '@types';
+import { friendsRequests } from '@utils-api';
+import { getErrorMessage } from '@utils/getErrorMessage';
 
 // Типизация стейта
 type TFriendsState = {

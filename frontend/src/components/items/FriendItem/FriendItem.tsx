@@ -1,7 +1,6 @@
 import { clsx } from 'clsx';
 
-import { Avatar } from '../ui/Avatar';
-import { Text } from '../ui/Text';
+import { Avatar, Text } from '@ui';
 
 import styles from './FriendItem.module.scss';
 

@@ -1,15 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
-import authIcon from '../../assets/icons/auth_icon.png';
-import styles from './Login.module.scss';
+import { LoginForm } from '@forms';
+import { Window, WindowFooter, Text, Button, Separator } from '@ui';
 
-import { LoginForm } from '../../components/forms/LoginForm';
-import { Window } from '../../components/ui/Window';
-import { WindowFooter } from '../../components/ui/WindowFooter';
-import { Text } from '../../components/ui/Text';
-import { Button } from '../../components/ui/Button';
-import { Separator } from '../../components/ui/Separator';
+import styles from './Login.module.scss';
+import { authIcon } from '@icons';
 
 // Страница входа
 export const Login = () => {

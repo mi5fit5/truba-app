@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
-import { ActionInput } from '../../ui/ActionInput';
+import { ActionInput } from '@ui';
 
-import searchIcon from '../../../assets/icons/search_icon.png';
+import { searchIcon } from '@icons';
 
 interface SearchBarProps {
 	onSearch: (query: string) => void;

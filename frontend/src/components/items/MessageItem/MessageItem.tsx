@@ -1,9 +1,7 @@
 import { clsx } from 'clsx';
 
 import styles from './MessageItem.module.scss';
-import myIcon from '../../assets/icons/user-message_icon.png';
-import friendIcon from '../../assets/icons/friend-message_icon.png';
-import systemIcon from '../../assets/icons/call-message_icon.png';
+import { userMessageIcon, friendMessageIcon, systemMessageIcon } from '@icons';
 
 interface MessageItemProps {
 	type: 'me' | 'friend' | 'system';
@@ -21,11 +19,11 @@ export const MessageItem = ({
 	const getIcon = () => {
 		switch (type) {
 			case 'me':
-				return myIcon;
+				return userMessageIcon;
 			case 'friend':
-				return friendIcon;
+				return friendMessageIcon;
 			case 'system':
-				return systemIcon;
+				return systemMessageIcon;
 		}
 	};
 

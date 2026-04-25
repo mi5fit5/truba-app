@@ -1,20 +1,22 @@
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from '../../services/store';
+import { useDispatch, useSelector } from '@store';
 
 import {
 	fetchFriendRequests,
 	fetchFriends,
 	selectFriends,
 	selectRequests,
-} from '../../services/slices/friendsSlice';
+} from '@slices';
 
-import { SearchBar } from './SearchBar/SearchBar';
-import { FriendList } from './FriendList/FriendList';
-import { AddFriend } from './AddFriend/AddFriend';
-import { RequestList } from './RequestList';
+import {
+	SearchBar,
+	FriendList,
+	AddFriend,
+	RequestList,
+	ProfileSection,
+} from '@components';
 
 import styles from './Sidebar.module.scss';
-import { ProfileSection } from './ProfileSection';
 
 export const Sidebar = () => {
 	const dispatch = useDispatch();

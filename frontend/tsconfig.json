@@ -21,6 +21,22 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
+
+    "paths": {
+      "@pages": ["./src/pages"],
+      "@components": ["./src/components"],
+      "@forms": ["./src/components/forms"],
+      "@items": ["./src/components/items"],
+      "@icons": ["./src/assets/icons"],
+      "@images": ["./src/assets/images"],
+      "@ui": ["./src/components/ui"],
+      "@types": ["./src/types"],
+      "@store": ["./src/services/store"],
+      "@slices": ["./src/services/slices"],
+      "@hooks/*": ["./src/hooks/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@utils-api": ["./src/utils/api"],
+    },
   },
   "include": ["src/**/*"]
 }

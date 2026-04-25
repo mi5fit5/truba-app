@@ -1,12 +1,10 @@
 import { type ReactElement } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 
-import { useSelector } from '../../services/store';
-import {
-	selectUserIsAuth,
-	selectUserIsInit,
-} from '../../services/slices/userSlice';
-import { Preloader } from '../ui/Preloader';
+import { useSelector } from '@store';
+import { selectUserIsAuth, selectUserIsInit } from '@slices';
+
+import { Preloader } from '@ui';
 
 // Типизация
 type TProtectedRouteProps = {

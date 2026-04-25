@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
-import { useDispatch, useSelector } from '../../../services/store';
-import {
-	selectIsSending,
-	sendMessage,
-} from '../../../services/slices/chatSlice';
+import { useDispatch, useSelector } from '@store';
+import { selectIsSending, sendMessage } from '@slices';
 
-import { ActionInput } from '../../ui/ActionInput';
+import { ActionInput } from '@ui';
 
 interface MessageInputProps {
 	friendId: string;

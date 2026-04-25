@@ -1,13 +1,12 @@
 import React, { useEffect } from 'react';
 
-import type { TRegisterData } from '../../../types';
-import { useDispatch } from '../../../services/store';
-import { useFormWithValidation } from '../../../hooks/useFormWithValidation';
-import { registerUser } from '../../../services/slices/userSlice';
-import { registerValidators } from '../../../utils/validators';
+import type { TRegisterData } from '@types';
+import { useDispatch } from '@store';
+import { registerUser } from '@slices';
+import { useFormWithValidation } from '@hooks/useFormWithValidation';
+import { registerValidators } from '@utils/validators';
 
-import { Input } from '../../ui/Input';
-import { ErrorMessage } from '../../ui/ErrorMessage';
+import { Input, ErrorMessage } from '@ui';
 
 type TRegisterFormProps = {
 	onValidationChange: (isValid: boolean) => void;

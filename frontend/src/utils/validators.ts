@@ -1,4 +1,4 @@
-import type { TFormValidators, TLoginData, TRegisterData } from '../types';
+import type { TFormValidators, TLoginData, TRegisterData } from '@types';
 
 // Регулярные выражения
 export const USERNAME_REGEX = /^[a-zA-Z0-9_]{3,20}$/;

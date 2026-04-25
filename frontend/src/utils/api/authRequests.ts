@@ -1,5 +1,5 @@
 import { api } from './index';
-import type { TLoginData, TRegisterData } from '../../types';
+import type { TLoginData, TRegisterData } from '@types';
 
 // Объект с запросами
 export const authRequests = {

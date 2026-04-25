@@ -1,15 +1,12 @@
 import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 
-import { useDispatch } from '../../services/store';
+import { useDispatch } from '@store';
+import { fetchCurrentUser } from '@slices';
+import { useSocket } from '@hooks/useSocket';
 
-import { ProtectedRoute } from '../ProtectedRoute';
-import { Login } from '../../pages/Login';
-import { Register } from '../../pages/Register';
-import { HomePage } from '../../pages/HomePage';
-
-import { fetchCurrentUser } from '../../services/slices/userSlice';
-import { useSocket } from '../../hooks/useSocket';
+import { ProtectedRoute } from '@components';
+import { Login, Register, HomePage } from '@pages';
 
 export const App = () => {
 	const dispatch = useDispatch();

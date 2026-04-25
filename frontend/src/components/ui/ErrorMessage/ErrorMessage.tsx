@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import styles from './ErrorMessage.module.scss';
-import { Text } from '../Text';
+import { Text } from '@ui';
 
 type TErrorMessageProps = {
 	error?: string | null;

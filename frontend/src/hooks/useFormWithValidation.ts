@@ -1,6 +1,6 @@
 import { useState, type ChangeEvent } from 'react';
 
-import type { TFormValidators } from '../types';
+import type { TFormValidators } from '@types';
 
 // Тип для хранения ошибок
 type TErrorState<T> = {

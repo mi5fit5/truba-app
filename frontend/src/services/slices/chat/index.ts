@@ -4,9 +4,9 @@ import {
 	type PayloadAction,
 } from '@reduxjs/toolkit';
 
-import type { TMessage } from '../../types';
-import { chatRequests } from '../../utils/api/chatRequests';
-import { getErrorMessage } from '../../utils/getErrorMessage';
+import type { TMessage } from '@types';
+import { chatRequests } from '@utils-api';
+import { getErrorMessage } from '@utils/getErrorMessage';
 
 // Типизация стейта
 type TChatState = {

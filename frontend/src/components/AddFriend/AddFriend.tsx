@@ -1,13 +1,10 @@
 import { useState } from 'react';
-import { useDispatch, useSelector } from '../../../services/store';
+import { useDispatch, useSelector } from '@store';
+import { selectIsActionLoading, sendFriendRequest } from '@slices';
 
-import { ActionInput } from '../../ui/ActionInput';
+import { ActionInput } from '@ui';
 
-import addFriendIcon from '../../../assets/icons/add-friend_icon.png';
-import {
-	selectIsActionLoading,
-	sendFriendRequest,
-} from '../../../services/slices/friendsSlice';
+import { addFriendIcon } from '@icons';
 
 export const AddFriend = () => {
 	const dispatch = useDispatch();

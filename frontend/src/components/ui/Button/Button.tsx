@@ -1,6 +1,7 @@
-import { clsx } from 'clsx';
-import styles from './Button.module.scss';
 import type { ButtonHTMLAttributes } from 'react';
+import { clsx } from 'clsx';
+
+import styles from './Button.module.scss';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 	size?: 'large' | 'medium' | 'small';

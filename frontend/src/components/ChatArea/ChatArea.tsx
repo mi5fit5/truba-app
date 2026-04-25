@@ -1,20 +1,18 @@
 import { useEffect } from 'react';
 
-import { useDispatch, useSelector } from '../../services/store';
+import { useDispatch, useSelector } from '@store';
 import {
 	fetchChatHistory,
 	selectActiveFriendId,
 	selectChatMessages,
 	selectIsLoadingHistory,
 	selectIsSearchActive,
-} from '../../services/slices/chatSlice';
-import { selectFriends } from '../../services/slices/friendsSlice';
-import { selectUserData } from '../../services/slices/userSlice';
+	selectFriends,
+	selectUserData,
+} from '@slices';
 
-import { ChatHeader } from './ChatHeader';
-import { MessageList } from './MessageList';
-import { MessageInput } from './MessageInput';
-import { Text } from '../ui/Text';
+import { ChatHeader, MessageList, MessageInput } from '@components';
+import { Text } from '@ui';
 
 import styles from './ChatArea.module.scss';
 

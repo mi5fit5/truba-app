@@ -1,9 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-import { authRequests } from '../../utils/api/authRequests';
-import type { TLoginData, TRegisterData, TUser } from '../../types';
-import { deleteCookie, setCookie } from '../../utils/cookie';
-import { getErrorMessage } from '../../utils/getErrorMessage';
+import type { TLoginData, TRegisterData, TUser } from '@types';
+import { authRequests } from '@utils-api';
+import { deleteCookie, setCookie } from '@utils/cookie';
+import { getErrorMessage } from '@utils/getErrorMessage';
 
 // Типизация стейта
 type TUserState = {

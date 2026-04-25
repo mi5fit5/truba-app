@@ -1,13 +1,12 @@
 import { useEffect, useRef } from 'react';
 
-import type { TMessage } from '../../../types';
-import { formatMessageDate } from '../../../utils/formatMessageDate';
+import type { TMessage } from '@types';
+import { formatMessageDate } from '@utils/formatMessageDate';
 
-import { MessageItem } from '../../MessageItem';
-import { Text } from '../../ui/Text';
+import { MessageItem } from '@items';
+import { Text, Preloader } from '@ui';
 
 import styles from './MessageList.module.scss';
-import { Preloader } from '../../ui/Preloader';
 
 interface MessageListProps {
 	messages: TMessage[];

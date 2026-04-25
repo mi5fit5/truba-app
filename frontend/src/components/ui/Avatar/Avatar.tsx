@@ -1,7 +1,7 @@
 import { clsx } from 'clsx';
 
 import styles from './Avatar.module.scss';
-import defaultAvatar from '../../../assets/images/default_avatar.jpg';
+import { defaultAvatar } from '@images';
 
 interface AvatarProps {
 	src?: string;
