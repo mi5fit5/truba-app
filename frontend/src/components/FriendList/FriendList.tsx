@@ -4,6 +4,7 @@ import {
 	selectActiveFriendId,
 	setActiveFriendId,
 	selectOnlineUsers,
+	selectUnreadSenders,
 } from '@slices';
 
 import { FriendItem } from '@items';
@@ -19,6 +20,7 @@ export const FriendList = ({ friends }: FriendListProps) => {
 	const dispatch = useDispatch();
 	const activeFriendId = useSelector(selectActiveFriendId);
 	const onlineUsers = useSelector(selectOnlineUsers);
+	const unreadSenders = useSelector(selectUnreadSenders);
 
 	return (
 		<div className={styles.container}>
@@ -29,6 +31,7 @@ export const FriendList = ({ friends }: FriendListProps) => {
 				{friends.length > 0 ? (
 					friends.map((friend) => {
 						const isFriendOnline = onlineUsers.includes(friend._id);
+						const hasUnreadMessages = unreadSenders.includes(friend._id);
 
 						return (
 							<FriendItem
@@ -37,6 +40,7 @@ export const FriendList = ({ friends }: FriendListProps) => {
 								avatar={friend.avatar}
 								isOnline={isFriendOnline}
 								isSelected={activeFriendId === friend._id}
+								hasUnread={hasUnreadMessages}
 								onClick={() => dispatch(setActiveFriendId(friend._id))}
 							/>
 						);

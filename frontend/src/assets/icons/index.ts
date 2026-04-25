@@ -4,6 +4,7 @@ import authIcon from './auth_icon.png';
 import findMessageIcon from './find-message_icon.png';
 import friendMessageIcon from './friend-message_icon.png';
 import logoutIcon from './logout_icon.png';
+import newMessageIcon from './new-message_icon.png';
 import mainAppLogo from './main_app-logo.png';
 import phoneCallIcon from './phone-call_icon.png';
 import rejectIcon from './reject_icon.png';
@@ -20,6 +21,7 @@ export {
 	findMessageIcon,
 	friendMessageIcon,
 	logoutIcon,
+	newMessageIcon,
 	mainAppLogo,
 	phoneCallIcon,
 	rejectIcon,

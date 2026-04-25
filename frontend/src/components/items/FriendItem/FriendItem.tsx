@@ -3,12 +3,14 @@ import { clsx } from 'clsx';
 import { Avatar, Text } from '@ui';
 
 import styles from './FriendItem.module.scss';
+import { newMessageIcon } from '@icons';
 
 interface FriendItemProps {
 	username: string;
 	avatar: string;
 	isOnline: boolean;
 	isSelected?: boolean;
+	hasUnread?: boolean;
 	onClick?: () => void;
 }
 
@@ -17,6 +19,7 @@ export const FriendItem = ({
 	avatar,
 	isOnline,
 	isSelected,
+	hasUnread,
 	onClick,
 }: FriendItemProps) => {
 	return (
@@ -41,6 +44,14 @@ export const FriendItem = ({
 					</Text>
 				</div>
 			</div>
+			{hasUnread && (
+				<div className={styles.unreadIcon}>
+					<img
+						src={newMessageIcon}
+						alt='Уведомление о новом сообщении: газета с конвертом'
+					/>
+				</div>
+			)}
 		</div>
 	);
 };

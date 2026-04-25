@@ -6,6 +6,7 @@ export {
 	addMessage,
 	selectActiveFriendId,
 	selectChatMessages,
+	selectUnreadSenders,
 	selectIsLoadingHistory,
 	selectIsSending,
 	selectIsSearchActive,

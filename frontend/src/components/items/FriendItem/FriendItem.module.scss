@@ -61,3 +61,24 @@
 .offline {
 	background-color: #ff6b6b;
 }
+
+.unreadIcon {
+	margin-left: auto;
+	margin-right: 4px;
+	animation: blink 1s step-end infinite;
+
+	img {
+		width: 20px;
+		aspect-ratio: 1;
+	}
+}
+
+@keyframes blink {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0;
+	}
+}

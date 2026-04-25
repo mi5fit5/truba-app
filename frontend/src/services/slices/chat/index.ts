@@ -12,6 +12,7 @@ import { getErrorMessage } from '@utils/getErrorMessage';
 type TChatState = {
 	activeFriendId: string | null;
 	messages: TMessage[];
+	unreadSenders: string[];
 	isLoadingHistory: boolean;
 	isSending: boolean;
 	isSearchActive: boolean;
@@ -22,6 +23,7 @@ type TChatState = {
 const initialState: TChatState = {
 	activeFriendId: null,
 	messages: [],
+	unreadSenders: [],
 	isLoadingHistory: false,
 	isSending: false,
 	isSearchActive: false,
@@ -79,15 +81,22 @@ const chatSlice = createSlice({
 	reducers: {
 		setActiveFriendId: (state, action: PayloadAction<string>) => {
 			state.activeFriendId = action.payload;
+			state.unreadSenders = state.unreadSenders.filter(
+				(id) => id !== action.payload
+			);
 		},
 		addMessage: (state, action: PayloadAction<TMessage>) => {
 			const newMessage = action.payload;
-
-			if (
+			const isChatActive =
 				state.activeFriendId === newMessage.sender ||
-				state.activeFriendId === newMessage.recipient
-			) {
+				state.activeFriendId === newMessage.recipient;
+
+			if (isChatActive) {
 				state.messages.push(newMessage);
+			} else {
+				if (!state.unreadSenders.includes(newMessage.sender)) {
+					state.unreadSenders.push(newMessage.sender);
+				}
 			}
 		},
 	},
@@ -95,6 +104,7 @@ const chatSlice = createSlice({
 		// Селекторы
 		selectActiveFriendId: (state) => state.activeFriendId,
 		selectChatMessages: (state) => state.messages,
+		selectUnreadSenders: (state) => state.unreadSenders,
 		selectIsLoadingHistory: (state) => state.isLoadingHistory,
 		selectIsSending: (state) => state.isSending,
 		selectIsSearchActive: (state) => state.isSearchActive,
@@ -153,6 +163,7 @@ export const { setActiveFriendId, addMessage } = chatSlice.actions;
 export const {
 	selectActiveFriendId,
 	selectChatMessages,
+	selectUnreadSenders,
 	selectIsLoadingHistory,
 	selectIsSending,
 	selectIsSearchActive,
