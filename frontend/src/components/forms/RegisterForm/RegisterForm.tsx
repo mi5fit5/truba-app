@@ -1,29 +1,36 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import type { TRegisterData } from '@types';
-import { useDispatch } from '@store';
-import { registerUser } from '@slices';
+import { useDispatch, useSelector } from '@store';
+import { clearAuthError, registerUser, selectAuthError } from '@slices';
 import { useFormWithValidation } from '@hooks/useFormWithValidation';
 import { registerValidators } from '@utils/validators';
 
-import { Input, ErrorMessage } from '@ui';
+import { Input, Button, ErrorMessage } from '@ui';
 
-type TRegisterFormProps = {
-	onValidationChange: (isValid: boolean) => void;
-};
+import styles from './RegisterForm.module.scss';
 
 // Форма регистрации
-export const RegisterForm = ({ onValidationChange }: TRegisterFormProps) => {
+export const RegisterForm = () => {
 	const dispatch = useDispatch();
+	const navigate = useNavigate();
+	const authError = useSelector(selectAuthError);
+
 	const { inputValues, errors, isValid, handleChange } =
 		useFormWithValidation<TRegisterData>(
 			{ username: '', email: '', password: '' },
 			registerValidators
 		);
 
-	useEffect(() => {
-		onValidationChange(isValid);
-	}, [isValid, onValidationChange]);
+	// Обработчик инпута
+	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		handleChange(e);
+
+		if (authError) {
+			dispatch(clearAuthError());
+		}
+	};
 
 	// Обработчик отправки формы
 	const handleSubmit = (e: React.SubmitEvent) => {
@@ -35,35 +42,32 @@ export const RegisterForm = ({ onValidationChange }: TRegisterFormProps) => {
 	};
 
 	return (
-		<form
-			id='register-form'
-			onSubmit={handleSubmit}
-			style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-			<div>
+		<form onSubmit={handleSubmit} className={styles.container}>
+			<div className={styles.section}>
 				<Input
 					label='никнейм:'
 					name='username'
 					value={inputValues.username}
-					onChange={handleChange}
+					onChange={handleInputChange}
 					type='text'
 					placeholder='nickname'
 					required
 				/>
 				<ErrorMessage error={errors.username} />
 			</div>
-			<div>
+			<div className={styles.section}>
 				<Input
 					label='почта:'
 					name='email'
 					value={inputValues.email}
-					onChange={handleChange}
+					onChange={handleInputChange}
 					type='email'
 					placeholder='example@domain.com'
 					required
 				/>
 				<ErrorMessage error={errors.email} />
 			</div>
-			<div>
+			<div className={styles.section}>
 				<Input
 					label='пароль:'
 					name='password'
@@ -74,6 +78,17 @@ export const RegisterForm = ({ onValidationChange }: TRegisterFormProps) => {
 					required
 				/>
 				<ErrorMessage error={errors.password} />
+			</div>
+			<div className={styles.section}>
+				<div className={styles.footer}>
+					<Button type='submit' disabled={!isValid}>
+						Регистрация
+					</Button>
+					<Button type='button' onClick={() => navigate('/login')}>
+						Войти
+					</Button>
+				</div>
+				<ErrorMessage error={authError} />
 			</div>
 		</form>
 	);

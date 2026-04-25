@@ -1,17 +1,11 @@
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-
 import { LoginForm } from '@forms';
-import { Window, WindowFooter, Text, Button, Separator } from '@ui';
+import { Window, Text, Separator } from '@ui';
 
 import styles from './Login.module.scss';
 import { authIcon } from '@icons';
 
 // Страница входа
 export const Login = () => {
-	const [isFormValid, setIsFormValid] = useState(false);
-	const navigate = useNavigate();
-
 	return (
 		<div className={styles.container}>
 			<Window
@@ -28,15 +22,7 @@ export const Login = () => {
 					<br />
 					для входа
 				</Text>
-				<LoginForm onValidationChange={setIsFormValid} />
-				<WindowFooter>
-					<Button type='submit' form='auth-form' disabled={!isFormValid}>
-						Войти
-					</Button>
-					<Button type='button' onClick={() => navigate('/register')}>
-						Регистрация
-					</Button>
-				</WindowFooter>
+				<LoginForm />
 			</Window>
 		</div>
 	);

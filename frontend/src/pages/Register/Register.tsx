@@ -1,17 +1,11 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-
 import { RegisterForm } from '@forms';
-import { Window, WindowFooter, Text, Button, Separator } from '@ui';
+import { Window, Text, Separator } from '@ui';
 
 import styles from './Register.module.scss';
 import { authIcon } from '@icons';
 
 // Страница регистрации
 export const Register = () => {
-	const [isFormValid, setIsFormValid] = useState(false);
-	const navigate = useNavigate();
-
 	return (
 		<div className={styles.container}>
 			<Window
@@ -28,15 +22,7 @@ export const Register = () => {
 					<br />
 					учётную запись
 				</Text>
-				<RegisterForm onValidationChange={setIsFormValid} />
-				<WindowFooter>
-					<Button type='submit' form='register-form' disabled={!isFormValid}>
-						Регистрация
-					</Button>
-					<Button type='button' onClick={() => navigate('/login')}>
-						Войти
-					</Button>
-				</WindowFooter>
+				<RegisterForm />
 			</Window>
 		</div>
 	);

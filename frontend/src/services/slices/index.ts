@@ -34,9 +34,9 @@ export {
 	loginUser,
 	logoutUser,
 	fetchCurrentUser,
+	clearAuthError,
 	selectUserData,
 	selectUserIsInit,
 	selectUserIsAuth,
-	selectUserRegisterError,
-	selectUserLoginError,
+	selectAuthError,
 } from './user';

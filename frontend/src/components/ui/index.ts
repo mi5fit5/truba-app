@@ -8,4 +8,3 @@ export * from './Separator';
 export * from './Text';
 export * from './TitleBar';
 export * from './Window';
-export * from './WindowFooter';

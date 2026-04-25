@@ -10,17 +10,15 @@ type TUserState = {
 	data: TUser | null;
 	isInit: boolean; // Проверка инициализации
 	isAuth: boolean; // Проверка авторизации
-	loginError: string | null;
-	registerError: string | null;
+	authError: string | null;
 };
 
 // Начальное состояние
 const initialState: TUserState = {
+	data: null,
 	isInit: false,
 	isAuth: false,
-	loginError: null,
-	registerError: null,
-	data: null,
+	authError: null,
 };
 
 // Санка регистрации
@@ -97,40 +95,43 @@ export const fetchCurrentUser = createAsyncThunk<
 const userSlice = createSlice({
 	name: 'user',
 	initialState,
-	reducers: {},
+	reducers: {
+		clearAuthError: (state) => {
+			state.authError = null;
+		},
+	},
 	selectors: {
 		// Селекторы
 		selectUserData: (state) => state.data,
 		selectUserIsInit: (state) => state.isInit,
 		selectUserIsAuth: (state) => state.isAuth,
-		selectUserRegisterError: (state) => state.registerError,
-		selectUserLoginError: (state) => state.loginError,
+		selectAuthError: (state) => state.authError,
 	},
 	extraReducers: (builder) => {
 		builder
 			// Логин
 			.addCase(loginUser.pending, (state) => {
-				state.loginError = null;
+				state.authError = null;
 			})
 			.addCase(loginUser.rejected, (state, action) => {
-				state.loginError = action.payload || 'Ошибка при входе';
+				state.authError = action.payload || 'Ошибка при входе';
 			})
 			.addCase(loginUser.fulfilled, (state, action) => {
 				state.isAuth = true;
-				state.loginError = null;
+				state.authError = null;
 				state.data = action.payload;
 			})
 
 			// Регистрация
 			.addCase(registerUser.pending, (state) => {
-				state.registerError = null;
+				state.authError = null;
 			})
 			.addCase(registerUser.rejected, (state, action) => {
-				state.registerError = action.payload || 'Ошибка при регистрации';
+				state.authError = action.payload || 'Ошибка при регистрации';
 			})
 			.addCase(registerUser.fulfilled, (state, action) => {
 				state.isAuth = true;
-				state.registerError = null;
+				state.authError = null;
 				state.data = action.payload;
 			})
 
@@ -153,12 +154,13 @@ const userSlice = createSlice({
 	},
 });
 
+export const { clearAuthError } = userSlice.actions;
+
 export const {
 	selectUserData,
 	selectUserIsInit,
 	selectUserIsAuth,
-	selectUserRegisterError,
-	selectUserLoginError,
+	selectAuthError,
 } = userSlice.selectors;
 
 export default userSlice.reducer;
