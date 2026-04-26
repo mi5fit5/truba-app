@@ -1,14 +1,24 @@
-import { useEffect, useRef } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
 import { useDispatch, useSelector } from '@store';
 import { selectUserData, setOnlineUsers, addMessage } from '@slices';
 
+// Контекст для передачи сокета по всему приложению
+export const SocketContext = createContext<Socket | null>(null);
+
+// Хук для быстрого получения сокета
+export const useSocketInstance = () => {
+	return useContext(SocketContext);
+};
+
+// Хук для подключения сокета и слушателей
 export const useSocket = () => {
 	const dispatch = useDispatch();
 	const currentUser = useSelector(selectUserData);
 
-	const socketRef = useRef<Socket | null>(null);
+	// Хранение сокета
+	const [socket, setSocket] = useState<Socket | null>(null);
 
 	useEffect(() => {
 		if (!currentUser) return;
@@ -20,22 +30,25 @@ export const useSocket = () => {
 			},
 		});
 
-		// Записываем активное подключение в реф
-		socketRef.current = newSocket;
+		newSocket.on('connect', () => {
+			setSocket(newSocket); // Записываем активное подключение в стейт
+		});
 
-		// Слушаем рассылку со списком онлайн-пользователей
+		// Онлайн-статусы
 		newSocket.on('getOnlineUsers', (users: string[]) => {
 			dispatch(setOnlineUsers(users));
 		});
 
-		// Слушаем личные сообщения
+		// Новые сообщения
 		newSocket.on('newMessage', (message) => {
 			dispatch(addMessage(message)); // Добавляем сообщение в историю чата без перезагрузки
 		});
 
 		return () => {
 			newSocket.close(); // Закрываем соединение
-			socketRef.current = null; // Очищаем реф
+			setSocket(null); // Очищаем стейт при размонтировании
 		};
 	}, [currentUser, dispatch]);
+
+	return socket; // Возвращаем стейт
 };
