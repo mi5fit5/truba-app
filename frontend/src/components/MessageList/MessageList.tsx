@@ -1,10 +1,15 @@
+import React from 'react';
 import { useEffect, useRef } from 'react';
 
 import type { TMessage } from '@types';
-import { formatMessageDate } from '@utils/formatMessageDate';
+import {
+	formatMessageDate,
+	formatSeparatorDate,
+	isSameDate,
+} from '@utils/dateUtils';
 
 import { MessageItem } from '@items';
-import { Text, Preloader } from '@ui';
+import { Text, Preloader, DateSeparator } from '@ui';
 
 import styles from './MessageList.module.scss';
 
@@ -56,20 +61,31 @@ export const MessageList = ({
 							</Text>
 						) : (
 							<div className={styles.messagesGroup}>
-								{messages.map((msg) => {
+								{messages.map((msg, index) => {
 									const isMe = msg.sender === currentUserId;
 
 									const type = isMe ? 'me' : 'friend';
 									const senderName = isMe ? currentUsername : friendUsername;
 
+									const showSeparator =
+										index === 0 ||
+										!isSameDate(messages[index - 1].createdAt, msg.createdAt);
+
 									return (
-										<MessageItem
-											key={msg._id}
-											type={type}
-											timestamp={formatMessageDate(msg.createdAt)}
-											senderName={senderName}
-											text={msg.text}
-										/>
+										<React.Fragment key={msg._id}>
+											{showSeparator && (
+												<DateSeparator
+													dateText={formatSeparatorDate(msg.createdAt)}
+												/>
+											)}
+
+											<MessageItem
+												type={type}
+												timestamp={formatMessageDate(msg.createdAt)}
+												senderName={senderName}
+												text={msg.text}
+											/>
+										</React.Fragment>
 									);
 								})}
 							</div>

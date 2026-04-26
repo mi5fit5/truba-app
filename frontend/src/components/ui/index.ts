@@ -1,6 +1,7 @@
 export * from './ActionInput';
 export * from './Avatar';
 export * from './Button';
+export * from './DateSeparator';
 export * from './ErrorMessage';
 export * from './Input';
 export * from './Preloader';

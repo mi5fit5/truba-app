@@ -1,0 +1,18 @@
+.container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+	margin: 14px 0;
+}
+
+.line {
+	display: flex;
+	flex: 1;
+}
+
+.text {
+	color: #808080;
+	user-select: none;
+}
