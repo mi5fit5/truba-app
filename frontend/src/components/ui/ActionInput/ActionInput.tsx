@@ -32,6 +32,8 @@ export const ActionInput = ({
 	onChange,
 	onAction,
 }: ActionInputProps) => {
+	const isActionDisabled = disabled || !value.trim();
+
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === 'Enter' && !disabled) {
 			e.preventDefault();
@@ -56,7 +58,7 @@ export const ActionInput = ({
 				size={buttonSize}
 				title={buttonTitle}
 				onClick={onAction}
-				disabled={disabled}>
+				disabled={isActionDisabled}>
 				{iconSrc && <img src={iconSrc} alt={iconAlt} />}
 				{buttonText && <span>{buttonText}</span>}
 			</Button>

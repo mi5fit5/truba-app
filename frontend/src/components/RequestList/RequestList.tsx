@@ -1,8 +1,8 @@
 import type { TFriendRequest } from '@types';
 import { useSelector } from '@store';
-import { selectIsActionLoading } from '@slices';
+import { selectIsActionLoading, selectIsRequestsLoading } from '@slices';
 
-import { Text } from '@ui';
+import { Preloader, Text } from '@ui';
 import { RequestItem } from '@items';
 
 import styles from './RequestList.module.scss';
@@ -13,6 +13,7 @@ interface RequestListProps {
 
 export const RequestList = ({ requests }: RequestListProps) => {
 	const isActionLoading = useSelector(selectIsActionLoading);
+	const isListLoading = useSelector(selectIsRequestsLoading);
 
 	return (
 		<div className={styles.container}>
@@ -20,7 +21,11 @@ export const RequestList = ({ requests }: RequestListProps) => {
 				заявки:
 			</Text>
 			<div className={styles.listWrapper}>
-				{requests.length > 0 ? (
+				{isListLoading ? (
+					<div className={styles.loaderWrapper}>
+						<Preloader />
+					</div>
+				) : requests.length > 0 ? (
 					requests.map((req) => (
 						<RequestItem
 							key={req._id}

@@ -1,3 +1,4 @@
+import type React from 'react';
 import { clsx } from 'clsx';
 
 import { Avatar, Text } from '@ui';
@@ -22,10 +23,17 @@ export const FriendItem = ({
 	hasUnread,
 	onClick,
 }: FriendItemProps) => {
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+		if (e.key === 'Enter') {
+			onClick?.();
+		}
+	};
+
 	return (
 		<div
 			className={clsx(styles.container, isSelected && styles.selected)}
 			onClick={onClick}
+			onKeyDown={handleKeyDown}
 			tabIndex={0}>
 			<Avatar src={avatar} name={username} size='medium' />
 			<div className={styles.userInfo}>

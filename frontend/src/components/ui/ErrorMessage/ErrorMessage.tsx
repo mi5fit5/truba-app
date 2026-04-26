@@ -13,7 +13,7 @@ export const ErrorMessage = ({ error }: TErrorMessageProps) => {
 				[styles.visible]: !!error,
 			})}>
 			<div className={styles.errorAlert}></div>
-			<Text as='span' size={13} align='left' invert>
+			<Text as='span' size={13} align='left'>
 				{error || ' '}
 			</Text>
 		</div>

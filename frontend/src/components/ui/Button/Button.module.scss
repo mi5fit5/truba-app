@@ -37,6 +37,10 @@
 		text-shadow: 1px 1px 0 #fff;
 		cursor: not-allowed;
 
+		img {
+			filter: grayscale(1);
+		}
+
 		&:focus {
 			outline: none;
 		}

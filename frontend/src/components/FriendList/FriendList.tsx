@@ -5,10 +5,11 @@ import {
 	setActiveFriendId,
 	selectOnlineUsers,
 	selectUnreadSenders,
+	selectIsFriendsLoading,
 } from '@slices';
 
 import { FriendItem } from '@items';
-import { Text } from '@ui';
+import { Preloader, Text } from '@ui';
 
 import styles from './FriendList.module.scss';
 
@@ -21,6 +22,7 @@ export const FriendList = ({ friends }: FriendListProps) => {
 	const activeFriendId = useSelector(selectActiveFriendId);
 	const onlineUsers = useSelector(selectOnlineUsers);
 	const unreadSenders = useSelector(selectUnreadSenders);
+	const isListLoading = useSelector(selectIsFriendsLoading);
 
 	return (
 		<div className={styles.container}>
@@ -28,7 +30,11 @@ export const FriendList = ({ friends }: FriendListProps) => {
 				Друзья:
 			</Text>
 			<div className={styles.listWrapper}>
-				{friends.length > 0 ? (
+				{isListLoading ? (
+					<div className={styles.loaderWrapper}>
+						<Preloader />
+					</div>
+				) : friends.length > 0 ? (
 					friends.map((friend) => {
 						const isFriendOnline = onlineUsers.includes(friend._id);
 						const hasUnreadMessages = unreadSenders.includes(friend._id);

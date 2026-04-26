@@ -10,13 +10,13 @@ import { getErrorMessage } from '@utils/getErrorMessage';
 
 // Типизация стейта
 type TChatState = {
-	activeFriendId: string | null;
-	messages: TMessage[];
-	unreadSenders: string[];
-	isLoadingHistory: boolean;
-	isSending: boolean;
-	isSearchActive: boolean;
-	error: string | null;
+	activeFriendId: string | null; // id активного пользователя (для чата)
+	messages: TMessage[]; // Сообщения
+	unreadSenders: string[]; // Непрочитанные пользователя
+	isLoadingHistory: boolean; // Флаг загрузки окна чата
+	isSending: boolean; // Флаг отправки сообщения
+	isSearchActive: boolean; // Флаг поиска сообщений
+	error: string | null; // Ошибка
 };
 
 // Начальное состояние

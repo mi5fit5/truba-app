@@ -10,13 +10,13 @@ import { getErrorMessage } from '@utils/getErrorMessage';
 
 // Типизация стейта
 type TFriendsState = {
-	friendList: TFriend[];
-	onlineUsers: string[];
-	incomingRequests: TFriendRequest[];
-	isFriendsLoading: boolean;
-	isRequestsLoading: boolean;
-	isActionLoading: boolean;
-	error: string | null;
+	friendList: TFriend[]; // Список друзей
+	onlineUsers: string[]; // Пользователи, у которых статус "онлайн"
+	incomingRequests: TFriendRequest[]; // Входящие запросы дружбы
+	isFriendsLoading: boolean; // Флаг загрузки списка друзей
+	isRequestsLoading: boolean; // Флаг загрузки списка входящих заявок в друзья
+	isActionLoading: boolean; // Флаг исполнения активного действия
+	error: string | null; // Ошибка
 };
 
 // Начальное состояние
