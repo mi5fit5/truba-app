@@ -18,13 +18,16 @@ export const TitleBar = ({ title, icon, className }: TitleBarProps) => {
 			</div>
 
 			<div className={styles.controls}>
-				<button type='button' className={styles.controlButton}>
+				<button tabIndex={-1} type='button' className={styles.controlButton}>
 					_
 				</button>
-				<button type='button' className={styles.controlButton}>
+				<button tabIndex={-1} type='button' className={styles.controlButton}>
 					□
 				</button>
-				<button type='button' className={clsx(styles.controlButton)}>
+				<button
+					tabIndex={-1}
+					type='button'
+					className={clsx(styles.controlButton)}>
 					X
 				</button>
 			</div>

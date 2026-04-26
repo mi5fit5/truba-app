@@ -1,5 +1,10 @@
 @use '../assets/fonts/fonts.scss';
 
+:root {
+	--cursor-default: url('../assets/cursors/arrow.cur'), default;
+	--cursor-pointer: url('../assets/cursors/pointer.cur'), pointer;
+}
+
 *,
 *::before,
 *::after {
@@ -16,7 +21,7 @@ body {
 	background-position: center;
 	background-size: cover;
 	background-attachment: fixed;
-	cursor: url('../assets/cursors/arrow.cur'), auto;
+	cursor: url('../assets/cursors/arrow.cur');
 	-webkit-font-smoothing: none;
 }
 
@@ -26,7 +31,15 @@ input,
 textarea {
 	font-family: inherit;
 	font-size: inherit;
-	cursor: url('../assets/cursors/pointer.cur'), pointer;
+}
+
+button,
+a,
+input,
+textarea {
+	font-family: inherit;
+	font-size: inherit;
+	cursor: var(--cursor-pointer);
 }
 
 // Стили скроллбара

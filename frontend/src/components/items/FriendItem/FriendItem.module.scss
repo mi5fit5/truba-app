@@ -3,7 +3,7 @@
 	align-items: center;
 	gap: 8px;
 	padding: 4px;
-	cursor: pointer;
+	cursor: var(--cursor-pointer);
 	user-select: none;
 
 	&:focus {
