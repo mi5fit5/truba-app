@@ -8,6 +8,7 @@ import {
 import userReducer from '../slices/user';
 import friendsReducer from '../slices/friends';
 import chatReducer from '../slices/chat';
+import callReducer from '../slices/call';
 
 // Конфигурация стора
 const store = configureStore({
@@ -15,6 +16,7 @@ const store = configureStore({
 		user: userReducer,
 		friends: friendsReducer,
 		chat: chatReducer,
+		call: callReducer,
 	},
 });
 

@@ -1,4 +1,15 @@
 export {
+	initiateCall,
+	receiveCall,
+	acceptCall,
+	endCall,
+	selectCallStatus,
+	selectCallType,
+	selectIncomingSignal,
+	selectParticipant,
+} from './call';
+
+export {
 	fetchChatHistory,
 	sendMessage,
 	fetchSearchedMessages,

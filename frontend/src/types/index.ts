@@ -1,3 +1,5 @@
+import type { SignalData } from 'simple-peer';
+
 export type TLoginData = {
 	email: string;
 	password: string;
@@ -37,6 +39,22 @@ export type TMessage = {
 	text: string;
 	createdAt: string;
 	updatedAt: string;
+};
+
+// Тип собеседника в звонке
+export type TParticipant = Pick<TFriend, '_id' | 'username' | 'avatar'>;
+
+// Тип для статуса звонка
+export type TCallStatus = 'idle' | 'calling' | 'receiving' | 'connected';
+
+// Тип самого звонка
+export type TCallType = 'audio' | 'video';
+
+// Тип входящего звонка
+export type TIncomingCall = {
+	from: TParticipant;
+	signal: SignalData;
+	callType: TCallType;
 };
 
 // Тип для любых объектов валидации
