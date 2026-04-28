@@ -1,6 +1,7 @@
 import http from 'http';
 import express from 'express';
 import { Server } from 'socket.io';
+import User from '../models/User';
 
 const app = express();
 const server = http.createServer(app);
@@ -28,6 +29,54 @@ io.on('connection', (socket) => {
 
 	// Для отправки событий всем подключенным пользователям
 	io.emit('getOnlineUsers', Object.keys(userSocketMap));
+
+	// Инициация звонка
+	socket.on('callToParticipant', async (data) => {
+		const { userToCall, signalData, callType } = data;
+		const targetSocketId = getReceiverSocketId(userToCall);
+
+		if (targetSocketId) {
+			try {
+				const caller = await User.findById(userId).select(
+					'_id username avatar'
+				);
+
+				if (caller) {
+					io.to(targetSocketId).emit('incomingCall', {
+						from: {
+							_id: caller._id.toString(),
+							username: caller.username,
+							avatar: caller.avatar,
+						},
+						signal: signalData,
+						callType: callType,
+					});
+				}
+			} catch (err: unknown) {
+				console.error('Ошибка при получении пользователя для звонка:', err);
+			}
+		}
+	});
+
+	// Собеседник принял звонок
+	socket.on('answerCall', (data) => {
+		const { to, signal } = data;
+		const targetSocketId = getReceiverSocketId(to);
+
+		if (targetSocketId) {
+			io.to(targetSocketId).emit('acceptedCall', signal);
+		}
+	});
+
+	// Завершение звонка
+	socket.on('endCall', (data) => {
+		const { to } = data;
+		const targetSocketId = getReceiverSocketId(to);
+
+		if (targetSocketId) {
+			io.to(targetSocketId).emit('completedCall');
+		}
+	});
 
 	// Отключение
 	socket.on('disconnect', () => {
