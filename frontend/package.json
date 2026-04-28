@@ -16,6 +16,7 @@
     "@eslint/js": "^9.39.4",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@types/simple-peer": "^9.11.9",
     "clean-webpack-plugin": "^4.0.0",
     "css-loader": "^7.1.4",
     "eslint": "^9.39.4",
@@ -43,6 +44,7 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-redux": "^9.2.0",
+    "simple-peer": "^9.11.1",
     "socket.io-client": "^4.8.3"
   }
 }

@@ -33,7 +33,7 @@
       "@types": ["./src/types"],
       "@store": ["./src/services/store"],
       "@slices": ["./src/services/slices"],
-      "@hooks/*": ["./src/hooks/*"],
+      "@hooks": ["./src/hooks"],
       "@utils/*": ["./src/utils/*"],
       "@utils-api": ["./src/utils/api"],
     },
