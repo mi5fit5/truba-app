@@ -1,8 +1,15 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
+import type { TIncomingCall } from '@types';
 import { useDispatch, useSelector } from '@store';
-import { selectUserData, setOnlineUsers, addMessage } from '@slices';
+import {
+	selectUserData,
+	setOnlineUsers,
+	addMessage,
+	receiveCall,
+	endCall,
+} from '@slices';
 
 // Контекст для передачи сокета по всему приложению
 export const SocketContext = createContext<Socket | null>(null);
@@ -42,6 +49,16 @@ export const useSocket = () => {
 		// Новые сообщения
 		newSocket.on('newMessage', (message) => {
 			dispatch(addMessage(message)); // Добавляем сообщение в историю чата без перезагрузки
+		});
+
+		// Входящий звонок
+		newSocket.on('incomingCall', (data: TIncomingCall) => {
+			dispatch(receiveCall(data));
+		});
+
+		// Звонок завершён или сброшен собеседником
+		newSocket.on('completedCall', () => {
+			dispatch(endCall());
 		});
 
 		return () => {

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import type { TRegisterData } from '@types';
 import { useDispatch, useSelector } from '@store';
 import { clearAuthError, registerUser, selectAuthError } from '@slices';
-import { useFormWithValidation } from '@hooks/useFormWithValidation';
+import { useFormWithValidation } from '@hooks';
 import { registerValidators } from '@utils/validators';
 
 import { Input, Button, ErrorMessage } from '@ui';

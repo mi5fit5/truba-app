@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import type { TLoginData } from '@types';
 import { useDispatch, useSelector } from '@store';
 import { clearAuthError, loginUser, selectAuthError } from '@slices';
-import { useFormWithValidation } from '@hooks/useFormWithValidation';
+import { useFormWithValidation } from '@hooks';
 import { loginValidators } from '@utils/validators';
 
 import { Input, ErrorMessage, Button } from '@ui';
