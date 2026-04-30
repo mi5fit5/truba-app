@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import type { TCallType, TFriend } from '@types';
 import { useDispatch, useSelector } from '@store';
-import { fetchChatHistory, fetchSearchedMessages, initiateCall, selectOnlineUsers } from '@slices';
+import {
+	fetchChatHistory,
+	fetchSearchedMessages,
+	initiateCall,
+	selectOnlineUsers,
+} from '@slices';
 import { usePeerContext } from '@context';
 
 import { Avatar, Text, Button, ActionInput } from '@ui';
@@ -15,7 +20,7 @@ interface ChatHeaderProps {
 
 export const ChatHeader = ({ friend }: ChatHeaderProps) => {
 	const dispatch = useDispatch();
-  const onlineUsers = useSelector(selectOnlineUsers);
+	const onlineUsers = useSelector(selectOnlineUsers);
 	const { callToFriend } = usePeerContext();
 	const [searchQuery, setSearchQuery] = useState('');
 

@@ -30,17 +30,17 @@ export const usePeerConnection = () => {
 	const remoteVideoRef = useRef<HTMLVideoElement>(null);
 	const peerRef = useRef<Instance | null>(null);
 	const localStreamRef = useRef<MediaStream | null>(null);
-  const isCallActiveRef = useRef<boolean>(false);
+	const isCallActiveRef = useRef<boolean>(false);
 
 	// Захват видео и аудио
 	const startMedia = async (type: TCallType) => {
 		try {
-      isCallActiveRef.current = true;
+			isCallActiveRef.current = true;
 
-      if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach((track) => track.stop());
-        localStreamRef.current = null;
-      }
+			if (localStreamRef.current) {
+				localStreamRef.current.getTracks().forEach((track) => track.stop());
+				localStreamRef.current = null;
+			}
 
 			// Запрос прав доступа у браузера (видео и аудио)
 			const stream = await navigator.mediaDevices.getUserMedia({
@@ -48,10 +48,10 @@ export const usePeerConnection = () => {
 				video: type === 'video',
 			});
 
-      if (!isCallActiveRef.current) {
-        stream.getTracks().forEach(track => track.stop());
-        return null;
-      }
+			if (!isCallActiveRef.current) {
+				stream.getTracks().forEach((track) => track.stop());
+				return null;
+			}
 
 			setLocalStream(stream);
 			localStreamRef.current = stream;
@@ -69,17 +69,17 @@ export const usePeerConnection = () => {
 	};
 
 	// Очищаем все потоки медиаданных; отвязываем потоки от DOM
-  // Разрываем p2p соединение; очищаем стейты
+	// Разрываем p2p соединение; очищаем стейты
 	const cleanupMedia = useCallback(() => {
-    isCallActiveRef.current = false;
+		isCallActiveRef.current = false;
 
 		if (localStreamRef.current) {
 			localStreamRef.current.getTracks().forEach((track) => track.stop());
 			localStreamRef.current = null;
 		}
 
-    if (localVideoRef.current) localVideoRef.current.srcObject = null;
-    if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+		if (localVideoRef.current) localVideoRef.current.srcObject = null;
+		if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
 
 		if (peerRef.current) {
 			peerRef.current.destroy();

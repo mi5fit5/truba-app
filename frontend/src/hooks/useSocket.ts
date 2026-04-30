@@ -19,7 +19,7 @@ export const useSocket = () => {
 	const currentUser = useSelector(selectUserData);
 	const callStatus = useSelector(selectCallStatus);
 
-  const statusRef = useRef(callStatus);
+	const statusRef = useRef(callStatus);
 
 	// Хранение сокета
 	const [socket, setSocket] = useState<Socket | null>(null);
@@ -55,9 +55,12 @@ export const useSocket = () => {
 
 		// Звонок завершён или сброшен собеседником
 		newSocket.on('completedCall', () => {
-			if (statusRef.current === 'calling' || statusRef.current === 'receiving') {
+			if (
+				statusRef.current === 'calling' ||
+				statusRef.current === 'receiving'
+			) {
 				const rejectAudio = new Audio(declineCallSound);
-        rejectAudio.volume = 0.4;
+				rejectAudio.volume = 0.4;
 				rejectAudio.play().catch((err: unknown) => {
 					console.warn('Auto-play заблокирован:', err);
 				});

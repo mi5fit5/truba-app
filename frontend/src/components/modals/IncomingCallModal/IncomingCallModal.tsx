@@ -31,7 +31,7 @@ export const IncomingCallModal = ({
 		}
 
 		const rejectAudio = new Audio(declineCallSound);
-    rejectAudio.volume = 0.4;
+		rejectAudio.volume = 0.4;
 		rejectAudio.play().catch((err: unknown) => {
 			console.warn('Auto-play заблокирован:', err);
 		});
@@ -42,7 +42,7 @@ export const IncomingCallModal = ({
 	useEffect(() => {
 		if (status === 'receiving') {
 			audioRef.current = new Audio(incomingCallSound);
-      audioRef.current.volume = 0.4;
+			audioRef.current.volume = 0.4;
 			audioRef.current.loop = true;
 			audioRef.current.play().catch((err: unknown) => {
 				console.warn('Auto-play заблокирован:', err);

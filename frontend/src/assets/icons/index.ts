@@ -22,7 +22,7 @@ export {
 	findMessageIcon,
 	friendMessageIcon,
 	logoutIcon,
-  networkModalIcon,
+	networkModalIcon,
 	newMessageIcon,
 	mainAppLogo,
 	phoneCallIcon,
