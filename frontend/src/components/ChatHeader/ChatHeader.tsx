@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import type { TFriend } from '@types';
-import { useDispatch } from '@store';
-import { fetchChatHistory, fetchSearchedMessages } from '@slices';
+import type { TCallType, TFriend } from '@types';
+import { useDispatch, useSelector } from '@store';
+import { fetchChatHistory, fetchSearchedMessages, initiateCall, selectOnlineUsers } from '@slices';
+import { usePeerContext } from '../../contexts';
 
 import { Avatar, Text, Button, ActionInput } from '@ui';
 
@@ -14,9 +15,13 @@ interface ChatHeaderProps {
 
 export const ChatHeader = ({ friend }: ChatHeaderProps) => {
 	const dispatch = useDispatch();
+  const onlineUsers = useSelector(selectOnlineUsers);
+	const { callToFriend } = usePeerContext();
 	const [searchQuery, setSearchQuery] = useState('');
-	const isOnline = true;
 
+	const isOnline = onlineUsers.includes(friend._id);
+
+	// Обработка изменений инпута для поиска сообщений
 	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setSearchQuery(e.target.value);
 
@@ -25,6 +30,7 @@ export const ChatHeader = ({ friend }: ChatHeaderProps) => {
 		}
 	};
 
+	// Обработка сабмита поиска сообщений
 	const handleSearchSubmit = () => {
 		if (searchQuery.trim() !== '') {
 			dispatch(
@@ -33,10 +39,27 @@ export const ChatHeader = ({ friend }: ChatHeaderProps) => {
 		}
 	};
 
+	// Данные друга для звонка
+	const participantData = {
+		_id: friend._id,
+		username: friend.username,
+		avatar: friend.avatar,
+	};
+
+	// Обработка звнока
+	const handleCall = (type: TCallType) => {
+		dispatch(initiateCall({ participant: participantData, type }));
+		callToFriend(friend._id, type);
+	};
+
 	return (
 		<div className={styles.container}>
 			<div className={styles.friendInfo}>
-				<Avatar src={friend.avatar || ''} name={friend.username} size='large' />
+				<Avatar
+					src={friend.avatar || ''}
+					name={friend.username}
+					size='medium'
+				/>
 				<div className={styles.textWrapper}>
 					<Text as='p' size={22} align='left' className={styles.username}>
 						{friend.username}
@@ -52,10 +75,16 @@ export const ChatHeader = ({ friend }: ChatHeaderProps) => {
 			</div>
 			<div className={styles.chatTools}>
 				<div className={styles.callButtons}>
-					<Button size='small' title='Голосовой звонок'>
+					<Button
+						size='small'
+						title='Голосовой звонок'
+						onClick={() => handleCall('audio')}>
 						<img src={phoneCallIcon} alt='Иконка: голосовой звонок' />
 					</Button>
-					<Button size='small' title='Видеозвонок'>
+					<Button
+						size='small'
+						title='Видеозвонок'
+						onClick={() => handleCall('video')}>
 						<img src={videoCallIcon} alt='Иконка: видеозвонок' />
 					</Button>
 				</div>

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
 import type { TIncomingCall } from '@types';
@@ -9,20 +9,17 @@ import {
 	addMessage,
 	receiveCall,
 	endCall,
+	selectCallStatus,
 } from '@slices';
-
-// Контекст для передачи сокета по всему приложению
-export const SocketContext = createContext<Socket | null>(null);
-
-// Хук для быстрого получения сокета
-export const useSocketInstance = () => {
-	return useContext(SocketContext);
-};
+import { declineCallSound } from '@audio';
 
 // Хук для подключения сокета и слушателей
 export const useSocket = () => {
 	const dispatch = useDispatch();
 	const currentUser = useSelector(selectUserData);
+	const callStatus = useSelector(selectCallStatus);
+
+  const statusRef = useRef(callStatus);
 
 	// Хранение сокета
 	const [socket, setSocket] = useState<Socket | null>(null);
@@ -58,6 +55,14 @@ export const useSocket = () => {
 
 		// Звонок завершён или сброшен собеседником
 		newSocket.on('completedCall', () => {
+			if (statusRef.current === 'calling' || statusRef.current === 'receiving') {
+				const rejectAudio = new Audio(declineCallSound);
+        rejectAudio.volume = 0.4;
+				rejectAudio.play().catch((err: unknown) => {
+					console.warn('Auto-play заблокирован:', err);
+				});
+			}
+
 			dispatch(endCall());
 		});
 

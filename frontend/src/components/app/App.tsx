@@ -3,10 +3,11 @@ import { Routes, Route } from 'react-router-dom';
 
 import { useDispatch } from '@store';
 import { fetchCurrentUser } from '@slices';
-import { SocketContext, useSocket } from '@hooks';
+import { SocketContext } from '../../contexts';
+import { useSocket } from '@hooks';
 
-import { ProtectedRoute } from '@components';
 import { Login, Register, HomePage } from '@pages';
+import { PeerProvider, ProtectedRoute } from '@components';
 
 export const App = () => {
 	const dispatch = useDispatch();
@@ -18,32 +19,35 @@ export const App = () => {
 
 	return (
 		<SocketContext.Provider value={socket}>
-			<Routes>
-				<Route
-					path='/login'
-					element={
-						<ProtectedRoute onlyUnAuth>
-							<Login />
-						</ProtectedRoute>
-					}
-				/>
-				<Route
-					path='/register'
-					element={
-						<ProtectedRoute onlyUnAuth>
-							<Register />
-						</ProtectedRoute>
-					}
-				/>
-				<Route
-					path='/'
-					element={
-						<ProtectedRoute>
-							<HomePage />
-						</ProtectedRoute>
-					}
-				/>
-			</Routes>
+			<PeerProvider>
+				<Routes>
+					<Route
+						path='/login'
+						element={
+							<ProtectedRoute onlyUnAuth>
+								<Login />
+							</ProtectedRoute>
+						}
+					/>
+					<Route
+						path='/register'
+						element={
+							<ProtectedRoute onlyUnAuth>
+								<Register />
+							</ProtectedRoute>
+						}
+					/>
+					<Route
+						path='/'
+						element={
+							<ProtectedRoute>
+								<HomePage />
+							</ProtectedRoute>
+						}
+					/>
+					<Route path='*' />
+				</Routes>
+			</PeerProvider>
 		</SocketContext.Provider>
 	);
 };

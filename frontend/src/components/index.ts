@@ -6,6 +6,7 @@ export * from './ChatHeader';
 export * from './FriendList';
 export * from './MessageInput';
 export * from './MessageList';
+export * from './PeerProvider';
 export * from './ProfileSection';
 export * from './ProtectedRoute';
 export * from './RequestList';

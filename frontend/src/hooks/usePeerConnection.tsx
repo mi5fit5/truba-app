@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Peer, { type Instance, type SignalData } from 'simple-peer';
 
 import { useDispatch, useSelector } from '@store';
@@ -9,9 +9,10 @@ import {
 	selectIncomingSignal,
 	selectParticipant,
 } from '@slices';
-import { useSocketInstance } from '@hooks';
+import { useSocketInstance } from '../contexts';
 import type { TCallType } from '@types';
 
+// Хук для управления WebRTC-соединением
 export const usePeerConnection = () => {
 	const dispatch = useDispatch();
 	const socket = useSocketInstance();
@@ -24,23 +25,36 @@ export const usePeerConnection = () => {
 	const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 	const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
 
-	// Рефы для работы с DOM-элементами
+	// Рефы для работы с DOM-элементами, хранения соединения и потока, и активности звонка
 	const localVideoRef = useRef<HTMLVideoElement>(null);
 	const remoteVideoRef = useRef<HTMLVideoElement>(null);
-
-	// Реф для хранения соединения
 	const peerRef = useRef<Instance | null>(null);
+	const localStreamRef = useRef<MediaStream | null>(null);
+  const isCallActiveRef = useRef<boolean>(false);
 
 	// Захват видео и аудио
 	const startMedia = async (type: TCallType) => {
 		try {
+      isCallActiveRef.current = true;
+
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach((track) => track.stop());
+        localStreamRef.current = null;
+      }
+
 			// Запрос прав доступа у браузера (видео и аудио)
 			const stream = await navigator.mediaDevices.getUserMedia({
 				audio: true, // Аудио включено всегда!
 				video: type === 'video',
 			});
 
+      if (!isCallActiveRef.current) {
+        stream.getTracks().forEach(track => track.stop());
+        return null;
+      }
+
 			setLocalStream(stream);
+			localStreamRef.current = stream;
 
 			// Привязываем видео, только если это видеозвонок
 			if (type === 'video' && localVideoRef.current) {
@@ -53,6 +67,29 @@ export const usePeerConnection = () => {
 			return null;
 		}
 	};
+
+	// Очищаем все потоки медиаданных; отвязываем потоки от DOM
+  // Разрываем p2p соединение; очищаем стейты
+	const cleanupMedia = useCallback(() => {
+    isCallActiveRef.current = false;
+
+		if (localStreamRef.current) {
+			localStreamRef.current.getTracks().forEach((track) => track.stop());
+			localStreamRef.current = null;
+		}
+
+    if (localVideoRef.current) localVideoRef.current.srcObject = null;
+    if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+
+		if (peerRef.current) {
+			peerRef.current.destroy();
+			peerRef.current = null;
+		}
+
+		setLocalStream(null);
+		setRemoteStream(null);
+		socket?.off('acceptedCall');
+	}, [socket]);
 
 	// Исходящий звонок
 	const callToFriend = async (friendToCallId: string, type: TCallType) => {
@@ -135,29 +172,25 @@ export const usePeerConnection = () => {
 	};
 
 	// Завершение звонка
-	const completeCall = () => {
-		// Разрываем peer-to-peer туннель
-		if (peerRef.current) {
-			peerRef.current.destroy();
-		}
-
-		// Останавливаем все медиа-треки
-		if (localStream) {
-			localStream.getTracks().forEach((track) => track.stop());
-		}
-
-		// Сообщаем серверу, что звонок завершился
+	const completeCall = useCallback(() => {
 		if (participant && socket) {
-			socket.emit('endCall', { to: participant._id });
+			socket.emit('endCall', { to: participant._id }); // Сообщаем серверу, что звонок завершился
 		}
 
-		// Очищаем стейты и удаляем слушатель
-		setLocalStream(null);
-		setRemoteStream(null);
-		socket?.off('acceptedCall');
-
+		cleanupMedia();
 		dispatch(endCall());
-	};
+	}, [cleanupMedia, dispatch, participant, socket]);
+
+	// Слушатель при сбрасывании собеседником звонка
+	useEffect(() => {
+		if (!socket) return;
+
+		socket.on('completedCall', cleanupMedia);
+
+		return () => {
+			socket.off('completedCall', cleanupMedia);
+		};
+	}, [socket, cleanupMedia]);
 
 	return {
 		callToFriend,
