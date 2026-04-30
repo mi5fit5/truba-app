@@ -4,6 +4,7 @@ export * from './Button';
 export * from './DateSeparator';
 export * from './ErrorMessage';
 export * from './Input';
+export * from './Modal';
 export * from './Preloader';
 export * from './Separator';
 export * from './Text';
