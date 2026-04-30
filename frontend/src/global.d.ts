@@ -13,6 +13,11 @@ declare module '*.png' {
 	export default value;
 }
 
+declare module '*.mp3' {
+  const src: string;
+  export default src;
+}
+
 declare module '*.jpg';
 declare module '*.jpeg';
 declare module '*.svg';

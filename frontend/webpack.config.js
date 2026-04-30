@@ -1,3 +1,4 @@
+const webpack = require('webpack');
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
@@ -31,11 +32,14 @@ module.exports = {
       '@pages': path.resolve(__dirname, './src/pages/'),
       '@components': path.resolve(__dirname, './src/components'),
       '@forms': path.resolve(__dirname, './src/components/forms'),
+      '@modals': path.resolve(__dirname, './src/components/modals'),
       '@items': path.resolve(__dirname, './src/components/items'),
       '@icons': path.resolve(__dirname, './src/assets/icons'),
       '@images': path.resolve(__dirname, './/src/assets/images'),
+      '@audio': path.resolve(__dirname, './src/assets/audio'),
       '@ui': path.resolve(__dirname, './src/components/ui/'),
       '@types': path.resolve(__dirname, './src/types'),
+      '@context': path.resolve(__dirname, './src/contexts'),
       '@store': path.resolve(__dirname, './src/services/store/index.ts'),
       '@slices': path.resolve(__dirname, './src/services/slices'),
       '@hooks': path.resolve(__dirname, './src/hooks'),
@@ -45,6 +49,12 @@ module.exports = {
   },
   module: {
     rules: [
+      {
+        test: /\.m?js/,
+        resolve: {
+          fullySpecified: false,
+        },
+      },
       {
         test: /\.tsx?$/,
         use: 'ts-loader',
@@ -69,6 +79,13 @@ module.exports = {
           'sass-loader'
         ]
       },
+      {
+        test: /\.(mp3|wav|ogg)$/i,
+        type: 'asset/resource',
+        generator: {
+          filename: 'assets/audio/[name].[hash][ext]'
+        }
+      }
     ],
   },
   plugins: [
@@ -77,5 +94,8 @@ module.exports = {
     }),
     new CleanWebpackPlugin(),
     new MiniCssExtractPlugin(),
+    new webpack.ProvidePlugin({
+      process: require.resolve('process/browser.js'),
+    })
   ],
 };
