@@ -1,4 +1,4 @@
-import { PeerContext } from '../../contexts';
+import { PeerContext } from '@context';
 import { usePeerConnection } from '@hooks';
 import { IncomingCallModal } from '@modals';
 import type React from 'react';

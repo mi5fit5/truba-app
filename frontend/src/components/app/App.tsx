@@ -3,7 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 
 import { useDispatch } from '@store';
 import { fetchCurrentUser } from '@slices';
-import { SocketContext } from '../../contexts';
+import { SocketContext } from '@context';
 import { useSocket } from '@hooks';
 
 import { Login, Register, HomePage } from '@pages';

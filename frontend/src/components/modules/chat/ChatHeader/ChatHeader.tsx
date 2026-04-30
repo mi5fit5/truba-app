@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { TCallType, TFriend } from '@types';
 import { useDispatch, useSelector } from '@store';
 import { fetchChatHistory, fetchSearchedMessages, initiateCall, selectOnlineUsers } from '@slices';
-import { usePeerContext } from '../../contexts';
+import { usePeerContext } from '@context';
 
 import { Avatar, Text, Button, ActionInput } from '@ui';
 
