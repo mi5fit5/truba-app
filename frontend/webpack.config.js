@@ -40,6 +40,8 @@ module.exports = {
       '@ui': path.resolve(__dirname, './src/components/ui/'),
       '@types': path.resolve(__dirname, './src/types'),
       '@context': path.resolve(__dirname, './src/contexts'),
+      '@providers': path.resolve(__dirname, './src/components/providers'),
+      '@navigation': path.resolve(__dirname, './src/components/navigation'),
       '@store': path.resolve(__dirname, './src/services/store/index.ts'),
       '@slices': path.resolve(__dirname, './src/services/slices'),
       '@hooks': path.resolve(__dirname, './src/hooks'),
