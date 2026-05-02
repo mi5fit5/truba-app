@@ -4,7 +4,7 @@ import { Routes, Route } from 'react-router-dom';
 import { useDispatch } from '@store';
 import { fetchCurrentUser } from '@slices';
 
-import { Login, Register, HomePage } from '@pages';
+import { Login, Register, HomePage, NotFound } from '@pages';
 import { SocketProvider, PeerProvider } from '@providers';
 import { ProtectedRoute } from '@navigation';
 
@@ -43,6 +43,7 @@ export const App = () => {
 							</ProtectedRoute>
 						}
 					/>
+					<Route path='*' element={<NotFound />} />
 				</Routes>
 			</PeerProvider>
 		</SocketProvider>

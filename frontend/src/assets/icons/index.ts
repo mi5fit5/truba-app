@@ -6,6 +6,7 @@ import friendMessageIcon from './friend-message_icon.png';
 import logoutIcon from './logout_icon.png';
 import networkModalIcon from './network-modal_icon.png';
 import newMessageIcon from './new-message_icon.png';
+import notFoundIcon from './not-found-page_icon.png';
 import mainAppLogo from './main_app-logo.png';
 import phoneCallIcon from './phone-call_icon.png';
 import rejectIcon from './reject_icon.png';
@@ -24,6 +25,7 @@ export {
 	logoutIcon,
 	networkModalIcon,
 	newMessageIcon,
+  notFoundIcon,
 	mainAppLogo,
 	phoneCallIcon,
 	rejectIcon,
