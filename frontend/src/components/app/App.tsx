@@ -3,22 +3,20 @@ import { Routes, Route } from 'react-router-dom';
 
 import { useDispatch } from '@store';
 import { fetchCurrentUser } from '@slices';
-import { SocketContext } from '@context';
-import { useSocket } from '@hooks';
 
 import { Login, Register, HomePage } from '@pages';
-import { PeerProvider, ProtectedRoute } from '@components';
+import { SocketProvider, PeerProvider } from '@providers';
+import { ProtectedRoute } from '@navigation';
 
 export const App = () => {
 	const dispatch = useDispatch();
-	const socket = useSocket();
 
 	useEffect(() => {
 		dispatch(fetchCurrentUser());
 	}, [dispatch]);
 
 	return (
-		<SocketContext.Provider value={socket}>
+		<SocketProvider>
 			<PeerProvider>
 				<Routes>
 					<Route
@@ -45,9 +43,8 @@ export const App = () => {
 							</ProtectedRoute>
 						}
 					/>
-					<Route path='*' />
 				</Routes>
 			</PeerProvider>
-		</SocketContext.Provider>
+		</SocketProvider>
 	);
 };

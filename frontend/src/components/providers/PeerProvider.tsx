@@ -1,7 +1,8 @@
+import type React from 'react';
+
 import { PeerContext } from '@context';
 import { usePeerConnection } from '@hooks';
 import { IncomingCallModal } from '@modals';
-import type React from 'react';
 
 interface PeerProviderProps {
 	children: React.ReactNode;
