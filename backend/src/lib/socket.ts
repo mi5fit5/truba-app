@@ -68,6 +68,14 @@ io.on('connection', (socket) => {
 		}
 	});
 
+	// Переключение медиа-устройств во время звонка
+	socket.on('toggleMedia', (data) => {
+		const { to, type, isMuted } = data;
+    const targetSocketId = getReceiverSocketId(to);
+
+		socket.to(targetSocketId).emit('peerMediaToggled', { type, isMuted });
+	});
+
 	// Завершение звонка
 	socket.on('endCall', (data) => {
 		const { to } = data;
