@@ -2,7 +2,12 @@
 	display: grid;
 	grid-template-rows: minmax(0, 1fr) auto;
 	gap: 10px;
-	height: 666px;
+	max-height: 666px;
+  height: 100%;
+}
+
+.emptyText {
+  height: 100%;
 }
 
 .panel {

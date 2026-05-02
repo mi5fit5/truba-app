@@ -13,12 +13,8 @@ export const AppLayout = () => {
 				icon={<img src={mainAppLogo} alt='Лого: Трубка телефона и Земля' />}
 				className={styles.appWindow}>
 				<div className={styles.mainArea}>
-					<div className={styles.leftSide}>
-						<Sidebar />
-					</div>
-					<div className={styles.rightSide}>
-						<ChatArea />
-					</div>
+					<Sidebar />
+          <ChatArea />
 				</div>
 			</Window>
 		</div>
