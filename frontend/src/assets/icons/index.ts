@@ -8,10 +8,13 @@ import networkModalIcon from './network-modal_icon.png';
 import newMessageIcon from './new-message_icon.png';
 import notFoundIcon from './not-found-page_icon.png';
 import mainAppLogo from './main_app-logo.png';
+import mutedSoundIcon from './muted-sound_icon.png';
 import phoneCallIcon from './phone-call_icon.png';
 import rejectIcon from './reject_icon.png';
 import searchIcon from './search_icon.png';
 import settingsIcon from './settings_icon.png';
+import toggleMic from './toggle-mic_icon.png';
+import toggleCamera from './toggle-camera_icon.png';
 import systemMessageIcon from './call-message_icon.png';
 import userMessageIcon from './user-message_icon.png';
 import videoCallIcon from './video-call_icon.png';
@@ -27,10 +30,13 @@ export {
 	newMessageIcon,
   notFoundIcon,
 	mainAppLogo,
+  mutedSoundIcon,
 	phoneCallIcon,
 	rejectIcon,
 	searchIcon,
 	settingsIcon,
+  toggleMic,
+  toggleCamera,
 	systemMessageIcon,
 	userMessageIcon,
 	videoCallIcon,

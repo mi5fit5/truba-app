@@ -18,7 +18,7 @@ export const Avatar = ({
 }: AvatarProps) => {
 	return (
 		<div className={clsx(styles.avatarWrapper, styles[size], className)}>
-			{src && src.trim() !== '' ? (
+			{src?.trim() ? (
 				<img src={src} alt={`Аватар ${name}`} />
 			) : (
 				<img src={defaultAvatar} alt={`Аватар ${name}`} />

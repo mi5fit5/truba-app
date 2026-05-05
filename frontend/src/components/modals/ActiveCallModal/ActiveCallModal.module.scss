@@ -1,0 +1,124 @@
+.modalWindow {
+	width: 100%;
+	max-width: 1060px;
+	height: 604px;
+}
+
+.modalWindowBody {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	gap: 10px;
+	padding: 10px;
+	background-color: #c0c0c0;
+}
+
+.videoGrid {
+	display: flex;
+	justify-content: space-between;
+	gap: 10px;
+	width: 100%;
+	margin: auto 0;
+}
+
+.videoWrapper {
+	position: relative;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 490px;
+	max-width: 100%;
+	height: 312px;
+	border: 2px solid;
+	border-color: #fff #262626 #262626 #fff;
+	box-shadow:
+		inset 1px 1px #fff,
+		inset -2px -2px #7e7e7e;
+	overflow: hidden;
+
+	&:first-child {
+		background-color: #48adb0;
+	}
+
+	&:last-child {
+		background-color: #9acbad;
+	}
+}
+
+.avatarFallback {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	z-index: 3;
+	transform: translate(-50%, -50%);
+}
+
+.videoElement {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 2;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.usernameBadge {
+	position: absolute;
+	bottom: 15px;
+	left: 15px;
+	z-index: 3;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	color: #fff;
+	line-height: 1.1;
+	letter-spacing: 2px;
+	text-shadow:
+		-2px -2px 0 #000,
+		2px -2px 0 #000,
+		-2px 2px 0 #000,
+		2px 2px 0 #000,
+		4px 4px 0 #000;
+}
+
+.mutedIcon {
+	width: 16px;
+	aspect-ratio: 1;
+  display: block;
+  transform: translateY(2px);
+}
+
+.controlsBar {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 10px;
+}
+
+.toggleIconWrapper {
+	position: relative;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 22px;
+	aspect-ratio: 1;
+}
+
+.toggleBtn {
+	position: relative;
+}
+
+.mainIcon {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+}
+
+.offIcon {
+	position: absolute;
+	top: -8px;
+	left: -8px;
+	width: 14px !important;
+	aspect-ratio: 1;
+}

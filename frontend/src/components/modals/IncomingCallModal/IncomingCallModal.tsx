@@ -23,6 +23,15 @@ export const IncomingCallModal = ({
 
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  const handleAccept = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+
+    onAccept();
+  }, [onAccept]);
+
 	const handleReject = useCallback(() => {
 		if (audioRef.current) {
 			audioRef.current.pause();
@@ -108,7 +117,7 @@ export const IncomingCallModal = ({
 					<Button
 						title='Принять входящий звонок'
 						size='medium'
-						onClick={onAccept}
+						onClick={handleAccept}
 						className={styles.btnBody}>
 						<img src={acceptIcon} alt='Принять входящий звонок: галочка' />
 						<Text as='span' size={22} lowercase align='left'>

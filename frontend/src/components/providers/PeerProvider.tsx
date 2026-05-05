@@ -2,7 +2,7 @@ import type React from 'react';
 
 import { PeerContext } from '@context';
 import { usePeerConnection } from '@hooks';
-import { IncomingCallModal } from '@modals';
+import { ActiveCallModal, IncomingCallModal } from '@modals';
 
 interface PeerProviderProps {
 	children: React.ReactNode;
@@ -18,6 +18,7 @@ export const PeerProvider = ({ children }: PeerProviderProps) => {
 				onAccept={peerConnection.callFromFriend}
 				onReject={peerConnection.completeCall}
 			/>
+      <ActiveCallModal onEndCall={peerConnection.completeCall} />
 		</PeerContext.Provider>
 	);
 };
