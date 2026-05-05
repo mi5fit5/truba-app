@@ -23,14 +23,14 @@ export const IncomingCallModal = ({
 
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const handleAccept = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
+	const handleAccept = useCallback(() => {
+		if (audioRef.current) {
+			audioRef.current.pause();
+			audioRef.current.currentTime = 0;
+		}
 
-    onAccept();
-  }, [onAccept]);
+		onAccept();
+	}, [onAccept]);
 
 	const handleReject = useCallback(() => {
 		if (audioRef.current) {

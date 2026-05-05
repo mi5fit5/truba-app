@@ -213,7 +213,11 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 									alt='Микрофон выключен'
 								/>
 							)}
-							<img src={toggleMic} className={styles.mainIcon} alt='Переключение микрофона' />
+							<img
+								src={toggleMic}
+								className={styles.mainIcon}
+								alt='Переключение микрофона'
+							/>
 						</div>
 					</Button>
 					<Button
@@ -229,7 +233,11 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 									alt='Камера выключена'
 								/>
 							)}
-							<img src={toggleCamera} className={styles.mainIcon} alt='Переключение камеры' />
+							<img
+								src={toggleCamera}
+								className={styles.mainIcon}
+								alt='Переключение камеры'
+							/>
 						</div>
 					</Button>
 					<Button title='Настройки' size='small'>

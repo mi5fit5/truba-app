@@ -14,7 +14,7 @@ export const AppLayout = () => {
 				className={styles.appWindow}>
 				<div className={styles.mainArea}>
 					<Sidebar />
-          <ChatArea />
+					<ChatArea />
 				</div>
 			</Window>
 		</div>

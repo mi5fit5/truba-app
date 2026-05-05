@@ -37,7 +37,7 @@ export type TMessage = {
 	sender: string;
 	recipient: string;
 	text: string;
-  type?: 'text' | 'system';
+	type?: 'text' | 'system';
 	createdAt: string;
 	updatedAt: string;
 };

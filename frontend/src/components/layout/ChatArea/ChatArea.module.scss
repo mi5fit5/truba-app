@@ -3,11 +3,11 @@
 	grid-template-rows: minmax(0, 1fr) auto;
 	gap: 10px;
 	max-height: 666px;
-  height: 100%;
+	height: 100%;
 }
 
 .emptyArea {
-  border: 2px solid;
+	border: 2px solid;
 	border-color: #262626 #f0f0f0 #f0f0f0 #262626;
 	box-shadow:
 		inset 1px 1px #262626,
@@ -15,7 +15,7 @@
 }
 
 .emptyText {
-  height: 100%;
+	height: 100%;
 }
 
 .panel {

@@ -62,19 +62,19 @@ export const MessageList = ({
 						) : (
 							<div className={styles.messagesGroup}>
 								{messages.map((msg, index) => {
-                  const isSystem = msg.type === 'system';
+									const isSystem = msg.type === 'system';
 									const isMe = msg.sender === currentUserId;
 
-                  let type: 'me' | 'friend' | 'system';
-                  let senderName: string;
+									let type: 'me' | 'friend' | 'system';
+									let senderName: string;
 
-                  if (isSystem) {
-                    type = 'system';
-                    senderName = '//СИСТЕМА//';
-                  } else {
-                    type = isMe ? 'me' : 'friend';
-                    senderName = isMe ? currentUsername : friendUsername;
-                  }
+									if (isSystem) {
+										type = 'system';
+										senderName = '//СИСТЕМА//';
+									} else {
+										type = isMe ? 'me' : 'friend';
+										senderName = isMe ? currentUsername : friendUsername;
+									}
 
 									const showSeparator =
 										index === 0 ||

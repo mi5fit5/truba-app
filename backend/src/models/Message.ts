@@ -5,7 +5,7 @@ export interface IMessage extends Document {
 	sender: Types.ObjectId; // Отправитель
 	recipient: Types.ObjectId; // Получатель
 	text: string; // Текст сообщения
-  type: 'text' | 'system'; // Тип сообщения
+	type: 'text' | 'system'; // Тип сообщения
 	createdAt: Date; // Дата и время создания
 	updatedAt: Date; // Дата и время обновления
 }
@@ -27,11 +27,11 @@ const messageSchema = new Schema<IMessage>(
 			type: String,
 			required: true,
 		},
-    type: {
-      type: String,
-      enum: ['text', 'system'],
-      default: 'text',
-    }
+		type: {
+			type: String,
+			enum: ['text', 'system'],
+			default: 'text',
+		},
 	},
 	{
 		timestamps: true,

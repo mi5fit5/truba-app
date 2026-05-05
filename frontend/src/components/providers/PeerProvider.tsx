@@ -18,7 +18,7 @@ export const PeerProvider = ({ children }: PeerProviderProps) => {
 				onAccept={peerConnection.callFromFriend}
 				onReject={peerConnection.completeCall}
 			/>
-      <ActiveCallModal onEndCall={peerConnection.completeCall} />
+			<ActiveCallModal onEndCall={peerConnection.completeCall} />
 		</PeerContext.Provider>
 	);
 };
