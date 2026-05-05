@@ -37,12 +37,10 @@ export const ChatArea = () => {
 
 	if (!activeFriend) {
 		return (
-			<div className={styles.emptyArea}>
-				<div className={`${styles.panel} ${styles.emptyText}`}>
-					<Text as='p' size={40} align='center'>
-						выберите друга <br /> для общения
-					</Text>
-				</div>
+			<div className={`${styles.emptyArea} ${styles.emptyText}`}>
+				<Text as='p' size={40} align='center'>
+					выберите друга <br /> для общения
+				</Text>
 			</div>
 		);
 	}
