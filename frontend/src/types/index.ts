@@ -56,6 +56,10 @@ export type TIncomingCall = {
 	from: TParticipant;
 	signal: SignalData;
 	callType: TCallType;
+	mediaState: {
+		micMuted: boolean;
+		camMuted: boolean;
+	};
 };
 
 // Тип для любых объектов валидации

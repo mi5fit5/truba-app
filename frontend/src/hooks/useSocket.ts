@@ -10,6 +10,7 @@ import {
 	receiveCall,
 	endCall,
 	selectCallStatus,
+	updatePeerMedia,
 } from '@slices';
 import { declineCallSound } from '@audio';
 
@@ -47,6 +48,14 @@ export const useSocket = () => {
 		newSocket.on('newMessage', (message) => {
 			dispatch(addMessage(message)); // Добавляем сообщение в историю чата без перезагрузки
 		});
+
+		// Изменения медиа от собеседника
+		newSocket.on(
+			'peerMediaToggled',
+			(data: { type: 'audio' | 'video'; isMuted: boolean }) => {
+				dispatch(updatePeerMedia(data));
+			}
+		);
 
 		// Входящий звонок
 		newSocket.on('incomingCall', (data: TIncomingCall) => {

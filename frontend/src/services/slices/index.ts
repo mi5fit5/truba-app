@@ -1,12 +1,14 @@
 export {
 	initiateCall,
 	receiveCall,
+	updatePeerMedia,
 	acceptCall,
 	endCall,
 	selectCallStatus,
 	selectCallType,
 	selectIncomingSignal,
 	selectParticipant,
+	selectRemoteMedia,
 } from './call';
 
 export {

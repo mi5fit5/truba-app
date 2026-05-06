@@ -6,6 +6,7 @@ import {
 	selectCallStatus,
 	selectCallType,
 	selectParticipant,
+	selectRemoteMedia,
 	selectUserData,
 } from '@slices';
 
@@ -41,29 +42,47 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 	} = usePeerContext();
 	const socket = useContext(SocketContext);
 
-	const [prevCallStatus, setPrevCallStatus] = useState(callStatus);
+	// Данные собеседника
+	const remoteMedia = useSelector(selectRemoteMedia);
+	const isRemoteMicMuted = remoteMedia.isMicMuted;
+	const isRemoteCamMuted = remoteMedia.isCamMuted;
 
+	// Локальные стейты для медиа текущего пользователя
+	const [prevCallStatus, setPrevCallStatus] = useState(callStatus);
 	const [isMicMuted, setIsMicMuted] = useState(false);
 	const [isCamMuted, setIsCamMuted] = useState(callType === 'audio');
 
-	const [isRemoteMicMuted, setIsRemoteMicMuted] = useState(false);
-	const [isRemoteCamMuted, setIsRemoteCamMuted] = useState(
-		callType === 'audio'
-	);
-
+	// Показывать аватар или камеру
 	const showLocalAvatar = isCamMuted || !localStream;
 	const showRemoteAvatar = isRemoteCamMuted || !remoteStream;
 
+	// Сброс локальных стейтов при новом звонке
 	if (callStatus !== prevCallStatus) {
 		setPrevCallStatus(callStatus);
 
 		if (callStatus === 'calling' || callStatus === 'receiving') {
 			setIsMicMuted(false);
-			setIsRemoteMicMuted(false);
 			setIsCamMuted(callType === 'audio');
-			setIsRemoteCamMuted(callType === 'audio');
 		}
 	}
+
+	// Все переключения аудио/видео применяются к собеседнику при его принятии звонка
+	useEffect(() => {
+		if (callStatus === 'connected' && socket && participant) {
+			socket.emit('toggleMedia', {
+				to: participant._id,
+				type: 'video',
+				isMuted: isCamMuted,
+			});
+
+			socket.emit('toggleMedia', {
+				to: participant._id,
+				type: 'audio',
+				isMuted: isMicMuted,
+			});
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [callStatus]);
 
 	// Переключение микрофона / камеры
 	const toggleMedia = useCallback(
@@ -74,7 +93,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 			if (type === 'video' && isDummyVideoRef?.current && upgradeVideoTrack) {
 				const newTrack = await upgradeVideoTrack();
 
-				if (!newTrack) return; // Если польщователь отменил запрос доступ на камеру
+				if (!newTrack) return; // Если пользователь отменил запрос доступ на камеру
 
 				setIsCamMuted(false);
 				socket.emit('toggleMedia', {
@@ -113,28 +132,6 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		},
 		[localStream, socket, participant, upgradeVideoTrack, isDummyVideoRef]
 	);
-
-	// Слушаем изменения от собеседника
-	useEffect(() => {
-		if (!socket) return;
-
-		const handleRemoteMediaToggle = ({
-			type,
-			isMuted,
-		}: {
-			type: string;
-			isMuted: boolean;
-		}) => {
-			if (type === 'audio') setIsRemoteMicMuted(isMuted);
-			if (type === 'video') setIsRemoteCamMuted(isMuted);
-		};
-
-		socket.on('peerMediaToggled', handleRemoteMediaToggle);
-
-		return () => {
-			socket.off('peerMediaToggled', handleRemoteMediaToggle);
-		};
-	}, [socket]);
 
 	if (
 		(callStatus !== 'calling' && callStatus !== 'connected') ||

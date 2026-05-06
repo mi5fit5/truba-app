@@ -46,7 +46,7 @@ export const usePeerConnection = () => {
 			ctx.fillRect(0, 0, canvas.width, canvas.height);
 		}
 
-		const stream = canvas.captureStream();
+		const stream = canvas.captureStream(30);
 		const track = stream.getVideoTracks()[0];
 		track.enabled = false;
 
@@ -171,6 +171,12 @@ export const usePeerConnection = () => {
 		const stream = await startMedia(type);
 		if (!stream) return;
 
+		// Начальные стейты аудио/видео для отправки собеседнику
+		const initialMediaState = {
+			micMuted: false,
+			camMuted: type === 'audio',
+		};
+
 		// Создаем инициатора звонка
 		const peer = new Peer({
 			initiator: true,
@@ -184,6 +190,7 @@ export const usePeerConnection = () => {
 				userToCall: friendToCallId,
 				signalData: data,
 				callType: type,
+				mediaState: initialMediaState,
 			});
 		});
 
@@ -197,11 +204,17 @@ export const usePeerConnection = () => {
 			}
 		});
 
-		// Единожды ждем ответа собеседника
-		socket.once('acceptedCall', (signal: SignalData) => {
-			peer.signal(signal);
-			dispatch(acceptCall());
-		});
+		// Получаем ответ от собеседника вместе с его актуальными стейтами
+		socket.once(
+			'acceptedCall',
+			(data: {
+				signal: SignalData;
+				mediaState: { micMuted: boolean; camMuted: boolean };
+			}) => {
+				peer.signal(data.signal);
+				dispatch(acceptCall({ mediaState: data.mediaState }));
+			}
+		);
 
 		peerRef.current = peer;
 	};
@@ -215,6 +228,12 @@ export const usePeerConnection = () => {
 
 		dispatch(acceptCall());
 
+		// Начальные стейты для ответа инициатору
+		const initialMediaState = {
+			micMuted: false,
+			camMuted: callType === 'audio',
+		};
+
 		// Отвечает на готовый сигнал от собеседника
 		const peer = new Peer({
 			initiator: false,
@@ -227,6 +246,7 @@ export const usePeerConnection = () => {
 			socket.emit('answerCall', {
 				signal: data,
 				to: participant._id,
+				mediaState: initialMediaState,
 			});
 		});
 
