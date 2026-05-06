@@ -50,7 +50,7 @@ io.on('connection', (socket) => {
 
 	// Инициация звонка
 	socket.on('callToParticipant', async (data) => {
-		const { userToCall, signalData, callType } = data;
+		const { userToCall, signalData, callType, mediaState } = data;
 		const targetSocketId = getReceiverSocketId(userToCall);
 
 		// Регистрируем попытку звонка
@@ -76,6 +76,7 @@ io.on('connection', (socket) => {
 						},
 						signal: signalData,
 						callType: callType,
+						mediaState: mediaState,
 					});
 				}
 			} catch (err: unknown) {
@@ -86,7 +87,7 @@ io.on('connection', (socket) => {
 
 	// Собеседник принял звонок
 	socket.on('answerCall', (data) => {
-		const { to, signal } = data;
+		const { to, signal, mediaState } = data;
 		const targetSocketId = getReceiverSocketId(to);
 
 		// Фиксация времени начала звонка
@@ -98,7 +99,7 @@ io.on('connection', (socket) => {
 		}
 
 		if (targetSocketId) {
-			io.to(targetSocketId).emit('acceptedCall', signal);
+			io.to(targetSocketId).emit('acceptedCall', { signal, mediaState });
 		}
 	});
 
@@ -107,7 +108,7 @@ io.on('connection', (socket) => {
 		const { to, type, isMuted } = data;
 		const targetSocketId = getReceiverSocketId(to);
 
-		socket.to(targetSocketId).emit('peerMediaToggled', { type, isMuted });
+		io.to(targetSocketId).emit('peerMediaToggled', { type, isMuted });
 	});
 
 	// Завершение звонка
