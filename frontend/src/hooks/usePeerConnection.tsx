@@ -25,34 +25,67 @@ export const usePeerConnection = () => {
 	const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 	const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
 
-	// Рефы для работы с DOM-элементами, хранения соединения и потока, и активности звонка
+	// Рефы для работы с DOM-элементами; хранения соединения и потока; активности звонка; пустого видео
 	const localVideoRef = useRef<HTMLVideoElement>(null);
 	const remoteVideoRef = useRef<HTMLVideoElement>(null);
 	const peerRef = useRef<Instance | null>(null);
 	const localStreamRef = useRef<MediaStream | null>(null);
 	const isCallActiveRef = useRef<boolean>(false);
+	const isDummyVideoRef = useRef<boolean>(false);
+
+	// Создание пустого видео-трека
+	const createEmptyVideoTrack = () => {
+		const canvas = document.createElement('canvas');
+		const ctx = canvas.getContext('2d');
+
+		canvas.width = 640;
+		canvas.height = 480;
+
+		if (ctx) {
+			ctx.fillStyle = '#000';
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
+		}
+
+		const stream = canvas.captureStream();
+		const track = stream.getVideoTracks()[0];
+		track.enabled = false;
+
+		return track;
+	};
 
 	// Захват видео и аудио
 	const startMedia = async (type: TCallType) => {
 		try {
 			isCallActiveRef.current = true;
 
+			// Очищаем старые потоки
 			if (localStreamRef.current) {
 				localStreamRef.current.getTracks().forEach((track) => track.stop());
 				localStreamRef.current = null;
 			}
 
-			// Запрос прав доступа у браузера (видео и аудио)
+			// Запрос медиа-устрйств
 			const stream = await navigator.mediaDevices.getUserMedia({
 				audio: true, // Аудио включено всегда!
 				video: type === 'video',
 			});
 
+			// Добавляем пустое видео, если это аудиозвонок
+			isDummyVideoRef.current = type !== 'video';
+
+			if (type !== 'video') {
+				const dummyVideoTrack = createEmptyVideoTrack();
+
+				stream.addTrack(dummyVideoTrack);
+			}
+
+			// Проверка на случай, если пользователь сбросил звонок
 			if (!isCallActiveRef.current) {
 				stream.getTracks().forEach((track) => track.stop());
 				return null;
 			}
 
+			// Сохраняем поток
 			setLocalStream(stream);
 			localStreamRef.current = stream;
 
@@ -64,6 +97,46 @@ export const usePeerConnection = () => {
 			return stream;
 		} catch (err: unknown) {
 			console.error('Ошибка доступа к устройствам:', err);
+			return null;
+		}
+	};
+
+	// Добавление видео-трека в аудиозвонок
+	const upgradeVideoTrack = async () => {
+		if (!localStreamRef.current || !peerRef.current) return null;
+
+		try {
+			// Запрос доступ к камере
+			const newStream = await navigator.mediaDevices.getUserMedia({
+				video: true,
+			});
+			const newVideoTrack = newStream.getVideoTracks()[0];
+			const oldVideoTrack = localStreamRef.current.getVideoTracks()[0];
+
+			// Подменяем трек внутри активного соединения
+			if (oldVideoTrack) {
+				peerRef.current.replaceTrack(
+					oldVideoTrack,
+					newVideoTrack,
+					localStreamRef.current
+				);
+				localStreamRef.current.removeTrack(oldVideoTrack); // Удаляем пустое видео из локального потока
+			}
+
+			localStreamRef.current.addTrack(newVideoTrack);
+			isDummyVideoRef.current = false;
+
+			// Пересоздание медиапотока
+			const updatedStream = new MediaStream(localStreamRef.current.getTracks());
+			setLocalStream(updatedStream);
+
+			if (localVideoRef.current) {
+				localVideoRef.current.srcObject = updatedStream;
+			}
+
+			return newVideoTrack;
+		} catch (err: unknown) {
+			console.error('Ошибка переключения камеры:', err);
 			return null;
 		}
 	};
@@ -196,6 +269,8 @@ export const usePeerConnection = () => {
 		callToFriend,
 		callFromFriend,
 		completeCall,
+		upgradeVideoTrack,
+		isDummyVideoRef,
 		localVideoRef,
 		remoteVideoRef,
 		localStream,

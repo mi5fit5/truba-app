@@ -31,8 +31,14 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 	const callStatus = useSelector(selectCallStatus);
 	const callType = useSelector(selectCallType);
 
-	const { localVideoRef, remoteVideoRef, localStream, remoteStream } =
-		usePeerContext();
+	const {
+		localVideoRef,
+		remoteVideoRef,
+		localStream,
+		remoteStream,
+		upgradeVideoTrack,
+		isDummyVideoRef,
+	} = usePeerContext();
 	const socket = useContext(SocketContext);
 
 	const [prevCallStatus, setPrevCallStatus] = useState(callStatus);
@@ -61,16 +67,33 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 
 	// Переключение микрофона / камеры
 	const toggleMedia = useCallback(
-		(type: 'audio' | 'video') => {
+		async (type: 'audio' | 'video') => {
 			if (!localStream || !socket || !participant) return;
 
+			// Включение камеры при аудиозвонке
+			if (type === 'video' && isDummyVideoRef?.current && upgradeVideoTrack) {
+				const newTrack = await upgradeVideoTrack();
+
+				if (!newTrack) return; // Если польщователь отменил запрос доступ на камеру
+
+				setIsCamMuted(false);
+				socket.emit('toggleMedia', {
+					to: participant._id,
+					type: 'video',
+					isMuted: false,
+				});
+
+				return;
+			}
+
+			// Обычное переключение
 			const track =
 				type === 'audio'
 					? localStream.getAudioTracks()[0]
 					: localStream.getVideoTracks()[0];
 
-			// Переключаем состояние трека
 			if (track) {
+				// Переключаем состояние трека
 				track.enabled = !track.enabled;
 				const newMutedState = !track.enabled;
 
@@ -88,7 +111,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 				});
 			}
 		},
-		[localStream, socket, participant]
+		[localStream, socket, participant, upgradeVideoTrack, isDummyVideoRef]
 	);
 
 	// Слушаем изменения от собеседника
