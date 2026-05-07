@@ -39,6 +39,7 @@ module.exports = {
       '@audio': path.resolve(__dirname, './src/assets/audio'),
       '@ui': path.resolve(__dirname, './src/components/ui/'),
       '@types': path.resolve(__dirname, './src/types'),
+      '@constants': path.resolve(__dirname, './src/constants'),
       '@context': path.resolve(__dirname, './src/contexts'),
       '@providers': path.resolve(__dirname, './src/components/providers'),
       '@navigation': path.resolve(__dirname, './src/components/navigation'),

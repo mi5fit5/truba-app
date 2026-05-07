@@ -33,6 +33,7 @@
       "@audio": ["./src/assets/audio"],
       "@ui": ["./src/components/ui"],
       "@types": ["./src/types"],
+      "@constants": ["./src/constants"],
       "@context": ["./src/contexts"],
       "@providers": ["./src/components/providers"],
       "@navigation": ["./src/components/navigation"],
