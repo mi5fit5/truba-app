@@ -3,13 +3,14 @@ import { useEffect, useRef, useState } from 'react';
 import { Select, Slider, Text } from '@ui';
 
 import styles from './CallSettingsPopover.module.scss';
-import type { TSelectOption } from '@types';
+import type { TCallStatus, TSelectOption } from '@types';
 import { NOISE_OPTIONS } from '@constants';
 
 interface CallSettingsPopoverProps {
 	isOpen: boolean;
 	onClose: () => void;
 	onSwitchDevice: (type: 'audio' | 'video', deviceId: string) => void;
+  callStatus: TCallStatus;
 	availableMics: TSelectOption[];
 	availableCams: TSelectOption[];
 	selectedMic: string;
@@ -20,6 +21,7 @@ export const CallSettingsPopover = ({
 	isOpen,
 	onClose,
 	onSwitchDevice,
+  callStatus,
 	availableMics,
 	availableCams,
 	selectedMic,
@@ -28,6 +30,8 @@ export const CallSettingsPopover = ({
 	const popoverRef = useRef<HTMLDivElement | null>(null);
 
 	const [selectedNoiseMode, setSelectedNoiseMode] = useState('standard');
+
+  const isConnecting = callStatus !== 'connected';
 
 	// Закрытие по клику вне поповера
 	useEffect(() => {
@@ -67,6 +71,7 @@ export const CallSettingsPopover = ({
 				value={selectedMic}
 				onChange={(e) => onSwitchDevice('audio', e.target.value)}
 				fallbackText='микрофоны не найдены'
+        disabled={isConnecting}
 			/>
 			<Select
 				label='камера:'
@@ -74,6 +79,7 @@ export const CallSettingsPopover = ({
 				value={selectedCam}
 				onChange={(e) => onSwitchDevice('video', e.target.value)}
 				fallbackText='Камеры не найдены'
+        disabled={isConnecting}
 			/>
 			<Select
 				label='шумоподавление:'

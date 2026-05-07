@@ -283,6 +283,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 						isOpen={isSettingsOpen}
 						onClose={() => setIsSettingsOpen(false)}
 						onSwitchDevice={switchDevice}
+            callStatus={callStatus}
 						availableMics={availableMics}
 						availableCams={availableCams}
 						selectedMic={selectedMic}

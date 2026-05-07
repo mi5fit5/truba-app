@@ -21,7 +21,7 @@
 	max-width: 100%;
 	border: 2px solid;
 	border-color: #262626 #f0f0f0 #f0f0f0 #262626;
-	padding: 15px 52px 15px 10px;
+	padding: 15px 54px 15px 10px;
 	box-shadow:
 		inset 1px 1px #262626,
 		inset -2px -2px #c3c3c3;
@@ -46,6 +46,7 @@
 
 	&:disabled {
 		color: #808080;
+    background-color: #e4e4e4;
 		text-shadow: 1px 1px 0 #fff;
 		cursor: not-allowed;
 	}
@@ -55,8 +56,8 @@
 	position: absolute;
 	top: 3px;
 	right: 3px;
-	width: 42px;
-	height: 42px;
+	width: 44px;
+	height: 44px;
 	border: 2px solid;
 	border-color: #fff #262626 #262626 #fff;
 	box-shadow: inset 1px 1px #fff;
@@ -67,7 +68,7 @@
 	pointer-events: none;
 }
 
-.select:active + .dropdownButton {
+.select:not(:disabled):active + .dropdownButton {
 	border-color: #262626 #fff #fff #262626;
 	box-shadow: none;
 	background-position: calc(50% + 1px) calc(50% + 1px);

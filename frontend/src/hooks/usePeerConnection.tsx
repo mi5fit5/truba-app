@@ -147,6 +147,13 @@ export const usePeerConnection = () => {
 			const newStream = await navigator.mediaDevices.getUserMedia({
 				video: true,
 			});
+
+      // Проверка статуса звонка
+      if (!isCallActiveRef.current || !localStreamRef.current || !peerRef.current) {
+        newStream.getTracks().forEach((track) => track.stop());
+        return null;
+      }
+
 			const newVideoTrack = newStream.getVideoTracks()[0];
 			const oldVideoTrack = localStreamRef.current.getVideoTracks()[0];
 
@@ -190,6 +197,17 @@ export const usePeerConnection = () => {
 
 			const newStream =
 				await navigator.mediaDevices.getUserMedia(specificDeviceStream);
+
+      // Проверка статуса звонка
+			if (
+				!isCallActiveRef.current ||
+				!localStreamRef.current ||
+				!peerRef.current
+			) {
+				newStream.getTracks().forEach((track) => track.stop());
+				return;
+			}
+
 			const newTrack =
 				type === 'audio'
 					? newStream.getAudioTracks()[0]
