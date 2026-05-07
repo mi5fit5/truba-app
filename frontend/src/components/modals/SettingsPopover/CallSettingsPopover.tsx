@@ -4,23 +4,30 @@ import { Select, Slider, Text } from '@ui';
 
 import styles from './CallSettingsPopover.module.scss';
 import type { TSelectOption } from '@types';
+import { NOISE_OPTIONS } from '@constants';
 
 interface CallSettingsPopoverProps {
 	isOpen: boolean;
 	onClose: () => void;
+	onSwitchDevice: (type: 'audio' | 'video', deviceId: string) => void;
+	availableMics: TSelectOption[];
+	availableCams: TSelectOption[];
+	selectedMic: string;
+	selectedCam: string;
 }
 
 export const CallSettingsPopover = ({
 	isOpen,
 	onClose,
+	onSwitchDevice,
+	availableMics,
+	availableCams,
+	selectedMic,
+	selectedCam,
 }: CallSettingsPopoverProps) => {
 	const popoverRef = useRef<HTMLDivElement | null>(null);
 
-	// Локальные стейты для хранения медиа-устройств
-	const [mics, setMics] = useState<TSelectOption[]>([]);
-	const [cams, setCams] = useState<TSelectOption[]>([]);
-
-	const [selectedNoiseMode, setSelectedNoiseMode] = useState('stanard');
+	const [selectedNoiseMode, setSelectedNoiseMode] = useState('standard');
 
 	// Закрытие по клику вне поповера
 	useEffect(() => {
@@ -43,44 +50,7 @@ export const CallSettingsPopover = ({
 		return () => document.removeEventListener('mousedown', handleClickOutside);
 	}, [isOpen, onClose]);
 
-	// Запрос списка медиа-устройств у браузера
-	useEffect(() => {
-		if (isOpen) {
-			const mediaDevices = navigator.mediaDevices.enumerateDevices();
-
-			mediaDevices
-				.then((devices) => {
-					const audioDevices = devices
-						.filter((device) => device.kind === 'audioinput')
-						.map((mic) => ({
-							value: mic.deviceId,
-							label: mic.label || 'Неизвестный микрофон',
-						}));
-
-					const videoDevices = devices
-						.filter((device) => device.kind === 'videoinput')
-						.map((cam) => ({
-							value: cam.deviceId,
-							label: cam.label || 'Неизвестная камера',
-						}));
-
-					setMics(audioDevices);
-					setCams(videoDevices);
-				})
-				.catch((err) =>
-					console.error('Ошибка получения медиа-устройств:', err)
-				);
-		}
-	}, [isOpen]);
-
 	if (!isOpen) return null;
-
-	// TODO: Вынести в отдельную константу
-	const noiseOptions: TSelectOption[] = [
-		{ value: 'none', label: 'Отключено' },
-		{ value: 'standard', label: 'Стандартное' },
-		{ value: 'rnnoise', label: 'RNNoise' },
-	];
 
 	return (
 		<div
@@ -93,13 +63,21 @@ export const CallSettingsPopover = ({
 			</Text>
 			<Select
 				label='микрофон:'
-				options={mics}
+				options={availableMics}
+				value={selectedMic}
+				onChange={(e) => onSwitchDevice('audio', e.target.value)}
 				fallbackText='микрофоны не найдены'
 			/>
-			<Select label='камера:' options={cams} fallbackText='Камеры не найдены' />
+			<Select
+				label='камера:'
+				options={availableCams}
+				value={selectedCam}
+				onChange={(e) => onSwitchDevice('video', e.target.value)}
+				fallbackText='Камеры не найдены'
+			/>
 			<Select
 				label='шумоподавление:'
-				options={noiseOptions}
+				options={NOISE_OPTIONS}
 				value={selectedNoiseMode}
 				onChange={(e) => setSelectedNoiseMode(e.target.value)}
 			/>

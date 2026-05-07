@@ -21,6 +21,7 @@ import {
 	toggleCamera,
 	toggleMic,
 } from '@icons';
+import { CallSettingsPopover } from '../SettingsPopover';
 
 interface ActiveCallModalProps {
 	onEndCall: () => void;
@@ -38,7 +39,12 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		localStream,
 		remoteStream,
 		upgradeVideoTrack,
+		switchDevice,
 		isDummyVideoRef,
+		availableMics,
+		availableCams,
+		selectedMic,
+		selectedCam,
 	} = usePeerContext();
 	const socket = useContext(SocketContext);
 
@@ -46,6 +52,8 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 	const remoteMedia = useSelector(selectRemoteMedia);
 	const isRemoteMicMuted = remoteMedia.isMicMuted;
 	const isRemoteCamMuted = remoteMedia.isCamMuted;
+
+	const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
 	// Локальные стейты для медиа текущего пользователя
 	const [prevCallStatus, setPrevCallStatus] = useState(callStatus);
@@ -260,12 +268,26 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 							/>
 						</div>
 					</Button>
-					<Button title='Настройки' size='small'>
+					<Button
+						id='settings-button'
+						title='Настройки'
+						size='small'
+						onClick={() => setIsSettingsOpen(!isSettingsOpen)}>
 						<img src={settingsIcon} alt='Настройки' />
 					</Button>
 					<Button title='Завершить звонок' size='large' onClick={onEndCall}>
 						завершить вызов
 					</Button>
+
+					<CallSettingsPopover
+						isOpen={isSettingsOpen}
+						onClose={() => setIsSettingsOpen(false)}
+						onSwitchDevice={switchDevice}
+						availableMics={availableMics}
+						availableCams={availableCams}
+						selectedMic={selectedMic}
+						selectedCam={selectedCam}
+					/>
 				</div>
 			</Window>
 		</Modal>
