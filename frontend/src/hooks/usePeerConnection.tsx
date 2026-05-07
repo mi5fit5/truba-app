@@ -10,7 +10,9 @@ import {
 	selectParticipant,
 } from '@slices';
 import { useSocketInstance } from '../contexts';
-import type { TCallType } from '@types';
+import type { TCallType, TSelectOption } from '@types';
+
+import { truncateOptionsText } from '@utils/textUtils';
 
 // Хук для управления WebRTC-соединением
 export const usePeerConnection = () => {
@@ -25,6 +27,14 @@ export const usePeerConnection = () => {
 	const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 	const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
 
+	// Стейты для списков доступных устройств + переменные для хранения активных устройств
+	const [availableMics, setAvailableMics] = useState<TSelectOption[]>([]);
+	const [availableCams, setAvailableCams] = useState<TSelectOption[]>([]);
+	const selectedMic =
+		localStream?.getAudioTracks()[0]?.getSettings().deviceId || '';
+	const selectedCam =
+		localStream?.getVideoTracks()[0]?.getSettings().deviceId || '';
+
 	// Рефы для работы с DOM-элементами; хранения соединения и потока; активности звонка; пустого видео
 	const localVideoRef = useRef<HTMLVideoElement>(null);
 	const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -32,6 +42,33 @@ export const usePeerConnection = () => {
 	const localStreamRef = useRef<MediaStream | null>(null);
 	const isCallActiveRef = useRef<boolean>(false);
 	const isDummyVideoRef = useRef<boolean>(false);
+
+	// Получение списка доступных устройств при старте звонка
+	useEffect(() => {
+		navigator.mediaDevices
+			.enumerateDevices()
+			.then((devices) => {
+				const audioDevices = devices
+					.filter((device) => device.kind === 'audioinput')
+					.map((mic) => ({
+						value: mic.deviceId,
+						label: truncateOptionsText(mic.label || 'Неизвестный микрофон'),
+					}));
+
+				const videoDevices = devices
+					.filter((device) => device.kind === 'videoinput')
+					.map((cam) => ({
+						value: cam.deviceId,
+						label: truncateOptionsText(cam.label || 'Неизвестная камера'),
+					}));
+
+				setAvailableMics(audioDevices);
+				setAvailableCams(videoDevices);
+			})
+			.catch((err) =>
+				console.error('Ошибка получения списка доступных устройств:', err)
+			);
+	}, []);
 
 	// Создание пустого видео-трека
 	const createEmptyVideoTrack = () => {
@@ -138,6 +175,57 @@ export const usePeerConnection = () => {
 		} catch (err: unknown) {
 			console.error('Ошибка переключения камеры:', err);
 			return null;
+		}
+	};
+
+	// Физическое переключение медиа-устройств
+	const switchDevice = async (type: 'audio' | 'video', deviceId: string) => {
+		if (!localStreamRef.current || !peerRef.current) return;
+
+		try {
+			// Запрос нового потока с устройства
+			const specificDeviceStream = {
+				[type]: { deviceId: { exact: deviceId } },
+			};
+
+			const newStream =
+				await navigator.mediaDevices.getUserMedia(specificDeviceStream);
+			const newTrack =
+				type === 'audio'
+					? newStream.getAudioTracks()[0]
+					: newStream.getVideoTracks()[0];
+
+			const oldTrack =
+				type === 'audio'
+					? localStreamRef.current.getAudioTracks()[0]
+					: localStreamRef.current.getVideoTracks()[0];
+
+			if (oldTrack && newTrack) {
+				// Заменяем трек у собеседника
+				peerRef.current.replaceTrack(
+					oldTrack,
+					newTrack,
+					localStreamRef.current
+				);
+
+				// Удаление старого трека и останавливаем его
+				localStreamRef.current.removeTrack(oldTrack);
+				oldTrack.stop();
+
+				localStreamRef.current.addTrack(newTrack);
+
+				// Пересоздание медиапотока
+				const updatedStream = new MediaStream(
+					localStreamRef.current.getTracks()
+				);
+				setLocalStream(updatedStream);
+
+				if (type === 'video' && localVideoRef.current) {
+					localVideoRef.current.srcObject = updatedStream;
+				}
+			}
+		} catch (err: unknown) {
+			console.error(`Ошибка переключения ${type}-устройства:`, err);
 		}
 	};
 
@@ -290,6 +378,11 @@ export const usePeerConnection = () => {
 		callFromFriend,
 		completeCall,
 		upgradeVideoTrack,
+		switchDevice,
+		availableMics,
+		availableCams,
+		selectedMic,
+		selectedCam,
 		isDummyVideoRef,
 		localVideoRef,
 		remoteVideoRef,
