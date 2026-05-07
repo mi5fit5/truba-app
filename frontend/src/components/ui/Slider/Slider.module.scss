@@ -2,13 +2,13 @@
 	display: flex;
 	flex-direction: column;
 	width: 100%;
+  margin-bottom: 4px;
 	text-transform: lowercase;
-	margin-bottom: 4px;
 }
 
 .label {
+  align-self: flex-start;
 	margin-bottom: 6px;
-	align-self: flex-start;
 }
 
 .slider {

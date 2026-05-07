@@ -10,7 +10,7 @@ interface CallSettingsPopoverProps {
 	isOpen: boolean;
 	onClose: () => void;
 	onSwitchDevice: (type: 'audio' | 'video', deviceId: string) => void;
-  callStatus: TCallStatus;
+	callStatus: TCallStatus;
 	availableMics: TSelectOption[];
 	availableCams: TSelectOption[];
 	selectedMic: string;
@@ -21,7 +21,7 @@ export const CallSettingsPopover = ({
 	isOpen,
 	onClose,
 	onSwitchDevice,
-  callStatus,
+	callStatus,
 	availableMics,
 	availableCams,
 	selectedMic,
@@ -31,7 +31,7 @@ export const CallSettingsPopover = ({
 
 	const [selectedNoiseMode, setSelectedNoiseMode] = useState('standard');
 
-  const isConnecting = callStatus !== 'connected';
+	const isConnecting = callStatus !== 'connected';
 
 	// Закрытие по клику вне поповера
 	useEffect(() => {
@@ -71,7 +71,7 @@ export const CallSettingsPopover = ({
 				value={selectedMic}
 				onChange={(e) => onSwitchDevice('audio', e.target.value)}
 				fallbackText='микрофоны не найдены'
-        disabled={isConnecting}
+				disabled={isConnecting}
 			/>
 			<Select
 				label='камера:'
@@ -79,7 +79,7 @@ export const CallSettingsPopover = ({
 				value={selectedCam}
 				onChange={(e) => onSwitchDevice('video', e.target.value)}
 				fallbackText='Камеры не найдены'
-        disabled={isConnecting}
+				disabled={isConnecting}
 			/>
 			<Select
 				label='шумоподавление:'
