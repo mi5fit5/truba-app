@@ -69,3 +69,9 @@ export type TFormValidators<T> = {
 		message: string;
 	};
 };
+
+// Тип для селекта
+export type TSelectOption = {
+	value: string | number;
+	label: string;
+};
