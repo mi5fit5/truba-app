@@ -75,3 +75,6 @@ export type TSelectOption = {
 	value: string | number;
 	label: string;
 };
+
+// Тип для режимов шумоподавления
+export type TNoiseMode = 'none' | 'standard' | 'rnnoise';

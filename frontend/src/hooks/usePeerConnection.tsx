@@ -10,7 +10,7 @@ import {
 	selectParticipant,
 } from '@slices';
 import { useSocketInstance } from '../contexts';
-import type { TCallType, TSelectOption } from '@types';
+import type { TCallType, TNoiseMode, TSelectOption } from '@types';
 
 import { truncateOptionsText } from '@utils/textUtils';
 
@@ -38,6 +38,7 @@ export const usePeerConnection = () => {
 	// Рефы для работы с DOM-элементами; хранения соединения и потока; активности звонка; пустого видео
 	const localVideoRef = useRef<HTMLVideoElement>(null);
 	const remoteVideoRef = useRef<HTMLVideoElement>(null);
+	const remoteAudioRef = useRef<HTMLAudioElement>(null);
 	const peerRef = useRef<Instance | null>(null);
 	const localStreamRef = useRef<MediaStream | null>(null);
 	const isCallActiveRef = useRef<boolean>(false);
@@ -103,7 +104,12 @@ export const usePeerConnection = () => {
 
 			// Запрос медиа-устрйств
 			const stream = await navigator.mediaDevices.getUserMedia({
-				audio: true, // Аудио включено всегда!
+				audio: {
+					// Стандартное шумоподавление WebRTC включено по умолчанию
+					echoCancellation: true,
+					noiseSuppression: true,
+					autoGainControl: true,
+				},
 				video: type === 'video',
 			});
 
@@ -126,8 +132,8 @@ export const usePeerConnection = () => {
 			setLocalStream(stream);
 			localStreamRef.current = stream;
 
-			// Привязываем видео, только если это видеозвонок
-			if (type === 'video' && localVideoRef.current) {
+			// Привязываем видео
+			if (localVideoRef.current) {
 				localVideoRef.current.srcObject = stream;
 			}
 
@@ -190,17 +196,31 @@ export const usePeerConnection = () => {
 	};
 
 	// Физическое переключение медиа-устройств
-	const switchDevice = async (type: 'audio' | 'video', deviceId: string) => {
+	const switchDevice = async (
+		type: 'audio' | 'video',
+		deviceId: string,
+		currentNoiseMode: TNoiseMode = 'standard'
+	) => {
 		if (!localStreamRef.current || !peerRef.current) return;
 
 		try {
-			// Запрос нового потока с устройства
-			const specificDeviceStream = {
-				[type]: { deviceId: { exact: deviceId } },
-			};
+			// Формируем настройки в зависимости от типа устройства
+			const constraints: MediaStreamConstraints = {};
 
-			const newStream =
-				await navigator.mediaDevices.getUserMedia(specificDeviceStream);
+			if (type === 'audio') {
+				const isStandard = currentNoiseMode === 'standard';
+				constraints.audio = {
+					deviceId: { exact: deviceId },
+					echoCancellation: isStandard,
+					noiseSuppression: isStandard,
+					autoGainControl: isStandard,
+				};
+			} else {
+				constraints.video = { deviceId: { exact: deviceId } };
+			}
+
+			// Запрос потока с правильными ограничениями
+			const newStream = await navigator.mediaDevices.getUserMedia(constraints);
 
 			// Проверка статуса звонка
 			if (
@@ -251,6 +271,28 @@ export const usePeerConnection = () => {
 		}
 	};
 
+	// Настройки шумоподавления для текущего аудио-трека
+	const applyAudioConstraints = async (mode: TNoiseMode) => {
+		const audioTrack = localStreamRef.current?.getAudioTracks()[0];
+
+		if (!audioTrack) return;
+
+		const isStandard = mode === 'standard';
+
+		// Настройки для стандартного режима WebRTC и для необработанного звука
+		const constraints = {
+			echoCancellation: isStandard, // Шумоподавление
+			noiseSuppression: isStandard, // Эхоподавление
+			autoGainControl: isStandard, // Автоусиление
+		};
+
+		try {
+			await audioTrack.applyConstraints(constraints); // Применение настроек без перезапуска потока
+		} catch (err: unknown) {
+			console.error('Ошибка при переключении режима шумоподавления:', err);
+		}
+	};
+
 	// Очищаем все потоки медиаданных; отвязываем потоки от DOM
 	// Разрываем p2p соединение; очищаем стейты
 	const cleanupMedia = useCallback(() => {
@@ -263,6 +305,7 @@ export const usePeerConnection = () => {
 
 		if (localVideoRef.current) localVideoRef.current.srcObject = null;
 		if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+		if (remoteAudioRef.current) remoteAudioRef.current.srcObject = null;
 
 		if (peerRef.current) {
 			peerRef.current.destroy();
@@ -308,9 +351,13 @@ export const usePeerConnection = () => {
 		peer.on('stream', (currentStream) => {
 			setRemoteStream(currentStream);
 
-			// Привязываем вебку собеседника
+			// Передаем оригинальные потоки
 			if (remoteVideoRef.current) {
 				remoteVideoRef.current.srcObject = currentStream;
+			}
+
+			if (remoteAudioRef.current) {
+				remoteAudioRef.current.srcObject = currentStream;
 			}
 		});
 
@@ -364,9 +411,13 @@ export const usePeerConnection = () => {
 		peer.on('stream', (currentStream) => {
 			setRemoteStream(currentStream);
 
-			// Привязываем вебку собеседника
+			// Передаем оригинальные потоки
 			if (remoteVideoRef.current) {
 				remoteVideoRef.current.srcObject = currentStream;
+			}
+
+			if (remoteAudioRef.current) {
+				remoteAudioRef.current.srcObject = currentStream;
 			}
 		});
 
@@ -401,6 +452,7 @@ export const usePeerConnection = () => {
 		completeCall,
 		upgradeVideoTrack,
 		switchDevice,
+		applyAudioConstraints,
 		availableMics,
 		availableCams,
 		selectedMic,
@@ -408,6 +460,7 @@ export const usePeerConnection = () => {
 		isDummyVideoRef,
 		localVideoRef,
 		remoteVideoRef,
+		remoteAudioRef,
 		localStream,
 		remoteStream,
 	};

@@ -1,5 +1,6 @@
 import { useCallback, useContext, useEffect, useState } from 'react';
 
+import type { TNoiseMode } from '@types';
 import { SocketContext, usePeerContext } from '@context';
 import { useSelector } from '@store';
 import {
@@ -9,6 +10,8 @@ import {
 	selectRemoteMedia,
 	selectUserData,
 } from '@slices';
+
+import { CallSettingsPopover } from '@modals';
 
 import { Avatar, Button, Modal, Text, Window } from '@ui';
 
@@ -21,7 +24,6 @@ import {
 	toggleCamera,
 	toggleMic,
 } from '@icons';
-import { CallSettingsPopover } from '../SettingsPopover';
 
 interface ActiveCallModalProps {
 	onEndCall: () => void;
@@ -36,15 +38,12 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 	const {
 		localVideoRef,
 		remoteVideoRef,
+		remoteAudioRef,
 		localStream,
 		remoteStream,
 		upgradeVideoTrack,
-		switchDevice,
+		applyAudioConstraints,
 		isDummyVideoRef,
-		availableMics,
-		availableCams,
-		selectedMic,
-		selectedCam,
 	} = usePeerContext();
 	const socket = useContext(SocketContext);
 
@@ -53,7 +52,11 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 	const isRemoteMicMuted = remoteMedia.isMicMuted;
 	const isRemoteCamMuted = remoteMedia.isCamMuted;
 
+	// Стейты для настроек звонка
 	const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+	const [selectedNoiseMode, setSelectedNoiseMode] =
+		useState<TNoiseMode>('standard');
+	const [remoteVolume, setRemoteVolume] = useState(100);
 
 	// Локальные стейты для медиа текущего пользователя
 	const [prevCallStatus, setPrevCallStatus] = useState(callStatus);
@@ -91,6 +94,13 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [callStatus]);
+
+	// Изменение громкости собеседника
+	useEffect(() => {
+		if (remoteAudioRef.current) {
+			remoteAudioRef.current.volume = remoteVolume / 100;
+		}
+	}, [remoteVolume, remoteAudioRef]);
 
 	// Переключение микрофона / камеры
 	const toggleMedia = useCallback(
@@ -141,6 +151,18 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		[localStream, socket, participant, upgradeVideoTrack, isDummyVideoRef]
 	);
 
+	// Изменение режима шумоподавления
+	const handleNoiseModeChange = (mode: string) => {
+		const newMode = mode as TNoiseMode;
+		setSelectedNoiseMode(newMode);
+
+		if (newMode !== 'rnnoise') {
+			applyAudioConstraints(newMode);
+		} else {
+			applyAudioConstraints('none');
+		}
+	};
+
 	if (
 		(callStatus !== 'calling' && callStatus !== 'connected') ||
 		!participant ||
@@ -151,6 +173,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 
 	return (
 		<Modal onClose={onEndCall}>
+			<audio ref={remoteAudioRef} autoPlay style={{ display: 'none' }} />
 			<Window
 				title={`активный звонок с ${participant.username}`}
 				icon={
@@ -208,6 +231,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 							ref={remoteVideoRef}
 							autoPlay
 							playsInline
+							muted
 							className={styles.videoElement}
 							style={{ display: isRemoteCamMuted ? 'none' : 'block' }}
 						/>
@@ -279,15 +303,15 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 						завершить вызов
 					</Button>
 
+					{/* Поповер настроек */}
 					<CallSettingsPopover
 						isOpen={isSettingsOpen}
 						onClose={() => setIsSettingsOpen(false)}
-						onSwitchDevice={switchDevice}
 						callStatus={callStatus}
-						availableMics={availableMics}
-						availableCams={availableCams}
-						selectedMic={selectedMic}
-						selectedCam={selectedCam}
+						remoteVolume={remoteVolume}
+						onRemoteVolumeChange={setRemoteVolume}
+						selectedNoiseMode={selectedNoiseMode}
+						onNoiseModeChange={handleNoiseModeChange}
 					/>
 				</div>
 			</Window>
