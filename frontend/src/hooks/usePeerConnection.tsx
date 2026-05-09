@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Peer, { type Instance, type SignalData } from 'simple-peer';
-
+import type { TCallType, TNoiseMode, TSelectOption } from '@types';
 import { useDispatch, useSelector } from '@store';
 import {
 	acceptCall,
@@ -9,8 +9,8 @@ import {
 	selectIncomingSignal,
 	selectParticipant,
 } from '@slices';
-import { useSocketInstance } from '../contexts';
-import type { TCallType, TNoiseMode, TSelectOption } from '@types';
+import { useSocketInstance } from '@context';
+import { useAudioProcessor } from '@hooks';
 
 import { truncateOptionsText } from '@utils/textUtils';
 
@@ -22,6 +22,10 @@ export const usePeerConnection = () => {
 	const incomingSignal = useSelector(selectIncomingSignal);
 	const participant = useSelector(selectParticipant);
 	const callType = useSelector(selectCallType);
+
+	// Инициализация нейросети + реф для хранения сырого звука
+	const { startNoiseSuppression, stopNoiseSuppression } = useAudioProcessor();
+	const rawAudioTrackRef = useRef<MediaStreamTrack | null>(null);
 
 	// Стейты для потоков
 	const [localStream, setLocalStream] = useState<MediaStream | null>(null);
@@ -118,7 +122,6 @@ export const usePeerConnection = () => {
 
 			if (type !== 'video') {
 				const dummyVideoTrack = createEmptyVideoTrack();
-
 				stream.addTrack(dummyVideoTrack);
 			}
 
@@ -131,6 +134,9 @@ export const usePeerConnection = () => {
 			// Сохраняем поток
 			setLocalStream(stream);
 			localStreamRef.current = stream;
+
+			// Сохраняем сырой звук для работы нейросети
+			rawAudioTrackRef.current = stream.getAudioTracks()[0];
 
 			// Привязываем видео
 			if (localVideoRef.current) {
@@ -195,7 +201,62 @@ export const usePeerConnection = () => {
 		}
 	};
 
-	// Физическое переключение медиа-устройств
+	// Управление шумоподавлением (пропускать звук через нейросеть или нет)
+	const applyNoiseMode = async (mode: TNoiseMode) => {
+		const rawTrack = rawAudioTrackRef.current;
+
+		if (!rawTrack || !localStreamRef.current) return;
+
+		// Если 'standard' - включаем стандартное шумоподавление WebRTC
+		const isStandard = mode === 'standard';
+
+		try {
+			await rawTrack.applyConstraints({
+				echoCancellation: true,
+				noiseSuppression: isStandard,
+				autoGainControl: false,
+			});
+		} catch (err: unknown) {
+			console.error('Ошибка применения ограничений аудио:', err);
+		}
+
+		const oldTrackToSend = localStreamRef.current.getAudioTracks()[0];
+		let newTrackToSend = rawTrack;
+
+		// Прогоняем сырой звук через нейросеть
+		if (mode === 'rnnoise') {
+			stopNoiseSuppression();
+
+			// Кладем сырой трек в поток и передаем процессору
+			const rawStream = new MediaStream([rawTrack]);
+			const cleanTrack = await startNoiseSuppression(rawStream);
+
+			// Отправляем собеседнику очищенный звук при рабочей нейросети
+			if (cleanTrack) {
+				newTrackToSend = cleanTrack;
+			}
+		} else {
+			stopNoiseSuppression(); // Выключаем работу нейросети в других режимах
+		}
+
+		// Физичеческая замена треков
+		if (oldTrackToSend && oldTrackToSend !== newTrackToSend) {
+			if (peerRef.current) {
+				peerRef.current.replaceTrack(
+					// Замена трека в P2P соединении
+					oldTrackToSend,
+					newTrackToSend,
+					localStreamRef.current
+				);
+			}
+
+			// Обновление локального стейта потока
+			localStreamRef.current.removeTrack(oldTrackToSend);
+			localStreamRef.current.addTrack(newTrackToSend);
+		}
+	};
+
+	// Физическое переключение медиа-устройств (смена вебки или микрофона)
 	const switchDevice = async (
 		type: 'audio' | 'video',
 		deviceId: string,
@@ -205,21 +266,11 @@ export const usePeerConnection = () => {
 
 		try {
 			// Формируем настройки в зависимости от типа устройства
-			const constraints: MediaStreamConstraints = {};
+			const constraints: MediaStreamConstraints =
+				type === 'audio'
+					? { audio: { deviceId: { exact: deviceId } } }
+					: { video: { deviceId: { exact: deviceId } } };
 
-			if (type === 'audio') {
-				const isStandard = currentNoiseMode === 'standard';
-				constraints.audio = {
-					deviceId: { exact: deviceId },
-					echoCancellation: isStandard,
-					noiseSuppression: isStandard,
-					autoGainControl: isStandard,
-				};
-			} else {
-				constraints.video = { deviceId: { exact: deviceId } };
-			}
-
-			// Запрос потока с правильными ограничениями
 			const newStream = await navigator.mediaDevices.getUserMedia(constraints);
 
 			// Проверка статуса звонка
@@ -232,38 +283,35 @@ export const usePeerConnection = () => {
 				return;
 			}
 
-			const newTrack =
-				type === 'audio'
-					? newStream.getAudioTracks()[0]
-					: newStream.getVideoTracks()[0];
+			if (type === 'audio') {
+				const newRawAudio = newStream.getAudioTracks()[0];
+				const oldRawAudio = rawAudioTrackRef.current;
 
-			const oldTrack =
-				type === 'audio'
-					? localStreamRef.current.getAudioTracks()[0]
-					: localStreamRef.current.getVideoTracks()[0];
+				if (oldRawAudio) oldRawAudio.stop(); // Отключаем старое устройство
 
-			if (oldTrack && newTrack) {
-				// Заменяем трек у собеседника
-				peerRef.current.replaceTrack(
-					oldTrack,
-					newTrack,
-					localStreamRef.current
-				);
+				rawAudioTrackRef.current = newRawAudio;
+				await applyNoiseMode(currentNoiseMode); // Пропускаем новое аудио-устройство через нейронку
+			} else {
+				// Берем новый видео-трек и сразу заменяем старый
+				const newTrack = newStream.getVideoTracks()[0];
+				const oldTrack = localStreamRef.current.getVideoTracks()[0];
 
-				// Удаление старого трека и останавливаем его
-				localStreamRef.current.removeTrack(oldTrack);
-				oldTrack.stop();
+				if (oldTrack && newTrack) {
+					peerRef.current.replaceTrack(
+						oldTrack,
+						newTrack,
+						localStreamRef.current
+					);
+					localStreamRef.current.removeTrack(oldTrack);
+					oldTrack.stop();
+					localStreamRef.current.addTrack(newTrack);
 
-				localStreamRef.current.addTrack(newTrack);
-
-				// Пересоздание медиапотока
-				const updatedStream = new MediaStream(
-					localStreamRef.current.getTracks()
-				);
-				setLocalStream(updatedStream);
-
-				if (type === 'video' && localVideoRef.current) {
-					localVideoRef.current.srcObject = updatedStream;
+					const updatedStream = new MediaStream(
+						localStreamRef.current.getTracks()
+					);
+					setLocalStream(updatedStream);
+					if (localVideoRef.current)
+						localVideoRef.current.srcObject = updatedStream;
 				}
 			}
 		} catch (err: unknown) {
@@ -271,32 +319,12 @@ export const usePeerConnection = () => {
 		}
 	};
 
-	// Настройки шумоподавления для текущего аудио-трека
-	const applyAudioConstraints = async (mode: TNoiseMode) => {
-		const audioTrack = localStreamRef.current?.getAudioTracks()[0];
-
-		if (!audioTrack) return;
-
-		const isStandard = mode === 'standard';
-
-		// Настройки для стандартного режима WebRTC и для необработанного звука
-		const constraints = {
-			echoCancellation: isStandard, // Шумоподавление
-			noiseSuppression: isStandard, // Эхоподавление
-			autoGainControl: isStandard, // Автоусиление
-		};
-
-		try {
-			await audioTrack.applyConstraints(constraints); // Применение настроек без перезапуска потока
-		} catch (err: unknown) {
-			console.error('Ошибка при переключении режима шумоподавления:', err);
-		}
-	};
-
 	// Очищаем все потоки медиаданных; отвязываем потоки от DOM
 	// Разрываем p2p соединение; очищаем стейты
 	const cleanupMedia = useCallback(() => {
 		isCallActiveRef.current = false;
+
+		stopNoiseSuppression(); // Отключаем нейросеть
 
 		if (localStreamRef.current) {
 			localStreamRef.current.getTracks().forEach((track) => track.stop());
@@ -315,7 +343,7 @@ export const usePeerConnection = () => {
 		setLocalStream(null);
 		setRemoteStream(null);
 		socket?.off('acceptedCall');
-	}, [socket]);
+	}, [socket, stopNoiseSuppression]);
 
 	// Исходящий звонок
 	const callToFriend = async (friendToCallId: string, type: TCallType) => {
@@ -452,7 +480,7 @@ export const usePeerConnection = () => {
 		completeCall,
 		upgradeVideoTrack,
 		switchDevice,
-		applyAudioConstraints,
+		applyNoiseMode,
 		availableMics,
 		availableCams,
 		selectedMic,

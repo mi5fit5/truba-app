@@ -42,7 +42,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		localStream,
 		remoteStream,
 		upgradeVideoTrack,
-		applyAudioConstraints,
+		applyNoiseMode,
 		isDummyVideoRef,
 	} = usePeerContext();
 	const socket = useContext(SocketContext);
@@ -155,12 +155,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 	const handleNoiseModeChange = (mode: string) => {
 		const newMode = mode as TNoiseMode;
 		setSelectedNoiseMode(newMode);
-
-		if (newMode !== 'rnnoise') {
-			applyAudioConstraints(newMode);
-		} else {
-			applyAudioConstraints('none');
-		}
+		applyNoiseMode(newMode);
 	};
 
 	if (
