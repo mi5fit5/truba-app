@@ -3,6 +3,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: './src/index.tsx',
@@ -12,7 +13,10 @@ module.exports = {
     publicPath: '/'
   },
   devServer: {
-    static: path.resolve(__dirname, './dist'),
+    static: [
+      { directory: path.resolve(__dirname, './dist') },
+      { directory: path.resolve(__dirname, './public') }
+    ],
     compress: true,
     port: 8080,
     open: true,
@@ -99,6 +103,15 @@ module.exports = {
     new MiniCssExtractPlugin(),
     new webpack.ProvidePlugin({
       process: require.resolve('process/browser.js'),
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'public'),
+          to: path.resolve(__dirname, 'dist'),
+          noErrorOnMissing: true
+        }
+      ]
     })
   ],
 };
