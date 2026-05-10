@@ -1,24 +1,31 @@
 import { useCallback, useContext, useEffect, useState } from 'react';
+import clsx from 'clsx';
 
 import type { TNoiseMode } from '@types';
 import { SocketContext, usePeerContext } from '@context';
-import { useSelector } from '@store';
+import { useDispatch, useSelector } from '@store';
 import {
+	fetchChatHistory,
 	selectCallStatus,
 	selectCallType,
+	selectChatMessages,
+	selectIsLoadingHistory,
+	selectIsSearchActive,
 	selectParticipant,
 	selectRemoteMedia,
 	selectUserData,
+	setActiveFriendId,
 } from '@slices';
 
+import { MessageList, MessageInput } from '@components';
 import { CallSettingsPopover } from '@modals';
-
 import { Avatar, Button, Modal, Text, Window } from '@ui';
 
 import styles from './ActiveCallModal.module.scss';
 import {
 	mutedSoundIcon,
 	networkModalIcon,
+	newMessageIcon,
 	rejectIcon,
 	settingsIcon,
 	toggleCamera,
@@ -30,6 +37,7 @@ interface ActiveCallModalProps {
 }
 
 export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
+	const dispatch = useDispatch();
 	const participant = useSelector(selectParticipant);
 	const currentUser = useSelector(selectUserData);
 	const callStatus = useSelector(selectCallStatus);
@@ -51,6 +59,12 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 	const remoteMedia = useSelector(selectRemoteMedia);
 	const isRemoteMicMuted = remoteMedia.isMicMuted;
 	const isRemoteCamMuted = remoteMedia.isCamMuted;
+
+	// Стейты и селекторы чата
+	const [isChatOpen, setIsChatOpen] = useState(false);
+	const chatMessages = useSelector(selectChatMessages);
+	const isLoadingHistory = useSelector(selectIsLoadingHistory);
+	const isSearchActive = useSelector(selectIsSearchActive);
 
 	// Стейты для настроек звонка
 	const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -74,8 +88,19 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		if (callStatus === 'calling' || callStatus === 'receiving') {
 			setIsMicMuted(false);
 			setIsCamMuted(callType === 'audio');
+      setIsChatOpen(false);
 		}
 	}
+
+	// Обработчик открытия чата
+	const handleToggleChat = () => {
+		if (!isChatOpen && participant) {
+			dispatch(setActiveFriendId(participant._id));
+			dispatch(fetchChatHistory(participant._id));
+		}
+
+		setIsChatOpen((prev) => !prev);
+	};
 
 	// Все переключения аудио/видео применяются к собеседнику при его принятии звонка
 	useEffect(() => {
@@ -179,136 +204,185 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 				}
 				className={styles.modalWindow}
 				bodyClassName={styles.modalWindowBody}>
-				<div className={styles.videoGrid}>
-					{/* Текущий пользователь */}
-					<div className={styles.videoWrapper}>
-						{showLocalAvatar && (
-							<Avatar
-								src={currentUser.avatar}
-								name={currentUser.username}
-								size='large'
-								className={styles.avatarFallback}
-							/>
-						)}
-						<video
-							ref={localVideoRef}
-							autoPlay
-							playsInline
-							muted
-							className={styles.videoElement}
-							style={{ display: isCamMuted ? 'none' : 'block' }}
-						/>
-						<div className={styles.usernameBadge}>
-							<Text as='span' size={30} lowercase>
-								{currentUser.username}
-							</Text>
-							{isMicMuted && (
-								<img
-									src={mutedSoundIcon}
-									className={styles.mutedIcon}
-									alt='Микрофон выключен'
+				{/* Иконка чата (когда чат закрыт) */}
+				{!isChatOpen && (
+					<Button
+						size='small'
+						onClick={handleToggleChat}
+						className={styles.openChatBtn}
+						title='Открыть чат'>
+						<img src={newMessageIcon} alt='Иконка чата' />
+					</Button>
+				)}
+
+				<div className={clsx(styles.leftColumn, isChatOpen && styles.chatOpen)}>
+					<div className={styles.videoGrid}>
+						{/* Текущий пользователь */}
+						<div className={styles.videoWrapper}>
+							{showLocalAvatar && (
+								<Avatar
+									src={currentUser.avatar}
+									name={currentUser.username}
+									size='large'
+									className={styles.avatarFallback}
 								/>
 							)}
+							<video
+								ref={localVideoRef}
+								autoPlay
+								playsInline
+								muted
+								className={styles.videoElement}
+								style={{ display: isCamMuted ? 'none' : 'block' }}
+							/>
+							<div className={styles.usernameBadge}>
+								<Text as='span' size={30} lowercase>
+									{currentUser.username}
+								</Text>
+								{isMicMuted && (
+									<img
+										src={mutedSoundIcon}
+										className={styles.mutedIcon}
+										alt='Микрофон выключен'
+									/>
+								)}
+							</div>
+						</div>
+
+						{/* Собеседник */}
+						<div className={styles.videoWrapper}>
+							{showRemoteAvatar && (
+								<Avatar
+									src={participant.avatar}
+									name={participant.username}
+									size='large'
+									className={styles.avatarFallback}
+								/>
+							)}
+							<video
+								ref={remoteVideoRef}
+								autoPlay
+								playsInline
+								muted
+								className={styles.videoElement}
+								style={{ display: isRemoteCamMuted ? 'none' : 'block' }}
+							/>
+							<div className={styles.usernameBadge}>
+								<Text as='span' size={30} lowercase>
+									{participant.username}
+								</Text>
+								{isRemoteMicMuted && (
+									<img
+										src={mutedSoundIcon}
+										className={styles.mutedIcon}
+										alt='Микрофон выключен'
+									/>
+								)}
+							</div>
 						</div>
 					</div>
 
-					{/* Собеседник */}
-					<div className={styles.videoWrapper}>
-						{showRemoteAvatar && (
-							<Avatar
-								src={participant.avatar}
-								name={participant.username}
-								size='large'
-								className={styles.avatarFallback}
+					{/* Меню управления */}
+					<div className={styles.controlsWrapper}>
+						<div className={styles.controlsBar}>
+							<Button
+								title='Переключение микрофона'
+								size='small'
+								className={styles.toggleBtn}
+								onClick={() => toggleMedia('audio')}>
+								<div className={styles.toggleIconWrapper}>
+									{isMicMuted && (
+										<img
+											src={rejectIcon}
+											className={styles.offIcon}
+											alt='Микрофон выключен'
+										/>
+									)}
+									<img
+										src={toggleMic}
+										className={styles.mainIcon}
+										alt='Переключение микрофона'
+									/>
+								</div>
+							</Button>
+							<Button
+								title='Переключение камеры'
+								size='small'
+								className={styles.toggleBtn}
+								onClick={() => toggleMedia('video')}>
+								<div className={styles.toggleIconWrapper}>
+									{isCamMuted && (
+										<img
+											src={rejectIcon}
+											className={styles.offIcon}
+											alt='Камера выключена'
+										/>
+									)}
+									<img
+										src={toggleCamera}
+										className={styles.mainIcon}
+										alt='Переключение камеры'
+									/>
+								</div>
+							</Button>
+							<Button
+								id='settings-button'
+								title='Настройки'
+								size='medium'
+								onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                style={{ display: 'flex', gap: '4px' }}>
+								<img src={settingsIcon} alt='Настройки' />
+                настройки
+							</Button>
+							<Button title='Завершить звонок' size='large' onClick={onEndCall}>
+								завершить вызов
+							</Button>
+
+							{/* Поповер настроек */}
+							<CallSettingsPopover
+								isOpen={isSettingsOpen}
+								onClose={() => setIsSettingsOpen(false)}
+								callStatus={callStatus}
+								remoteVolume={remoteVolume}
+								onRemoteVolumeChange={setRemoteVolume}
+								selectedNoiseMode={selectedNoiseMode}
+								onNoiseModeChange={handleNoiseModeChange}
 							/>
-						)}
-						<video
-							ref={remoteVideoRef}
-							autoPlay
-							playsInline
-							muted
-							className={styles.videoElement}
-							style={{ display: isRemoteCamMuted ? 'none' : 'block' }}
-						/>
-						<div className={styles.usernameBadge}>
-							<Text as='span' size={30} lowercase>
-								{participant.username}
-							</Text>
-							{isRemoteMicMuted && (
-								<img
-									src={mutedSoundIcon}
-									className={styles.mutedIcon}
-									alt='Микрофон выключен'
-								/>
-							)}
 						</div>
 					</div>
 				</div>
 
-				{/* Меню управления */}
-				<div className={styles.controlsBar}>
-					<Button
-						title='Переключение микрофона'
-						size='small'
-						className={styles.toggleBtn}
-						onClick={() => toggleMedia('audio')}>
-						<div className={styles.toggleIconWrapper}>
-							{isMicMuted && (
-								<img
-									src={rejectIcon}
-									className={styles.offIcon}
-									alt='Микрофон выключен'
-								/>
-							)}
-							<img
-								src={toggleMic}
-								className={styles.mainIcon}
-								alt='Переключение микрофона'
+				{/* Чат */}
+				{isChatOpen && (
+					<div className={styles.rightColumn}>
+            <div className={`${styles.panel} ${styles.chatArea}`}>
+              <div className={styles.chatHeader}>
+							<Text as='h3' size={30} align='left'>
+								ваш чат с {participant.username}:
+							</Text>
+							<Button
+								size='small'
+								onClick={handleToggleChat}
+								title='Закрыть чат'>
+								<img src={newMessageIcon} alt='Иконка чата: закрыть' />
+							</Button>
+						</div>
+						<div className={styles.messageListContainer}>
+							<MessageList
+								messages={chatMessages}
+								currentUserId={currentUser._id}
+								currentUsername={currentUser.username}
+								friendUsername={participant.username}
+								isSearchActive={isSearchActive}
+								isLoadingHistory={isLoadingHistory}
 							/>
 						</div>
-					</Button>
-					<Button
-						title='Переключение камеры'
-						size='small'
-						className={styles.toggleBtn}
-						onClick={() => toggleMedia('video')}>
-						<div className={styles.toggleIconWrapper}>
-							{isCamMuted && (
-								<img
-									src={rejectIcon}
-									className={styles.offIcon}
-									alt='Камера выключена'
-								/>
-							)}
-							<img
-								src={toggleCamera}
-								className={styles.mainIcon}
-								alt='Переключение камеры'
-							/>
-						</div>
-					</Button>
-					<Button
-						id='settings-button'
-						title='Настройки'
-						size='small'
-						onClick={() => setIsSettingsOpen(!isSettingsOpen)}>
-						<img src={settingsIcon} alt='Настройки' />
-					</Button>
-					<Button title='Завершить звонок' size='large' onClick={onEndCall}>
-						завершить вызов
-					</Button>
-
-					{/* Поповер настроек */}
-					<CallSettingsPopover
-						isOpen={isSettingsOpen}
-						onClose={() => setIsSettingsOpen(false)}
-						callStatus={callStatus}
-						remoteVolume={remoteVolume}
-						onRemoteVolumeChange={setRemoteVolume}
-						selectedNoiseMode={selectedNoiseMode}
-						onNoiseModeChange={handleNoiseModeChange}
-					/>
-				</div>
+            </div>
+            <div className={styles.panel}>
+								<MessageInput friendId={participant._id} />
+							</div>
+					</div>
+				)}
 			</Window>
 		</Modal>
 	);
