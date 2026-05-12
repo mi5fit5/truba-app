@@ -7,7 +7,9 @@ import {
 	endCall,
 	selectCallType,
 	selectIncomingSignal,
+	selectIsScreenSharing,
 	selectParticipant,
+	setScreenSharing,
 } from '@slices';
 import { useSocketInstance } from '@context';
 import { useAudioProcessor } from '@hooks';
@@ -22,6 +24,7 @@ export const usePeerConnection = () => {
 	const incomingSignal = useSelector(selectIncomingSignal);
 	const participant = useSelector(selectParticipant);
 	const callType = useSelector(selectCallType);
+	const isScreenSharing = useSelector(selectIsScreenSharing);
 
 	// Инициализация нейросети + реф для хранения сырого звука
 	const { startNoiseSuppression, stopNoiseSuppression } = useAudioProcessor();
@@ -39,7 +42,8 @@ export const usePeerConnection = () => {
 	const selectedCam =
 		localStream?.getVideoTracks()[0]?.getSettings().deviceId || '';
 
-	// Рефы для работы с DOM-элементами; хранения соединения и потока; активности звонка; пустого видео
+	// Рефы для работы с DOM-элементами; хранения соединения и потока;
+	// активности звонка; пустого видео; демонстрации экрана
 	const localVideoRef = useRef<HTMLVideoElement>(null);
 	const remoteVideoRef = useRef<HTMLVideoElement>(null);
 	const remoteAudioRef = useRef<HTMLAudioElement>(null);
@@ -47,6 +51,7 @@ export const usePeerConnection = () => {
 	const localStreamRef = useRef<MediaStream | null>(null);
 	const isCallActiveRef = useRef<boolean>(false);
 	const isDummyVideoRef = useRef<boolean>(false);
+	const screenTrackRef = useRef<MediaStreamTrack | null>(null);
 
 	// Получение списка доступных устройств при старте звонка
 	useEffect(() => {
@@ -319,12 +324,127 @@ export const usePeerConnection = () => {
 		}
 	};
 
+	// Отключение камеры
+	const disableCamera = () => {
+		if (!localStreamRef.current || !peerRef.current || isDummyVideoRef.current)
+			return;
+
+		const oldTrack = localStreamRef.current.getVideoTracks()[0];
+		const dummyTrack = createEmptyVideoTrack(); // Создаем пустой видео-трек
+
+		// Заменяем трек
+		peerRef.current.replaceTrack(oldTrack, dummyTrack, localStreamRef.current);
+
+		localStreamRef.current.removeTrack(oldTrack);
+		oldTrack.stop(); // Останавливаем текущий трек
+		localStreamRef.current.addTrack(dummyTrack);
+
+		isDummyVideoRef.current = true;
+
+		const updatedStream = new MediaStream(localStreamRef.current.getTracks());
+		setLocalStream(updatedStream);
+
+		if (localVideoRef.current) {
+			localVideoRef.current.srcObject = updatedStream;
+		}
+	};
+
+	// Демонстрация экрана
+	const toggleScreenShare = async () => {
+		if (!localStreamRef.current || !peerRef.current || !isCallActiveRef.current)
+			return;
+
+		try {
+			// Выключение демонстрации
+			if (isScreenSharing) {
+				if (isScreenSharing) {
+					if (screenTrackRef.current) {
+						// Отвязываем обработчик закрытия экрана
+						screenTrackRef.current.onended = null;
+						screenTrackRef.current = null;
+					}
+
+					disableCamera(); // Возвращаем аватарку вместо запроса камеры
+
+					dispatch(setScreenSharing(false));
+
+					if (participant && socket) {
+						socket.emit('toggleMedia', {
+							to: participant._id,
+							type: 'video',
+							isMuted: true,
+						});
+					}
+					return;
+				}
+			}
+
+			// Включение
+			const screenStream = await navigator.mediaDevices.getDisplayMedia({
+				video: true,
+				audio: false,
+			});
+			const screenTrack = screenStream.getVideoTracks()[0];
+			screenTrackRef.current = screenTrack; // Сохраняем в реф для очистки при сбросе
+
+			const currentVideoTrack = localStreamRef.current.getVideoTracks()[0];
+
+			if (currentVideoTrack && screenTrack) {
+				// Заменяем трек экраном
+				peerRef.current.replaceTrack(
+					currentVideoTrack,
+					screenTrack,
+					localStreamRef.current
+				);
+
+				isDummyVideoRef.current = false;
+
+				// Обновляем локальный поток
+				localStreamRef.current.removeTrack(currentVideoTrack);
+				currentVideoTrack.stop(); // Останавливаем камеру
+				localStreamRef.current.addTrack(screenTrack);
+
+				// Обновляем видео-элемент
+				const updatedStream = new MediaStream(
+					localStreamRef.current.getTracks()
+				);
+				setLocalStream(updatedStream);
+
+				if (localVideoRef.current) {
+					localVideoRef.current.srcObject = updatedStream;
+				}
+
+				dispatch(setScreenSharing(true));
+
+				if (participant && socket) {
+					socket.emit('toggleMedia', {
+						to: participant._id,
+						type: 'video',
+						isMuted: false,
+					});
+				}
+				// Возвращаем камеру, если пользователь отменил демонстрацию экрана в браузере
+				screenTrack.onended = async () => {
+					await toggleScreenShare();
+				};
+			}
+		} catch (err: unknown) {
+			console.error('Ошибка с демонстрацией экрана:', err);
+		}
+	};
+
 	// Очищаем все потоки медиаданных; отвязываем потоки от DOM
 	// Разрываем p2p соединение; очищаем стейты
 	const cleanupMedia = useCallback(() => {
 		isCallActiveRef.current = false;
 
 		stopNoiseSuppression(); // Отключаем нейросеть
+
+		if (screenTrackRef.current) {
+			screenTrackRef.current.onended = null;
+			screenTrackRef.current.stop();
+			screenTrackRef.current = null;
+		}
 
 		if (localStreamRef.current) {
 			localStreamRef.current.getTracks().forEach((track) => track.stop());
@@ -343,7 +463,9 @@ export const usePeerConnection = () => {
 		setLocalStream(null);
 		setRemoteStream(null);
 		socket?.off('acceptedCall');
-	}, [socket, stopNoiseSuppression]);
+
+		dispatch(setScreenSharing(false));
+	}, [socket, stopNoiseSuppression, dispatch]);
 
 	// Исходящий звонок
 	const callToFriend = async (friendToCallId: string, type: TCallType) => {
@@ -481,6 +603,8 @@ export const usePeerConnection = () => {
 		upgradeVideoTrack,
 		switchDevice,
 		applyNoiseMode,
+		disableCamera,
+		toggleScreenShare,
 		availableMics,
 		availableCams,
 		selectedMic,

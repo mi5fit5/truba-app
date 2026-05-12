@@ -13,6 +13,7 @@ import phoneCallIcon from './phone-call_icon.png';
 import rejectIcon from './reject_icon.png';
 import searchIcon from './search_icon.png';
 import settingsIcon from './settings_icon.png';
+import shareScreenIcon from './share-screen_icon.png';
 import toggleMic from './toggle-mic_icon.png';
 import toggleCamera from './toggle-camera_icon.png';
 import systemMessageIcon from './call-message_icon.png';
@@ -35,6 +36,7 @@ export {
 	rejectIcon,
 	searchIcon,
 	settingsIcon,
+	shareScreenIcon,
 	toggleMic,
 	toggleCamera,
 	systemMessageIcon,

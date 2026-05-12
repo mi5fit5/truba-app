@@ -17,6 +17,7 @@ import {
 	selectUserData,
 	setActiveFriendId,
 	setChatOpen,
+	selectIsScreenSharing,
 } from '@slices';
 
 import { MessageList, MessageInput } from '@components';
@@ -30,6 +31,7 @@ import {
 	newMessageIcon,
 	rejectIcon,
 	settingsIcon,
+	shareScreenIcon,
 	toggleCamera,
 	toggleMic,
 } from '@icons';
@@ -46,6 +48,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 	const callStatus = useSelector(selectCallStatus);
 	const callType = useSelector(selectCallType);
 	const isChatOpen = useSelector(selectIsChatOpen);
+	const isScreenSharing = useSelector(selectIsScreenSharing);
 
 	const {
 		localVideoRef,
@@ -53,9 +56,11 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		remoteAudioRef,
 		localStream,
 		remoteStream,
+		isDummyVideoRef,
 		upgradeVideoTrack,
 		applyNoiseMode,
-		isDummyVideoRef,
+		disableCamera,
+		toggleScreenShare,
 	} = usePeerContext();
 	const socket = useContext(SocketContext);
 
@@ -76,11 +81,13 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 
 	// Локальные стейты для медиа текущего пользователя
 	const [prevCallStatus, setPrevCallStatus] = useState(callStatus);
+	const [prevIsScreenSharing, setPrevIsScreenSharing] =
+		useState(isScreenSharing);
 	const [isMicMuted, setIsMicMuted] = useState(false);
 	const [isCamMuted, setIsCamMuted] = useState(callType === 'audio');
 
 	// Показывать аватар или камеру
-	const showLocalAvatar = isCamMuted || !localStream;
+	const showLocalAvatar = (isCamMuted && !isScreenSharing) || !localStream;
 	const showRemoteAvatar = isRemoteCamMuted || !remoteStream;
 
 	const prevCallStatusAudioRef = useRef(callStatus);
@@ -95,6 +102,16 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 			setIsCamMuted(callType === 'audio');
 			setChatOpen(false);
 			setRemoteVolume(100);
+		}
+	}
+
+	if (isScreenSharing !== prevIsScreenSharing) {
+		setPrevIsScreenSharing(isScreenSharing);
+
+		if (isScreenSharing) {
+			setIsCamMuted(false);
+		} else {
+			setIsCamMuted(true);
 		}
 	}
 
@@ -133,53 +150,79 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		}
 	}, [remoteVolume, remoteAudioRef]);
 
+	// Привязка медиа-потоков к DOM
+	useEffect(() => {
+		// Видео или голос локального пользователя
+		if (localVideoRef.current && localStream) {
+			localVideoRef.current.srcObject = localStream;
+		}
+	}, [localStream, localVideoRef]);
+
+	useEffect(() => {
+		// Голос собеседника
+		if (remoteAudioRef.current && remoteStream) {
+			remoteAudioRef.current.srcObject = remoteStream;
+		}
+
+		// Видео собеседника
+		if (remoteVideoRef.current && remoteStream) {
+			remoteVideoRef.current.srcObject = remoteStream;
+		}
+	}, [remoteStream, remoteVideoRef, remoteAudioRef]);
+
 	// Переключение микрофона / камеры
 	const toggleMedia = useCallback(
 		async (type: 'audio' | 'video') => {
 			if (!localStream || !socket || !participant) return;
 
 			// Включение камеры при аудиозвонке
-			if (type === 'video' && isDummyVideoRef?.current && upgradeVideoTrack) {
-				const newTrack = await upgradeVideoTrack();
+			if (type === 'video') {
+				// Запрашиваем реальную веб-камеру
+				if (isDummyVideoRef?.current && upgradeVideoTrack) {
+					const newTrack = await upgradeVideoTrack();
+					if (!newTrack) return;
 
-				if (!newTrack) return; // Если пользователь отменил запрос доступ на камеру
-
-				setIsCamMuted(false);
-				socket.emit('toggleMedia', {
-					to: participant._id,
-					type: 'video',
-					isMuted: false,
-				});
-
+					setIsCamMuted(false);
+					socket.emit('toggleMedia', {
+						to: participant._id,
+						type: 'video',
+						isMuted: false,
+					});
+				} else {
+					// Выключаем камеру
+					disableCamera();
+					setIsCamMuted(true);
+					socket.emit('toggleMedia', {
+						to: participant._id,
+						type: 'video',
+						isMuted: true,
+					});
+				}
 				return;
 			}
 
 			// Обычное переключение
-			const track =
-				type === 'audio'
-					? localStream.getAudioTracks()[0]
-					: localStream.getVideoTracks()[0];
+			const track = localStream.getAudioTracks()[0];
 
 			if (track) {
 				// Переключаем состояние трека
 				track.enabled = !track.enabled;
-				const newMutedState = !track.enabled;
-
-				if (type === 'audio') {
-					setIsMicMuted(newMutedState);
-				} else {
-					setIsCamMuted(newMutedState);
-				}
-
-				// Изменяем статус у собеседника
+				setIsMicMuted(!track.enabled);
 				socket.emit('toggleMedia', {
 					to: participant._id,
-					type: type,
-					isMuted: newMutedState,
+					type: 'audio',
+					isMuted: !track.enabled,
 				});
 			}
 		},
-		[localStream, socket, participant, upgradeVideoTrack, isDummyVideoRef]
+		[
+			localStream,
+			socket,
+			participant,
+			upgradeVideoTrack,
+			disableCamera,
+			isDummyVideoRef,
+		]
 	);
 
 	// Изменение режима шумоподавления
@@ -275,7 +318,9 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								playsInline
 								muted
 								className={styles.videoElement}
-								style={{ display: isCamMuted ? 'none' : 'block' }}
+								style={{
+									display: isCamMuted && !isScreenSharing ? 'none' : 'block',
+								}}
 							/>
 							<div className={styles.usernameBadge}>
 								<Text as='span' size={30} lowercase>
@@ -334,7 +379,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 					<div className={styles.controlsWrapper}>
 						<div className={styles.controlsBar}>
 							<Button
-								title='Переключение микрофона'
+								title={isMicMuted ? 'Включить микрофон' : 'Выключить микрофон'}
 								size='small'
 								className={styles.toggleBtn}
 								onClick={() => toggleMedia('audio')}>
@@ -354,12 +399,15 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								</div>
 							</Button>
 							<Button
-								title='Переключение камеры'
+								title={
+									isCamMuted ? 'Включить веб-камеру' : 'Выключить веб-камеру'
+								}
 								size='small'
 								className={styles.toggleBtn}
-								onClick={() => toggleMedia('video')}>
+								onClick={() => toggleMedia('video')}
+								disabled={isScreenSharing}>
 								<div className={styles.toggleIconWrapper}>
-									{isCamMuted && (
+									{(isCamMuted || isScreenSharing) && (
 										<img
 											src={rejectIcon}
 											className={styles.offIcon}
@@ -374,16 +422,31 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								</div>
 							</Button>
 							<Button
+								title={
+									isScreenSharing
+										? 'Остановить демонстрацию экрана'
+										: 'Демонстрация экрана'
+								}
+								size='small'
+								className={clsx(
+									styles.toggleBtn,
+									isScreenSharing && styles.activeControl
+								)}
+								onClick={toggleScreenShare}>
+								<img src={shareScreenIcon} alt='Демонстрация экрана' />
+							</Button>
+							<Button
 								id='settings-button'
 								title='Настройки'
-								size='medium'
+								size='small'
 								onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-								style={{ display: 'flex', gap: '4px' }}>
+								// style={{ display: 'flex', gap: '4px' }}
+							>
 								<img src={settingsIcon} alt='Настройки' />
-								настройки
+								{/* настройки */}
 							</Button>
-							<Button title='Завершить звонок' size='large' onClick={onEndCall}>
-								завершить вызов
+							<Button title='Завершить звонок' size='huge' onClick={onEndCall}>
+								завершить звонок
 							</Button>
 
 							{/* Поповер настроек */}
@@ -395,6 +458,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								onRemoteVolumeChange={setRemoteVolume}
 								selectedNoiseMode={selectedNoiseMode}
 								onNoiseModeChange={handleNoiseModeChange}
+								isCamMuted={isCamMuted}
 							/>
 						</div>
 					</div>

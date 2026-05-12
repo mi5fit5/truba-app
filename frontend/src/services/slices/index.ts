@@ -4,6 +4,7 @@ export {
 	updatePeerMedia,
 	acceptCall,
 	setChatOpen,
+	setScreenSharing,
 	endCall,
 	selectCallStatus,
 	selectCallType,
@@ -11,6 +12,7 @@ export {
 	selectParticipant,
 	selectRemoteMedia,
 	selectIsChatOpen,
+	selectIsScreenSharing,
 } from './call';
 
 export {

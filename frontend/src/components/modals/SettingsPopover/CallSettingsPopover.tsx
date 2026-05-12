@@ -16,6 +16,7 @@ interface CallSettingsPopoverProps {
 	onRemoteVolumeChange: (value: number) => void;
 	selectedNoiseMode: TNoiseMode;
 	onNoiseModeChange: (mode: TNoiseMode) => void;
+	isCamMuted: boolean;
 }
 
 export const CallSettingsPopover = ({
@@ -23,6 +24,7 @@ export const CallSettingsPopover = ({
 	callStatus,
 	remoteVolume,
 	selectedNoiseMode,
+	isCamMuted,
 	onClose,
 	onRemoteVolumeChange,
 	onNoiseModeChange,
@@ -89,7 +91,7 @@ export const CallSettingsPopover = ({
 					switchDevice('video', e.target.value, selectedNoiseMode)
 				}
 				fallbackText='Камеры не найдены'
-				disabled={isConnecting}
+				disabled={isConnecting || isCamMuted}
 			/>
 			<Select
 				label='шумоподавление:'

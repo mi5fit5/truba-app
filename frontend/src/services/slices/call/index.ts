@@ -19,6 +19,7 @@ type TCallState = {
 		isCamMuted: boolean;
 	};
 	isChatOpen: boolean; // Открыт ли чат
+	isScreenSharing: boolean; // Идёт ли демонстрация экрана
 };
 
 // Начальное состояние
@@ -32,6 +33,7 @@ const initialState: TCallState = {
 		isCamMuted: false,
 	},
 	isChatOpen: false,
+	isScreenSharing: false,
 };
 
 // Слайс
@@ -96,6 +98,11 @@ const callSlice = createSlice({
 			state.isChatOpen = action.payload;
 		},
 
+		// Демонстрация экрана
+		setScreenSharing: (state, action: PayloadAction<boolean>) => {
+			state.isScreenSharing = action.payload;
+		},
+
 		// Сброс про завершении звонка
 		endCall: (state) => {
 			state.status = 'idle';
@@ -114,6 +121,7 @@ const callSlice = createSlice({
 		selectIncomingSignal: (state) => state.incomingSignal,
 		selectRemoteMedia: (state) => state.remoteMedia,
 		selectIsChatOpen: (state) => state.isChatOpen,
+		selectIsScreenSharing: (state) => state.isScreenSharing,
 	},
 });
 
@@ -123,6 +131,7 @@ export const {
 	updatePeerMedia,
 	acceptCall,
 	setChatOpen,
+	setScreenSharing,
 	endCall,
 } = callSlice.actions;
 
@@ -133,6 +142,7 @@ export const {
 	selectIncomingSignal,
 	selectRemoteMedia,
 	selectIsChatOpen,
+	selectIsScreenSharing,
 } = callSlice.selectors;
 
 export default callSlice.reducer;

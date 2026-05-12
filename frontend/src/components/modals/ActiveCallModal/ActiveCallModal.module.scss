@@ -51,6 +51,7 @@
 	width: 513px;
 	height: 320px;
 	border: 2px solid;
+	background-color: #000;
 	border-color: #fff #262626 #262626 #fff;
 	box-shadow:
 		inset 1px 1px #fff,
@@ -72,6 +73,7 @@
 	z-index: 3;
 	transform: translate(-50%, -50%);
 }
+
 .videoElement {
 	position: absolute;
 	top: 0;
@@ -81,6 +83,7 @@
 	height: 100%;
 	object-fit: cover;
 }
+
 .usernameBadge {
 	position: absolute;
 	bottom: 15px;
@@ -141,6 +144,7 @@
 .toggleBtn {
 	position: relative;
 }
+
 .mainIcon {
 	width: 100%;
 	height: 100%;
@@ -152,6 +156,17 @@
 	left: -8px;
 	width: 14px !important;
 	aspect-ratio: 1;
+}
+
+.activeControl {
+	background-color: #000080;
+	border-color: #262626 #fff #fff #262626;
+	box-shadow: inset 1px 1px #262626;
+
+	.mainIcon {
+		transform: translate(1px, 1px);
+		filter: none;
+	}
 }
 
 .rightColumn {
