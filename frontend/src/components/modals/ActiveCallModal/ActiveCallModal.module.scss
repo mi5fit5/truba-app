@@ -119,7 +119,7 @@
 	justify-content: center;
 	align-items: center;
 	gap: 10px;
-  max-width: 513px;
+	max-width: 513px;
 	width: 100%;
 	border: 2px solid;
 	border-color: #fff #262626 #262626 #fff;
@@ -208,4 +208,17 @@
 	top: 10px;
 	right: 10px;
 	z-index: 2;
+}
+
+.callingOverlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 10;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.65);
 }

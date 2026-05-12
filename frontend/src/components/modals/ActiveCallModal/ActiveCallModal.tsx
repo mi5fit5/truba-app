@@ -19,7 +19,7 @@ import {
 
 import { MessageList, MessageInput } from '@components';
 import { CallSettingsPopover } from '@modals';
-import { Avatar, Button, Modal, Text, Window } from '@ui';
+import { Avatar, Button, Modal, Preloader, Text, Window } from '@ui';
 
 import styles from './ActiveCallModal.module.scss';
 import {
@@ -88,7 +88,8 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		if (callStatus === 'calling' || callStatus === 'receiving') {
 			setIsMicMuted(false);
 			setIsCamMuted(callType === 'audio');
-      setIsChatOpen(false);
+			setIsChatOpen(false);
+			setRemoteVolume(100);
 		}
 	}
 
@@ -195,7 +196,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		<Modal onClose={onEndCall}>
 			<audio ref={remoteAudioRef} autoPlay style={{ display: 'none' }} />
 			<Window
-				title={`активный звонок с ${participant.username}`}
+				title={`активный звонок с ${participant.username} - тРУба.exe`}
 				icon={
 					<img
 						src={networkModalIcon}
@@ -251,6 +252,12 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 
 						{/* Собеседник */}
 						<div className={styles.videoWrapper}>
+							{callStatus === 'calling' && (
+								<div className={styles.callingOverlay}>
+									<Preloader />
+								</div>
+							)}
+
 							{showRemoteAvatar && (
 								<Avatar
 									src={participant.avatar}
@@ -330,9 +337,9 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								title='Настройки'
 								size='medium'
 								onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-                style={{ display: 'flex', gap: '4px' }}>
+								style={{ display: 'flex', gap: '4px' }}>
 								<img src={settingsIcon} alt='Настройки' />
-                настройки
+								настройки
 							</Button>
 							<Button title='Завершить звонок' size='large' onClick={onEndCall}>
 								завершить вызов
@@ -355,32 +362,32 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 				{/* Чат */}
 				{isChatOpen && (
 					<div className={styles.rightColumn}>
-            <div className={`${styles.panel} ${styles.chatArea}`}>
-              <div className={styles.chatHeader}>
-							<Text as='h3' size={30} align='left'>
-								ваш чат с {participant.username}:
-							</Text>
-							<Button
-								size='small'
-								onClick={handleToggleChat}
-								title='Закрыть чат'>
-								<img src={newMessageIcon} alt='Иконка чата: закрыть' />
-							</Button>
-						</div>
-						<div className={styles.messageListContainer}>
-							<MessageList
-								messages={chatMessages}
-								currentUserId={currentUser._id}
-								currentUsername={currentUser.username}
-								friendUsername={participant.username}
-								isSearchActive={isSearchActive}
-								isLoadingHistory={isLoadingHistory}
-							/>
-						</div>
-            </div>
-            <div className={styles.panel}>
-								<MessageInput friendId={participant._id} />
+						<div className={`${styles.panel} ${styles.chatArea}`}>
+							<div className={styles.chatHeader}>
+								<Text as='h3' size={30} align='left'>
+									ваш чат с {participant.username}:
+								</Text>
+								<Button
+									size='small'
+									onClick={handleToggleChat}
+									title='Закрыть чат'>
+									<img src={newMessageIcon} alt='Иконка чата: закрыть' />
+								</Button>
 							</div>
+							<div className={styles.messageListContainer}>
+								<MessageList
+									messages={chatMessages}
+									currentUserId={currentUser._id}
+									currentUsername={currentUser.username}
+									friendUsername={participant.username}
+									isSearchActive={isSearchActive}
+									isLoadingHistory={isLoadingHistory}
+								/>
+							</div>
+						</div>
+						<div className={styles.panel}>
+							<MessageInput friendId={participant._id} />
+						</div>
 					</div>
 				)}
 			</Window>
