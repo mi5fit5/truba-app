@@ -79,7 +79,7 @@ export const IncomingCallModal = ({
 	return (
 		<Modal onClose={handleReject}>
 			<Window
-				title='входящий звонок'
+				title='тРУба.exe'
 				icon={
 					<img
 						src={networkModalIcon}

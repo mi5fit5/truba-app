@@ -95,4 +95,16 @@
 			background-color: #e4e4e4;
 		}
 	}
+
+	&:focus::-webkit-slider-thumb {
+		background-color: #000080;
+	}
+
+	&:focus::-moz-range-thumb {
+		background-color: #000080;
+	}
+
+	&:focus {
+		outline: none;
+	}
 }

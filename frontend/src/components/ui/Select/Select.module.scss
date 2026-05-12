@@ -29,7 +29,7 @@
 	overflow: hidden;
 	color: #000;
 	font-family: inherit;
-	font-size: 16px;
+	font-size: 18px;
 	text-overflow: ellipsis;
 	background-color: #fff;
 	cursor: pointer;
@@ -38,8 +38,7 @@
 	-moz-appearance: none;
 	appearance: none;
 
-	&:focus,
-	&:disabled {
+	&:focus {
 		color: #fff;
 		background-color: #000080;
 	}
