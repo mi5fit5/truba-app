@@ -3,12 +3,14 @@ export {
 	receiveCall,
 	updatePeerMedia,
 	acceptCall,
+	setChatOpen,
 	endCall,
 	selectCallStatus,
 	selectCallType,
 	selectIncomingSignal,
 	selectParticipant,
 	selectRemoteMedia,
+	selectIsChatOpen,
 } from './call';
 
 export {

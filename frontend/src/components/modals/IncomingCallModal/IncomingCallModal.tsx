@@ -40,9 +40,7 @@ export const IncomingCallModal = ({
 
 		const rejectAudio = new Audio(declineCallSound);
 		rejectAudio.volume = 0.4;
-		rejectAudio.play().catch((err: unknown) => {
-			console.warn('Auto-play заблокирован:', err);
-		});
+		rejectAudio.play().catch(console.warn);
 
 		onReject();
 	}, [onReject]);
@@ -52,9 +50,7 @@ export const IncomingCallModal = ({
 			audioRef.current = new Audio(incomingCallSound);
 			audioRef.current.volume = 0.4;
 			audioRef.current.loop = true;
-			audioRef.current.play().catch((err: unknown) => {
-				console.warn('Auto-play заблокирован:', err);
-			});
+			audioRef.current.play().catch(console.warn);
 
 			const handleEsc = (e: KeyboardEvent) => {
 				if (e.key === 'Escape') {

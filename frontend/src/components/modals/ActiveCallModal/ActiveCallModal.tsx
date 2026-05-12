@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
 
 import type { TNoiseMode } from '@types';
@@ -9,12 +9,14 @@ import {
 	selectCallStatus,
 	selectCallType,
 	selectChatMessages,
+	selectIsChatOpen,
 	selectIsLoadingHistory,
 	selectIsSearchActive,
 	selectParticipant,
 	selectRemoteMedia,
 	selectUserData,
 	setActiveFriendId,
+	setChatOpen,
 } from '@slices';
 
 import { MessageList, MessageInput } from '@components';
@@ -31,6 +33,7 @@ import {
 	toggleCamera,
 	toggleMic,
 } from '@icons';
+import { initCallSound, callEndSound } from '@audio';
 
 interface ActiveCallModalProps {
 	onEndCall: () => void;
@@ -42,6 +45,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 	const currentUser = useSelector(selectUserData);
 	const callStatus = useSelector(selectCallStatus);
 	const callType = useSelector(selectCallType);
+	const isChatOpen = useSelector(selectIsChatOpen);
 
 	const {
 		localVideoRef,
@@ -60,8 +64,6 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 	const isRemoteMicMuted = remoteMedia.isMicMuted;
 	const isRemoteCamMuted = remoteMedia.isCamMuted;
 
-	// Стейты и селекторы чата
-	const [isChatOpen, setIsChatOpen] = useState(false);
 	const chatMessages = useSelector(selectChatMessages);
 	const isLoadingHistory = useSelector(selectIsLoadingHistory);
 	const isSearchActive = useSelector(selectIsSearchActive);
@@ -81,6 +83,9 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 	const showLocalAvatar = isCamMuted || !localStream;
 	const showRemoteAvatar = isRemoteCamMuted || !remoteStream;
 
+	const prevCallStatusAudioRef = useRef(callStatus);
+	const outgoingAudioRef = useRef<HTMLAudioElement | null>(null);
+
 	// Сброс локальных стейтов при новом звонке
 	if (callStatus !== prevCallStatus) {
 		setPrevCallStatus(callStatus);
@@ -88,7 +93,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		if (callStatus === 'calling' || callStatus === 'receiving') {
 			setIsMicMuted(false);
 			setIsCamMuted(callType === 'audio');
-			setIsChatOpen(false);
+			setChatOpen(false);
 			setRemoteVolume(100);
 		}
 	}
@@ -100,7 +105,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 			dispatch(fetchChatHistory(participant._id));
 		}
 
-		setIsChatOpen((prev) => !prev);
+		dispatch(setChatOpen(!isChatOpen));
 	};
 
 	// Все переключения аудио/видео применяются к собеседнику при его принятии звонка
@@ -183,6 +188,42 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		setSelectedNoiseMode(newMode);
 		applyNoiseMode(newMode);
 	};
+
+	// Звуковые эффекты звонка
+	useEffect(() => {
+		// Исходящий звонок
+		if (callStatus === 'calling') {
+			outgoingAudioRef.current = new Audio(initCallSound);
+			outgoingAudioRef.current.volume = 0.4;
+			outgoingAudioRef.current.loop = true;
+			outgoingAudioRef.current.play().catch(console.warn);
+		} else {
+			if (outgoingAudioRef.current) {
+				outgoingAudioRef.current.pause();
+				outgoingAudioRef.current.currentTime = 0;
+			}
+		}
+
+		// Завершение звонка
+		if (
+			(prevCallStatusAudioRef.current === 'connected' ||
+				prevCallStatusAudioRef.current === 'calling') &&
+			callStatus === 'idle'
+		) {
+			const endAudio = new Audio(callEndSound);
+			endAudio.volume = 0.4;
+			endAudio.play().catch(console.warn);
+		}
+
+		prevCallStatusAudioRef.current = callStatus;
+
+		return () => {
+			if (outgoingAudioRef.current) {
+				outgoingAudioRef.current.pause();
+				outgoingAudioRef.current.currentTime = 0;
+			}
+		};
+	}, [callStatus]);
 
 	if (
 		(callStatus !== 'calling' && callStatus !== 'connected') ||

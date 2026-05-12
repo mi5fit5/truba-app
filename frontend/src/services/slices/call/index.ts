@@ -18,6 +18,7 @@ type TCallState = {
 		isMicMuted: boolean;
 		isCamMuted: boolean;
 	};
+	isChatOpen: boolean; // Открыт ли чат
 };
 
 // Начальное состояние
@@ -30,6 +31,7 @@ const initialState: TCallState = {
 		isMicMuted: false,
 		isCamMuted: false,
 	},
+	isChatOpen: false,
 };
 
 // Слайс
@@ -89,6 +91,11 @@ const callSlice = createSlice({
 			}
 		},
 
+		// Открытие чата
+		setChatOpen: (state, action: PayloadAction<boolean>) => {
+			state.isChatOpen = action.payload;
+		},
+
 		// Сброс про завершении звонка
 		endCall: (state) => {
 			state.status = 'idle';
@@ -96,6 +103,7 @@ const callSlice = createSlice({
 			state.participant = null;
 			state.incomingSignal = null;
 			state.remoteMedia = { isMicMuted: false, isCamMuted: false };
+			state.isChatOpen = false;
 		},
 	},
 	selectors: {
@@ -105,6 +113,7 @@ const callSlice = createSlice({
 		selectParticipant: (state) => state.participant,
 		selectIncomingSignal: (state) => state.incomingSignal,
 		selectRemoteMedia: (state) => state.remoteMedia,
+		selectIsChatOpen: (state) => state.isChatOpen,
 	},
 });
 
@@ -113,6 +122,7 @@ export const {
 	receiveCall,
 	updatePeerMedia,
 	acceptCall,
+	setChatOpen,
 	endCall,
 } = callSlice.actions;
 
@@ -122,6 +132,7 @@ export const {
 	selectParticipant,
 	selectIncomingSignal,
 	selectRemoteMedia,
+	selectIsChatOpen,
 } = callSlice.selectors;
 
 export default callSlice.reducer;

@@ -11,16 +11,29 @@ import {
 	endCall,
 	selectCallStatus,
 	updatePeerMedia,
+	selectActiveFriendId,
+	selectIsChatOpen,
 } from '@slices';
-import { declineCallSound } from '@audio';
+import { declineCallSound, messageSound } from '@audio';
 
 // Хук для подключения сокета и слушателей
 export const useSocket = () => {
 	const dispatch = useDispatch();
 	const currentUser = useSelector(selectUserData);
 	const callStatus = useSelector(selectCallStatus);
+	const activeFriendId = useSelector(selectActiveFriendId);
+	const isCallChatOpen = useSelector(selectIsChatOpen);
 
 	const statusRef = useRef(callStatus);
+	const activeFriendIdRef = useRef(activeFriendId);
+	const isCallChatOpenRef = useRef(isCallChatOpen);
+
+	// Синхронизация с Redux
+	useEffect(() => {
+		statusRef.current = callStatus;
+		activeFriendIdRef.current = activeFriendId;
+		isCallChatOpenRef.current = isCallChatOpen;
+	}, [callStatus, activeFriendId, isCallChatOpen]);
 
 	// Хранение сокета
 	const [socket, setSocket] = useState<Socket | null>(null);
@@ -47,6 +60,21 @@ export const useSocket = () => {
 		// Новые сообщения
 		newSocket.on('newMessage', (message) => {
 			dispatch(addMessage(message)); // Добавляем сообщение в историю чата без перезагрузки
+
+			// Звук нового сообщения (если не открыт чат с другом / чат в модалке активного звонка)
+			const isFromActiveFriend = message.sender === activeFriendIdRef.current;
+			const isCurrentUser = message.sender === currentUser._id;
+			const isModalActive =
+				statusRef.current === 'connected' || statusRef.current === 'calling';
+
+			if (
+				!isCurrentUser &&
+				(!isFromActiveFriend || (isModalActive && !isCallChatOpenRef.current))
+			) {
+				const messageAudio = new Audio(messageSound);
+				messageAudio.volume = 0.4;
+				messageAudio.play().catch(console.warn);
+			}
 		});
 
 		// Изменения медиа от собеседника
@@ -70,9 +98,7 @@ export const useSocket = () => {
 			) {
 				const rejectAudio = new Audio(declineCallSound);
 				rejectAudio.volume = 0.4;
-				rejectAudio.play().catch((err: unknown) => {
-					console.warn('Auto-play заблокирован:', err);
-				});
+				rejectAudio.play().catch(console.warn);
 			}
 
 			dispatch(endCall());
