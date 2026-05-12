@@ -79,10 +79,18 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		useState<TNoiseMode>('standard');
 	const [remoteVolume, setRemoteVolume] = useState(100);
 
-	// Локальные стейты для медиа текущего пользователя
+	// Стейт для фокуса участника
+	const [focusedParticipant, setFocusedParticipant] = useState<
+		'local' | 'remote' | null
+	>(null);
+
+	// Стейты для отслеживания предыдущих значений
 	const [prevCallStatus, setPrevCallStatus] = useState(callStatus);
 	const [prevIsScreenSharing, setPrevIsScreenSharing] =
 		useState(isScreenSharing);
+	const [prevIsChatOpen, setPrevIsChatOpen] = useState(isChatOpen);
+
+	// Локальные стейты для медиа текущего пользователя
 	const [isMicMuted, setIsMicMuted] = useState(false);
 	const [isCamMuted, setIsCamMuted] = useState(callType === 'audio');
 
@@ -93,9 +101,10 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 	const prevCallStatusAudioRef = useRef(callStatus);
 	const outgoingAudioRef = useRef<HTMLAudioElement | null>(null);
 
-	// Сброс локальных стейтов при новом звонке
+	// Сброс локальных стейтов при новом звонке / завершении
 	if (callStatus !== prevCallStatus) {
 		setPrevCallStatus(callStatus);
+		setFocusedParticipant(null);
 
 		if (callStatus === 'calling' || callStatus === 'receiving') {
 			setIsMicMuted(false);
@@ -115,6 +124,12 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		}
 	}
 
+	if (isChatOpen !== prevIsChatOpen) {
+		setPrevIsChatOpen(isChatOpen);
+
+		if (isChatOpen) setFocusedParticipant(null);
+	}
+
 	// Обработчик открытия чата
 	const handleToggleChat = () => {
 		if (!isChatOpen && participant) {
@@ -123,6 +138,13 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		}
 
 		dispatch(setChatOpen(!isChatOpen));
+	};
+
+	// Обработчик клика по видео (для фокуса участника)
+	const handleVideoClick = (target: 'local' | 'remote') => {
+		if (isChatOpen) return;
+
+		setFocusedParticipant((prev) => (prev === target ? null : target));
 	};
 
 	// Все переключения аудио/видео применяются к собеседнику при его принятии звонка
@@ -300,10 +322,25 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 					</Button>
 				)}
 
-				<div className={clsx(styles.leftColumn, isChatOpen && styles.chatOpen)}>
-					<div className={styles.videoGrid}>
-						{/* Текущий пользователь */}
-						<div className={styles.videoWrapper}>
+				<div
+					className={clsx(
+						styles.leftColumn,
+						isChatOpen && styles.chatOpen,
+						focusedParticipant && !isChatOpen && styles.withPadding
+					)}>
+					<div
+						className={clsx(
+							styles.videoGrid,
+							focusedParticipant && styles.hasFocused
+						)}>
+						{/* Текущий пользователь (локальное видео) */}
+						<div
+							className={clsx(
+								styles.videoWrapper,
+								focusedParticipant === 'local' && styles.focused,
+								focusedParticipant === 'remote' && styles.unfocused
+							)}
+							onClick={() => handleVideoClick('local')}>
 							{showLocalAvatar && (
 								<Avatar
 									src={currentUser.avatar}
@@ -317,7 +354,10 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								autoPlay
 								playsInline
 								muted
-								className={styles.videoElement}
+								className={clsx(
+									styles.videoElement,
+									isScreenSharing && styles.containVideo
+								)}
 								style={{
 									display: isCamMuted && !isScreenSharing ? 'none' : 'block',
 								}}
@@ -336,8 +376,14 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 							</div>
 						</div>
 
-						{/* Собеседник */}
-						<div className={styles.videoWrapper}>
+						{/* Собеседник (удаленное видео) */}
+						<div
+							className={clsx(
+								styles.videoWrapper,
+								focusedParticipant === 'remote' && styles.focused,
+								focusedParticipant === 'local' && styles.unfocused
+							)}
+							onClick={() => handleVideoClick('remote')}>
 							{callStatus === 'calling' && (
 								<div className={styles.callingOverlay}>
 									<Preloader />
@@ -357,7 +403,10 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								autoPlay
 								playsInline
 								muted
-								className={styles.videoElement}
+								className={clsx(
+									styles.videoElement,
+									isScreenSharing && styles.containVideo
+								)}
 								style={{ display: isRemoteCamMuted ? 'none' : 'block' }}
 							/>
 							<div className={styles.usernameBadge}>

@@ -30,6 +30,14 @@
 	.videoGrid {
 		flex-direction: column;
 	}
+
+	.videoWrapper {
+		cursor: default;
+	}
+}
+
+.withPadding {
+	padding-top: 60px;
 }
 
 .videoGrid {
@@ -51,12 +59,13 @@
 	width: 513px;
 	height: 320px;
 	border: 2px solid;
-	background-color: #000;
 	border-color: #fff #262626 #262626 #fff;
 	box-shadow:
 		inset 1px 1px #fff,
 		inset -2px -2px #7e7e7e;
 	overflow: hidden;
+	background-color: #000;
+	cursor: pointer;
 
 	&:first-child {
 		background-color: #48adb0;
@@ -66,12 +75,55 @@
 	}
 }
 
+.hasFocused {
+	position: relative;
+}
+
+.focused {
+	z-index: 1;
+	flex: 1;
+	width: 100%;
+	height: 100%;
+
+	.usernameBadge {
+		bottom: 20px;
+		left: 20px;
+		transform: scale(1.2);
+		transform-origin: bottom left;
+	}
+}
+
+.unfocused {
+	position: absolute;
+	right: 20px;
+	bottom: 20px;
+	z-index: 2;
+	width: calc(15%);
+	height: calc(15%);
+
+	.avatarFallback {
+		transform: translate(-50%, -50%) scale(0.25);
+	}
+
+	.usernameBadge {
+		bottom: 8px;
+		left: 8px;
+		transform: scale(0.6);
+		transform-origin: bottom left;
+	}
+
+	&:hover {
+		transform: scale(1.05);
+	}
+}
+
 .avatarFallback {
 	position: absolute;
 	top: 50%;
 	left: 50%;
 	z-index: 3;
-	transform: translate(-50%, -50%);
+	transition: transform cubic-bezier(0.4, 0, 0.2, 1);
+	transform: translate(-50%, -50%) scale(1);
 }
 
 .videoElement {
@@ -82,6 +134,11 @@
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
+}
+
+.containVideo {
+	object-fit: contain;
+	background-color: #000;
 }
 
 .usernameBadge {
@@ -122,8 +179,8 @@
 	justify-content: center;
 	align-items: center;
 	gap: 10px;
-	max-width: 513px;
 	width: 100%;
+	max-width: 513px;
 	border: 2px solid;
 	border-color: #fff #262626 #262626 #fff;
 	padding: 10px;
@@ -159,13 +216,13 @@
 }
 
 .activeControl {
-	background-color: #000080;
 	border-color: #262626 #fff #fff #262626;
 	box-shadow: inset 1px 1px #262626;
+	background-color: #000080;
 
 	.mainIcon {
-		transform: translate(1px, 1px);
 		filter: none;
+		transform: translate(1px, 1px);
 	}
 }
 
