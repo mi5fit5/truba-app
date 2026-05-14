@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from 'react';
+import { useCallback, useState, type ChangeEvent } from 'react';
 
 import type { TFormValidators } from '@types';
 
@@ -18,7 +18,9 @@ export function useFormWithValidation<T extends Record<string, string>>(
 	const [isValid, setIsValid] = useState(false);
 
 	// Обработчик для всех инпутов
-	const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+	const handleChange = (
+		e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+	) => {
 		const { name, value } = e.target;
 		const inputName = name as keyof T;
 
@@ -35,14 +37,24 @@ export function useFormWithValidation<T extends Record<string, string>>(
 		setInputValues(newValues);
 		setErrors(newErrors);
 
-		// Проверка формы на заполненность всех полей и наличие ошибок
-		const areInputsFilled = Object.values(newValues).every(
-			(value) => value.trim() !== ''
-		);
 		const hasErrors = Object.values(newErrors).some((err) => err !== undefined);
 
-		setIsValid(areInputsFilled && !hasErrors);
+		setIsValid(!hasErrors);
 	};
 
-	return { inputValues, handleChange, errors, isValid };
+	// Сброс формы
+	const resetForm = useCallback(
+		(
+			newValues: T = initialValues,
+			newErrors: TErrorState<T> = {},
+			newIsValid: boolean = false
+		) => {
+			setInputValues(newValues);
+			setErrors(newErrors);
+			setIsValid(newIsValid);
+		},
+		[initialValues]
+	);
+
+	return { inputValues, handleChange, errors, isValid, resetForm };
 }
