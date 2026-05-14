@@ -5,7 +5,6 @@ import { useDispatch } from '@store';
 import { fetchCurrentUser } from '@slices';
 
 import { Login, Register, HomePage, NotFound } from '@pages';
-import { SocketProvider, PeerProvider } from '@providers';
 import { ProtectedRoute } from '@navigation';
 
 export const App = () => {
@@ -16,36 +15,25 @@ export const App = () => {
 	}, [dispatch]);
 
 	return (
-		<SocketProvider>
-			<PeerProvider>
-				<Routes>
-					<Route
-						path='/login'
-						element={
-							<ProtectedRoute onlyUnAuth>
-								<Login />
-							</ProtectedRoute>
-						}
-					/>
-					<Route
-						path='/register'
-						element={
-							<ProtectedRoute onlyUnAuth>
-								<Register />
-							</ProtectedRoute>
-						}
-					/>
-					<Route
-						path='/'
-						element={
-							<ProtectedRoute>
-								<HomePage />
-							</ProtectedRoute>
-						}
-					/>
-					<Route path='*' element={<NotFound />} />
-				</Routes>
-			</PeerProvider>
-		</SocketProvider>
+		<Routes>
+			<Route
+				path='/login'
+				element={
+					<ProtectedRoute onlyUnAuth>
+						<Login />
+					</ProtectedRoute>
+				}
+			/>
+			<Route
+				path='/register'
+				element={
+					<ProtectedRoute onlyUnAuth>
+						<Register />
+					</ProtectedRoute>
+				}
+			/>
+			<Route path='/' element={<HomePage />} />
+			<Route path='*' element={<NotFound />} />
+		</Routes>
 	);
 };

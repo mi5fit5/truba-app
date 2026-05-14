@@ -1,4 +1,4 @@
-import { type ReactElement } from 'react';
+import { type ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 
 import { useSelector } from '@store';
@@ -9,7 +9,7 @@ import { Preloader } from '@ui';
 // Типизация
 type TProtectedRouteProps = {
 	onlyUnAuth?: boolean; // Только для НЕавторизованных пользователей -> вход / регистрация
-	children: ReactElement;
+	children: ReactNode;
 };
 
 // Защищённый маршрут
