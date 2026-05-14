@@ -6,6 +6,7 @@ import {
 	rejectFriendRequest,
 	sendFriendRequest,
 	getCurrentUser,
+	updateUserProfile,
 } from '../controllers/userController';
 import { authMiddleware } from '../middlewares/auth';
 
@@ -15,6 +16,8 @@ router.use(authMiddleware);
 
 // Маршруты
 router.get('/me', getCurrentUser);
+router.patch('/me', updateUserProfile);
+
 router.get('/friends', getCurrentUserFriends);
 
 router.get('/friend-requests', getIncomingFriendRequests);

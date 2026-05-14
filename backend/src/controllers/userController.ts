@@ -221,3 +221,34 @@ export const getIncomingFriendRequests = async (
 		return res.status(500).json({ message: 'Ошибка сервера' });
 	}
 };
+
+export const updateUserProfile = async (req: AuthRequest, res: Response) => {
+	try {
+		const { avatar, bio } = req.body;
+
+		if (!req.user || !req.user._id) {
+			return res.status(401).json({ message: 'Вы не авторизованы' });
+		}
+
+		// Обновляем поля: аватар и био
+		const updatedUser = await User.findByIdAndUpdate(
+			req.user._id,
+			{ avatar, bio },
+			{ returnDocument: 'after', runValidators: true }
+		);
+
+		if (!updatedUser) {
+			return res.status(404).json({ message: 'Пользователь не найден' });
+		}
+
+		const { password: _, ...userData } = updatedUser.toObject();
+
+		return res.status(200).json({
+			message: 'Профиль успешно обновлен',
+			user: userData,
+		});
+	} catch (err: unknown) {
+		console.error('Ошибка при обновлении профиля:', err);
+		return res.status(500).json({ message: 'Ошибка сервера' });
+	}
+};

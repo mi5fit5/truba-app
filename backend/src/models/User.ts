@@ -6,6 +6,7 @@ export interface IUser extends Document {
 	email: string; // Почта
 	password: string; // Пароль
 	avatar?: string; // Аватар
+	bio?: string; // "О себе"
 	friends: Types.ObjectId[]; // Массив ссылок на других пользователей
 }
 
@@ -33,6 +34,11 @@ const userSchema = new Schema<IUser>({
 		type: String,
 		default:
 			'https://i.pinimg.com/1200x/0b/92/46/0b92463dca2aa16d08e58ee05871c878.jpg',
+	},
+	bio: {
+		type: String,
+		default: '',
+		maxlength: 160,
 	},
 	friends: [
 		{
