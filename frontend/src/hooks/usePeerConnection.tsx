@@ -456,14 +456,29 @@ export const usePeerConnection = () => {
 		if (remoteAudioRef.current) remoteAudioRef.current.srcObject = null;
 
 		if (peerRef.current) {
-			peerRef.current.destroy();
-			peerRef.current = null;
+			try {
+				if (!peerRef.current.destroyed) {
+					peerRef.current.destroy();
+				}
+			} catch (err: unknown) {
+				if (
+					err instanceof Error &&
+					(err.message.includes('Abort') || err.message.includes('Close'))
+				) {
+					console.warn('Соединение WebRTC закрыто');
+				} else {
+					console.error('Ошибка при уничтожении Peer:', err);
+				}
+			} finally {
+				peerRef.current = null;
+			}
 		}
 
 		setLocalStream(null);
 		setRemoteStream(null);
 		socket?.off('acceptedCall');
 
+		dispatch(endCall());
 		dispatch(setScreenSharing(false));
 	}, [socket, stopNoiseSuppression, dispatch]);
 
@@ -509,6 +524,25 @@ export const usePeerConnection = () => {
 			if (remoteAudioRef.current) {
 				remoteAudioRef.current.srcObject = currentStream;
 			}
+		});
+
+		// Обработка обрывов соединения
+		peer.on('error', (err: Error & { code?: string }) => {
+			if (
+				err.message.includes('Abort') ||
+				err.message.includes('Close') ||
+				err.code === 'ERR_WEBRTC_SUPPORT'
+			) {
+				console.warn('Соединение прервано собеседником');
+			} else {
+				console.error('Ошибка WebRTC:', err);
+			}
+			cleanupMedia();
+		});
+
+		peer.on('close', () => {
+			console.log('Соединение WebRTC закрыто');
+			cleanupMedia();
 		});
 
 		// Получаем ответ от собеседника вместе с его актуальными стейтами
@@ -571,6 +605,25 @@ export const usePeerConnection = () => {
 			}
 		});
 
+		// Обработка обрывов соединения
+		peer.on('error', (err: Error & { code?: string }) => {
+			if (
+				err.message.includes('Abort') ||
+				err.message.includes('Close') ||
+				err.code === 'ERR_WEBRTC_SUPPORT'
+			) {
+				console.warn('Соединение прервано собеседником');
+			} else {
+				console.error('Ошибка WebRTC:', err);
+			}
+			cleanupMedia();
+		});
+
+		peer.on('close', () => {
+			console.log('Соединение WebRTC закрыто');
+			cleanupMedia();
+		});
+
 		peer.signal(incomingSignal);
 		peerRef.current = peer;
 	};
@@ -582,8 +635,7 @@ export const usePeerConnection = () => {
 		}
 
 		cleanupMedia();
-		dispatch(endCall());
-	}, [cleanupMedia, dispatch, participant, socket]);
+	}, [cleanupMedia, participant, socket]);
 
 	// Слушатель при сбрасывании собеседником звонка
 	useEffect(() => {
@@ -595,6 +647,16 @@ export const usePeerConnection = () => {
 			socket.off('completedCall', cleanupMedia);
 		};
 	}, [socket, cleanupMedia]);
+
+	useEffect(() => {
+		const handleBeforeUnload = () => {
+			if (participant && socket && isCallActiveRef.current) {
+				socket.emit('endCall', { to: participant._id });
+			}
+		};
+		window.addEventListener('beforeunload', handleBeforeUnload);
+		return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+	}, [participant, socket]);
 
 	return {
 		callToFriend,
