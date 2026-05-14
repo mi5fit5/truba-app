@@ -21,6 +21,10 @@
 		aspect-ratio: 1;
 	}
 
+	&:hover {
+		background-color: #e4e4e4;
+	}
+
 	&:focus-visible {
 		outline: 2px dotted #000;
 		outline-offset: -10px;

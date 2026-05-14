@@ -14,7 +14,7 @@
 	gap: 4px;
 }
 
-.errorAlert {
+.alertLine {
 	width: 2px;
 	height: 14px;
 	background-color: #ff6b6b;
@@ -24,4 +24,12 @@
 .visible {
 	visibility: visible;
 	opacity: 1;
+}
+
+.lineError {
+	background-color: #ff6b6b;
+}
+
+.lineSuccess {
+	background-color: #33ff00;
 }

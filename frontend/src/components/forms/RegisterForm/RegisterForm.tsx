@@ -7,7 +7,7 @@ import { clearAuthError, registerUser, selectAuthError } from '@slices';
 import { useFormWithValidation } from '@hooks';
 import { registerValidators } from '@utils/validators';
 
-import { Input, Button, ErrorMessage } from '@ui';
+import { Input, Button, StatusMessage } from '@ui';
 
 import styles from './RegisterForm.module.scss';
 
@@ -53,7 +53,7 @@ export const RegisterForm = () => {
 					placeholder='nickname'
 					required
 				/>
-				<ErrorMessage error={errors.username} />
+				<StatusMessage message={errors.username} />
 			</div>
 			<div className={styles.section}>
 				<Input
@@ -65,7 +65,7 @@ export const RegisterForm = () => {
 					placeholder='example@domain.com'
 					required
 				/>
-				<ErrorMessage error={errors.email} />
+				<StatusMessage message={errors.email} />
 			</div>
 			<div className={styles.section}>
 				<Input
@@ -77,7 +77,7 @@ export const RegisterForm = () => {
 					placeholder='password'
 					required
 				/>
-				<ErrorMessage error={errors.password} />
+				<StatusMessage message={errors.password} />
 			</div>
 			<div className={styles.section}>
 				<div className={styles.footer}>
@@ -88,7 +88,7 @@ export const RegisterForm = () => {
 						Войти
 					</Button>
 				</div>
-				<ErrorMessage error={authError} />
+				<StatusMessage message={authError} />
 			</div>
 		</form>
 	);

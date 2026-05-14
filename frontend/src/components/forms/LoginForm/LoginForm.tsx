@@ -7,7 +7,7 @@ import { clearAuthError, loginUser, selectAuthError } from '@slices';
 import { useFormWithValidation } from '@hooks';
 import { loginValidators } from '@utils/validators';
 
-import { Input, ErrorMessage, Button } from '@ui';
+import { Input, StatusMessage, Button } from '@ui';
 
 import styles from './LoginForm.module.scss';
 
@@ -53,7 +53,7 @@ export const LoginForm = () => {
 					placeholder='nickname'
 					required
 				/>
-				<ErrorMessage error={errors.email} />
+				<StatusMessage message={errors.email} />
 			</div>
 			<div className={styles.section}>
 				<Input
@@ -65,7 +65,7 @@ export const LoginForm = () => {
 					placeholder='password'
 					required
 				/>
-				<ErrorMessage error={errors.password} />
+				<StatusMessage message={errors.password} />
 			</div>
 			<div className={styles.section}>
 				<div className={styles.footer}>
@@ -76,7 +76,7 @@ export const LoginForm = () => {
 						Регистрация
 					</Button>
 				</div>
-				<ErrorMessage error={authError} />
+				<StatusMessage message={authError} />
 			</div>
 		</form>
 	);
