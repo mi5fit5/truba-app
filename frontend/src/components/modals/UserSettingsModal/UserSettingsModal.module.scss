@@ -1,0 +1,80 @@
+.settingsWindow {
+	width: 450px;
+}
+
+.container {
+	padding: 10px;
+	background-color: #c0c0c0;
+}
+
+.tabsHeader {
+	position: relative;
+	z-index: 2;
+	display: flex;
+	gap: 2px;
+	margin-bottom: -2px;
+	padding-left: 2px;
+}
+
+.tabTrigger {
+	border: 2px solid;
+	border-color: #fff #262626 #262626 #fff;
+	border-top-left-radius: 3px;
+	border-top-right-radius: 3px;
+	border-bottom: none;
+	padding: 4px 8px;
+	box-shadow:
+		inset 0.5px 0.5px #fff,
+		inset -1px -1px #7e7e7e;
+	font-size: 16px;
+	background-color: #c0c0c0;
+	cursor: pointer;
+
+	&.activeTab {
+		z-index: 3;
+		margin-top: -2px;
+		padding-top: 6px;
+		box-shadow:
+			inset 1px 1px 0px #ffffff,
+			inset -1px 0px 0px #808080;
+		background-color: #e4e4e4;
+	}
+}
+
+.tabContent {
+	height: 100%;
+	min-height: 466px;
+	border: 2px solid;
+	border-color: #fff #262626 #262626 #fff;
+	padding: 20px 10px;
+	box-shadow:
+		inset 1px 1px #fff,
+		inset -2px -2px #7e7e7e;
+	overflow-y: auto;
+	background-color: #c0c0c0;
+}
+
+.contentSection {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.fieldGroup {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.footer {
+	display: flex;
+	justify-content: flex-end;
+	gap: 6px;
+	margin-top: 10px;
+}
+
+.changePasswordActions {
+	display: flex;
+	gap: 6px;
+	margin-top: 10px;
+}
