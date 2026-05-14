@@ -17,7 +17,25 @@ export type TUser = {
 	username: string;
 	email: string;
 	avatar: string;
+	bio: string;
 	friends: string[];
+};
+
+// Тип смены пароля
+export type TChangePasswordData = {
+	oldPassword: string;
+	newPassword: string;
+};
+
+// Тип для формы смены пароля
+export type TChangePasswordForm = TChangePasswordData & {
+	confirmPassword: string;
+};
+
+// Тип для обновления профиля пользователя (аватар или био)
+export type TUpdateProfileData = {
+	avatar?: string;
+	bio?: string;
 };
 
 // Тип друга
@@ -78,3 +96,6 @@ export type TSelectOption = {
 
 // Тип для режимов шумоподавления
 export type TNoiseMode = 'none' | 'standard' | 'rnnoise';
+
+// Тип вкладок модалки настроек
+export type TUserSettingsTab = 'profile' | 'security' | 'audio' | 'integration';

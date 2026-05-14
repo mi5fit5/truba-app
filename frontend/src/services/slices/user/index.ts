@@ -1,6 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-import type { TLoginData, TRegisterData, TUser } from '@types';
+import type {
+	TChangePasswordData,
+	TLoginData,
+	TRegisterData,
+	TUpdateProfileData,
+	TUser,
+} from '@types';
 import { authRequests } from '@utils-api';
 import { deleteCookie, setCookie } from '@utils/cookie';
 import { getErrorMessage } from '@utils/getErrorMessage';
@@ -91,6 +97,35 @@ export const fetchCurrentUser = createAsyncThunk<
 	}
 });
 
+// Санка обновления профиля (аватар, био)
+export const updateUserProfile = createAsyncThunk<
+	TUser,
+	TUpdateProfileData,
+	{ rejectValue: string }
+>('user/updateProfile', async (data, { rejectWithValue }) => {
+	try {
+		const response = await authRequests.updateProfile(data);
+
+		return response.user;
+	} catch (err: unknown) {
+		return rejectWithValue(getErrorMessage(err));
+	}
+});
+
+// Санка смены пароля
+export const changeUserPassword = createAsyncThunk<
+	string,
+	TChangePasswordData,
+	{ rejectValue: string }
+>('user/changePassword', async (data, { rejectWithValue }) => {
+	try {
+		const response = await authRequests.changePassword(data);
+		return response.message;
+	} catch (err: unknown) {
+		return rejectWithValue(getErrorMessage(err));
+	}
+});
+
 // Слайс
 const userSlice = createSlice({
 	name: 'user',
@@ -149,6 +184,11 @@ const userSlice = createSlice({
 			.addCase(fetchCurrentUser.fulfilled, (state, action) => {
 				state.isInit = true;
 				state.isAuth = true;
+				state.data = action.payload;
+			})
+
+			// Обновление профиля
+			.addCase(updateUserProfile.fulfilled, (state, action) => {
 				state.data = action.payload;
 			});
 	},

@@ -1,5 +1,10 @@
 import { api } from './index';
-import type { TLoginData, TRegisterData } from '@types';
+import type {
+	TChangePasswordData,
+	TLoginData,
+	TRegisterData,
+	TUpdateProfileData,
+} from '@types';
 
 // Объект с запросами
 export const authRequests = {
@@ -18,8 +23,18 @@ export const authRequests = {
 		return api.post('/auth/logout').then((res) => res.data);
 	},
 
+	// Смена пароля
+	changePassword: (data: TChangePasswordData) => {
+		return api.patch('/auth/change-password', data).then((res) => res.data);
+	},
+
 	// Получение данных текущего пользователя
 	getUser: () => {
 		return api.get('/users/me').then((res) => res.data);
+	},
+
+	// Обновление профиля пользователя
+	updateProfile: (data: TUpdateProfileData) => {
+		return api.patch('/users/me', data).then((res) => res.data);
 	},
 };

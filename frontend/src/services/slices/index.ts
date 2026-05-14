@@ -51,6 +51,8 @@ export {
 	loginUser,
 	logoutUser,
 	fetchCurrentUser,
+	updateUserProfile,
+	changeUserPassword,
 	clearAuthError,
 	selectUserData,
 	selectUserIsInit,
