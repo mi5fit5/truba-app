@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 
 export interface AuthRequest extends Request {
-	user?: JwtPayload & { _id: string };
+	user?: Express.User & JwtPayload;
 }
 
 // Проверка подлинности пользователя перед тем, как запрос дойдёт до маршрута
@@ -14,9 +14,7 @@ export const authMiddleware = (
 	const token = req.cookies.jwt;
 
 	if (!token) {
-		return res
-			.status(401)
-			.json({ message: 'Похоже, что у вас нет доступа 😞' });
+		return res.status(401).json({ message: 'Похоже, что у вас нет доступа' });
 	}
 
 	try {
@@ -24,7 +22,7 @@ export const authMiddleware = (
 		const decodedToken = jwt.verify(
 			token,
 			process.env.JWT_SECRET_KEY as string
-		) as JwtPayload & { _id: string };
+		) as Express.User & JwtPayload;
 
 		// Записываем данные в объект запроса
 		req.user = decodedToken;
