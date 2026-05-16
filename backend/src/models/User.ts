@@ -8,6 +8,7 @@ export interface IUser extends Document {
 	avatar?: string; // Аватар
 	bio?: string; // "О себе"
 	friends: Types.ObjectId[]; // Массив ссылок на других пользователей
+	steamId?: string; // SteamID
 }
 
 // Схема пользователя
@@ -46,6 +47,10 @@ const userSchema = new Schema<IUser>({
 			ref: 'User',
 		},
 	],
+	steamId: {
+		type: String,
+		default: null,
+	},
 });
 
 export default mongoose.model<IUser>('User', userSchema);
