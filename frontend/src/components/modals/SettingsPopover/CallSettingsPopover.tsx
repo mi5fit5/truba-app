@@ -28,11 +28,14 @@ export const CallSettingsPopover = ({
 	const {
 		availableMics,
 		availableCams,
+		availableSpeakers,
 		selectedMic,
 		selectedCam,
+		selectedSpeaker,
 		noiseMode,
 		applyNoiseMode,
 		switchDevice,
+		switchSpeaker,
 	} = usePeerContext();
 
 	const popoverRef = useRef<HTMLDivElement | null>(null);
@@ -77,6 +80,14 @@ export const CallSettingsPopover = ({
 				value={selectedMic}
 				onChange={(e) => switchDevice('audio', e.target.value, noiseMode)}
 				fallbackText='микрофоны не найдены'
+				disabled={isConnecting}
+			/>
+			<Select
+				label='динамики:'
+				options={availableSpeakers}
+				value={selectedSpeaker}
+				onChange={(e) => switchSpeaker(e.target.value)}
+				fallbackText='динамики не найдены'
 				disabled={isConnecting}
 			/>
 			<Select

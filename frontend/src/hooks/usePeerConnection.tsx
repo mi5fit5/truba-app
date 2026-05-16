@@ -35,9 +35,12 @@ export const usePeerConnection = () => {
 	const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 	const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
 
-	// Стейты для списков доступных устройств + переменные для хранения активных устройств
+	// Стейты для списков доступных устройств
 	const [availableMics, setAvailableMics] = useState<TSelectOption[]>([]);
 	const [availableCams, setAvailableCams] = useState<TSelectOption[]>([]);
+	const [availableSpeakers, setAvailableSpeakers] = useState<TSelectOption[]>(
+		[]
+	);
 
 	// Инициализация из Local Storage
 	const [selectedMic, setSelectedMic] = useState<string>(
@@ -45,6 +48,9 @@ export const usePeerConnection = () => {
 	);
 	const [selectedCam, setSelectedCam] = useState<string>(
 		() => localStorage.getItem('voice_chat_selected_cam') || ''
+	);
+	const [selectedSpeaker, setSelectedSpeaker] = useState<string>(
+		() => localStorage.getItem('voice_chat_selected_speaker') || ''
 	);
 	const [noiseMode, setNoiseMode] = useState<TNoiseMode>(
 		() =>
@@ -82,8 +88,16 @@ export const usePeerConnection = () => {
 						label: truncateOptionsText(cam.label || 'Неизвестная камера'),
 					}));
 
+				const outputDevices = devices
+					.filter((device) => device.kind === 'audiooutput')
+					.map((speaker) => ({
+						value: speaker.deviceId,
+						label: truncateOptionsText(speaker.label || 'Неизвестные динамики'),
+					}));
+
 				setAvailableMics(audioDevices);
 				setAvailableCams(videoDevices);
+				setAvailableSpeakers(outputDevices);
 			})
 			.catch((err) =>
 				console.error('Ошибка получения списка доступных устройств:', err)
@@ -269,6 +283,22 @@ export const usePeerConnection = () => {
 		}
 	};
 
+	// Применение сохраненных динамиков
+	useEffect(() => {
+		const applySpeaker = async () => {
+			if (selectedSpeaker && remoteAudioRef.current && remoteStream) {
+				if (typeof remoteAudioRef.current.setSinkId === 'function') {
+					try {
+						await remoteAudioRef.current.setSinkId(selectedSpeaker);
+					} catch (error) {
+						console.error('Ошибка применения динамиков:', error);
+					}
+				}
+			}
+		};
+		applySpeaker();
+	}, [selectedSpeaker, remoteStream]);
+
 	// Управление шумоподавлением (пропускать звук через нейросеть или нет)
 	const applyNoiseMode = async (mode: TNoiseMode) => {
 		// Сохраняем режим в стейт и память
@@ -413,6 +443,25 @@ export const usePeerConnection = () => {
 			}
 		} catch (err: unknown) {
 			console.error(`Ошибка переключения ${type}-устройства:`, err);
+		}
+	};
+
+	// Физическое переключение устройства вывода звука
+	const switchSpeaker = async (deviceId: string) => {
+		// Обновляем память и стейт динамиков
+		setSelectedSpeaker(deviceId);
+		localStorage.setItem('voice_chat_selected_speaker', deviceId);
+
+		if (remoteAudioRef.current) {
+			if (typeof remoteAudioRef.current.setSinkId === 'function') {
+				try {
+					await remoteAudioRef.current.setSinkId(deviceId);
+				} catch (error) {
+					console.error('Ошибка при переключении динамиков:', error);
+				}
+			} else {
+				console.warn('Браузер не поддерживает выбор устройства вывода звука');
+			}
 		}
 	};
 
@@ -756,13 +805,16 @@ export const usePeerConnection = () => {
 		completeCall,
 		upgradeVideoTrack,
 		switchDevice,
+		switchSpeaker,
 		applyNoiseMode,
 		disableCamera,
 		toggleScreenShare,
 		availableMics,
 		availableCams,
+		availableSpeakers,
 		selectedMic,
 		selectedCam,
+		selectedSpeaker,
 		noiseMode,
 		isDummyVideoRef,
 		localVideoRef,

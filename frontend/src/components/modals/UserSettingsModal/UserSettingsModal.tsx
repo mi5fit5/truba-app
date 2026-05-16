@@ -40,20 +40,27 @@ export const UserSettingsModal = ({
 	const {
 		availableMics,
 		availableCams,
+		availableSpeakers,
 		selectedMic,
 		selectedCam,
+		selectedSpeaker,
 		noiseMode,
 		switchDevice,
+		switchSpeaker,
 		applyNoiseMode,
 	} = usePeerContext();
 
-	// Обработчик смены медиа-устройств и шумодава
+	// Обработчики смены медиа-устройств и шумодава
 	const handleMicChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
 		switchDevice('audio', e.target.value, noiseMode);
 	};
 
 	const handleCamChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
 		switchDevice('video', e.target.value, noiseMode);
+	};
+
+	const handleSpeakerChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+		switchSpeaker(e.target.value);
 	};
 
 	const handleNoiseModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -365,6 +372,13 @@ export const UserSettingsModal = ({
 								value={selectedMic}
 								onChange={handleMicChange}
 								fallbackText='микрофоны не найдены'
+							/>
+							<Select
+								label='динамики:'
+								options={availableSpeakers}
+								value={selectedSpeaker}
+								onChange={handleSpeakerChange}
+								fallbackText='динамики не найдены'
 							/>
 							<Select
 								label='камера:'
