@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Peer, { type Instance, type SignalData } from 'simple-peer';
+
 import type { TCallType, TNoiseMode, TSelectOption } from '@types';
 import { useDispatch, useSelector } from '@store';
 import {
@@ -37,10 +38,19 @@ export const usePeerConnection = () => {
 	// Стейты для списков доступных устройств + переменные для хранения активных устройств
 	const [availableMics, setAvailableMics] = useState<TSelectOption[]>([]);
 	const [availableCams, setAvailableCams] = useState<TSelectOption[]>([]);
-	const selectedMic =
-		localStream?.getAudioTracks()[0]?.getSettings().deviceId || '';
-	const selectedCam =
-		localStream?.getVideoTracks()[0]?.getSettings().deviceId || '';
+
+	// Инициализация из Local Storage
+	const [selectedMic, setSelectedMic] = useState<string>(
+		() => localStorage.getItem('voice_chat_selected_mic') || ''
+	);
+	const [selectedCam, setSelectedCam] = useState<string>(
+		() => localStorage.getItem('voice_chat_selected_cam') || ''
+	);
+	const [noiseMode, setNoiseMode] = useState<TNoiseMode>(
+		() =>
+			(localStorage.getItem('voice_chat_noise_mode') as TNoiseMode) ||
+			'standard'
+	);
 
 	// Рефы для работы с DOM-элементами; хранения соединения и потока;
 	// активности звонка; пустого видео; демонстрации экрана
@@ -111,16 +121,52 @@ export const usePeerConnection = () => {
 				localStreamRef.current = null;
 			}
 
-			// Запрос медиа-устрйств
+			// Достаем микрофон и вебку из памяти
+			const savedMic = localStorage.getItem('voice_chat_selected_mic');
+			const savedCam = localStorage.getItem('voice_chat_selected_cam');
+
+			const audioConstraints = savedMic
+				? {
+						deviceId: { exact: savedMic },
+						echoCancellation: true,
+						noiseSuppression: true,
+						autoGainControl: true,
+					}
+				: {
+						echoCancellation: true,
+						noiseSuppression: true,
+						autoGainControl: true,
+					};
+
+			const videoConstraints =
+				type === 'video'
+					? savedCam
+						? { deviceId: { exact: savedCam } }
+						: true
+					: false;
+
+			// Запрос медиа-устрйств с учетом сохраненных
 			const stream = await navigator.mediaDevices.getUserMedia({
-				audio: {
-					// Стандартное шумоподавление WebRTC включено по умолчанию
-					echoCancellation: true,
-					noiseSuppression: true,
-					autoGainControl: true,
-				},
-				video: type === 'video',
+				audio: audioConstraints,
+				video: videoConstraints,
 			});
+
+			// Сохранение в память при первом входе
+			const currentMicId = stream.getAudioTracks()[0]?.getSettings().deviceId;
+
+			if (currentMicId && !savedMic) {
+				setSelectedMic(currentMicId);
+				localStorage.setItem('voice_chat_selected_mic', currentMicId);
+			}
+
+			if (type === 'video') {
+				const currentCamId = stream.getVideoTracks()[0]?.getSettings().deviceId;
+
+				if (currentCamId && !savedCam) {
+					setSelectedCam(currentCamId);
+					localStorage.setItem('voice_chat_selected_cam', currentCamId);
+				}
+			}
 
 			// Добавляем пустое видео, если это аудиозвонок
 			isDummyVideoRef.current = type !== 'video';
@@ -148,6 +194,11 @@ export const usePeerConnection = () => {
 				localVideoRef.current.srcObject = stream;
 			}
 
+			// Применяем сохраненный режим шумоподавления
+			if (noiseMode === 'rnnoise') {
+				await applyNoiseMode('rnnoise');
+			}
+
 			return stream;
 		} catch (err: unknown) {
 			console.error('Ошибка доступа к устройствам:', err);
@@ -160,9 +211,12 @@ export const usePeerConnection = () => {
 		if (!localStreamRef.current || !peerRef.current) return null;
 
 		try {
+			// Достаем камеру из памяти
+			const savedCam = localStorage.getItem('voice_chat_selected_cam');
+
 			// Запрос доступ к камере
 			const newStream = await navigator.mediaDevices.getUserMedia({
-				video: true,
+				video: savedCam ? { deviceId: { exact: savedCam } } : true,
 			});
 
 			// Проверка статуса звонка
@@ -175,6 +229,15 @@ export const usePeerConnection = () => {
 				return null;
 			}
 
+			// Если пусто, то записываем новую камеру в память
+			const currentCamId = newStream
+				.getVideoTracks()[0]
+				?.getSettings().deviceId;
+
+			if (currentCamId && !savedCam) {
+				setSelectedCam(currentCamId);
+				localStorage.setItem('voice_chat_selected_cam', currentCamId);
+			}
 			const newVideoTrack = newStream.getVideoTracks()[0];
 			const oldVideoTrack = localStreamRef.current.getVideoTracks()[0];
 
@@ -208,8 +271,11 @@ export const usePeerConnection = () => {
 
 	// Управление шумоподавлением (пропускать звук через нейросеть или нет)
 	const applyNoiseMode = async (mode: TNoiseMode) => {
-		const rawTrack = rawAudioTrackRef.current;
+		// Сохраняем режим в стейт и память
+		setNoiseMode(mode);
+		localStorage.setItem('voice_chat_noise_mode', mode);
 
+		const rawTrack = rawAudioTrackRef.current;
 		if (!rawTrack || !localStreamRef.current) return;
 
 		// Если 'standard' - включаем стандартное шумоподавление WebRTC
@@ -267,6 +333,15 @@ export const usePeerConnection = () => {
 		deviceId: string,
 		currentNoiseMode: TNoiseMode = 'standard'
 	) => {
+		// Обновляем память и стейт микрофона и камеры
+		if (type === 'audio') {
+			setSelectedMic(deviceId);
+			localStorage.setItem('voice_chat_selected_mic', deviceId);
+		} else {
+			setSelectedCam(deviceId);
+			localStorage.setItem('voice_chat_selected_cam', deviceId);
+		}
+
 		if (!localStreamRef.current || !peerRef.current) return;
 
 		try {
@@ -290,15 +365,31 @@ export const usePeerConnection = () => {
 
 			if (type === 'audio') {
 				const newRawAudio = newStream.getAudioTracks()[0];
+
+				// Обновляем память для микрофона
+				const currentMicId = newRawAudio.getSettings().deviceId;
+
+				if (currentMicId) {
+					setSelectedMic(currentMicId);
+					localStorage.setItem('voice_chat_selected_mic', currentMicId);
+				}
+
 				const oldRawAudio = rawAudioTrackRef.current;
-
 				if (oldRawAudio) oldRawAudio.stop(); // Отключаем старое устройство
-
 				rawAudioTrackRef.current = newRawAudio;
 				await applyNoiseMode(currentNoiseMode); // Пропускаем новое аудио-устройство через нейронку
 			} else {
 				// Берем новый видео-трек и сразу заменяем старый
 				const newTrack = newStream.getVideoTracks()[0];
+
+				// Обновляем память для камеры
+				const currentCamId = newTrack.getSettings().deviceId;
+
+				if (currentCamId) {
+					setSelectedCam(currentCamId);
+					localStorage.setItem('voice_chat_selected_cam', currentCamId);
+				}
+
 				const oldTrack = localStreamRef.current.getVideoTracks()[0];
 
 				if (oldTrack && newTrack) {
@@ -315,6 +406,7 @@ export const usePeerConnection = () => {
 						localStreamRef.current.getTracks()
 					);
 					setLocalStream(updatedStream);
+
 					if (localVideoRef.current)
 						localVideoRef.current.srcObject = updatedStream;
 				}
@@ -671,6 +763,7 @@ export const usePeerConnection = () => {
 		availableCams,
 		selectedMic,
 		selectedCam,
+		noiseMode,
 		isDummyVideoRef,
 		localVideoRef,
 		remoteVideoRef,
