@@ -14,6 +14,8 @@ import {
 	selectActiveFriendId,
 	selectIsChatOpen,
 } from '@slices';
+import { playSystemSound } from '@utils/audioUtils';
+
 import { declineCallSound, messageSound } from '@audio';
 
 // Хук для подключения сокета и слушателей
@@ -71,9 +73,7 @@ export const useSocket = () => {
 				!isCurrentUser &&
 				(!isFromActiveFriend || (isModalActive && !isCallChatOpenRef.current))
 			) {
-				const messageAudio = new Audio(messageSound);
-				messageAudio.volume = 0.4;
-				messageAudio.play().catch(console.warn);
+				playSystemSound(messageSound);
 			}
 		});
 
@@ -96,9 +96,7 @@ export const useSocket = () => {
 				statusRef.current === 'calling' ||
 				statusRef.current === 'receiving'
 			) {
-				const rejectAudio = new Audio(declineCallSound);
-				rejectAudio.volume = 0.4;
-				rejectAudio.play().catch(console.warn);
+				playSystemSound(declineCallSound);
 			}
 
 			dispatch(endCall());

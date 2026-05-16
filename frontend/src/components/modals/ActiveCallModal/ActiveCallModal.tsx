@@ -35,6 +35,7 @@ import {
 	toggleMic,
 } from '@icons';
 import { initCallSound, callEndSound } from '@audio';
+import { playSystemSound } from '@utils/audioUtils';
 
 interface ActiveCallModalProps {
 	onEndCall: () => void;
@@ -247,14 +248,14 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 	useEffect(() => {
 		// Исходящий звонок
 		if (callStatus === 'calling') {
-			outgoingAudioRef.current = new Audio(initCallSound);
-			outgoingAudioRef.current.volume = 0.4;
-			outgoingAudioRef.current.loop = true;
-			outgoingAudioRef.current.play().catch(console.warn);
+			playSystemSound(initCallSound, true).then((audio) => {
+				outgoingAudioRef.current = audio;
+			});
 		} else {
 			if (outgoingAudioRef.current) {
 				outgoingAudioRef.current.pause();
 				outgoingAudioRef.current.currentTime = 0;
+				outgoingAudioRef.current = null;
 			}
 		}
 
@@ -264,9 +265,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 				prevCallStatusAudioRef.current === 'calling') &&
 			callStatus === 'idle'
 		) {
-			const endAudio = new Audio(callEndSound);
-			endAudio.volume = 0.4;
-			endAudio.play().catch(console.warn);
+			playSystemSound(callEndSound, false);
 		}
 
 		prevCallStatusAudioRef.current = callStatus;
@@ -477,9 +476,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								id='settings-button'
 								title='Настройки'
 								size='small'
-								onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-								// style={{ display: 'flex', gap: '4px' }}
-							>
+								onClick={() => setIsSettingsOpen(!isSettingsOpen)}>
 								<img src={settingsIcon} alt='Настройки' />
 								{/* настройки */}
 							</Button>
