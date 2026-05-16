@@ -1,18 +1,29 @@
 import React, { useState } from 'react';
 import clsx from 'clsx';
 
+import { NOISE_OPTIONS } from '@constants';
 import type {
 	TUser,
 	TUserSettingsTab,
 	TUpdateProfileData,
 	TChangePasswordForm,
+	TNoiseMode,
 } from '@types';
+import { usePeerContext } from '@context';
 import { useDispatch } from '@store';
 import { changeUserPassword, updateUserProfile } from '@slices';
 import { useFormWithValidation } from '@hooks';
 import { changePasswordValidators, profileValidators } from '@utils/validators';
 
-import { Button, Modal, Window, Input, StatusMessage, TextArea } from '@ui';
+import {
+	Button,
+	Modal,
+	Window,
+	Input,
+	StatusMessage,
+	TextArea,
+	Select,
+} from '@ui';
 import styles from './UserSettingsModal.module.scss';
 import { settingsIcon } from '@icons';
 
@@ -26,20 +37,55 @@ export const UserSettingsModal = ({
 	userData,
 }: UserSettingsModalProps) => {
 	const dispatch = useDispatch();
+	const {
+		availableMics,
+		availableCams,
+		selectedMic,
+		selectedCam,
+		noiseMode,
+		switchDevice,
+		applyNoiseMode,
+	} = usePeerContext();
+
+	// Обработчик смены медиа-устройств и шумодава
+	const handleMicChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+		switchDevice('audio', e.target.value, noiseMode);
+	};
+
+	const handleCamChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+		switchDevice('video', e.target.value, noiseMode);
+	};
+
+	const handleNoiseModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+		applyNoiseMode(e.target.value as TNoiseMode);
+	};
+
 	const [activeTab, setActiveTab] = useState<TUserSettingsTab>('profile');
 
+	// Валидация пароля
 	const {
 		inputValues: profileValues,
 		errors: profileErrors,
 		isValid: isProfileValid,
 		handleChange: handleProfileChange,
+		resetForm: resetProfileForm,
 	} = useFormWithValidation<TUpdateProfileData>(
 		{ avatar: '', bio: userData.bio || '' },
 		profileValidators
 	);
 
+	const [profileStatus, setProfileStatus] = useState<{
+		text: string;
+		type: 'error' | 'success';
+	} | null>(null);
 	const [isProfileLoading, setIsProfileLoading] = useState(false);
 
+	// Есть ли несохраненные изменения во вкладке профиля
+	const isProfileChanged =
+		profileValues.bio !== (userData.bio || '') ||
+		profileValues.avatar !== (userData.avatar || '');
+
+	// Валидация пароля
 	const {
 		inputValues: passwordValues,
 		errors: passwordErrors,
@@ -57,9 +103,10 @@ export const UserSettingsModal = ({
 	} | null>(null);
 	const [isSecurityLoading, setIsSecurityLoading] = useState(false);
 
-	// Обработчик сабмита формы обновления профиля
+	// Сохранение настроек профиля
 	const handleProfileSubmit = async () => {
 		if (!isProfileValid) return;
+		setProfileStatus(null);
 
 		try {
 			setIsProfileLoading(true);
@@ -70,14 +117,17 @@ export const UserSettingsModal = ({
 					bio: profileValues.bio,
 				})
 			).unwrap();
+
+			setProfileStatus({ text: 'Профиль успешно обновлен', type: 'success' });
 		} catch (err: unknown) {
 			console.error('Ошибка обновления профиля:', err);
+			setProfileStatus({ text: 'Не удалось обновить профиль', type: 'error' });
 		} finally {
 			setIsProfileLoading(false);
 		}
 	};
 
-	// Обработчик сабмита формы смены пароля
+	// Сохранение изменения пароля
 	const handlePasswordSubmit = async () => {
 		setPasswordStatus(null);
 
@@ -116,32 +166,27 @@ export const UserSettingsModal = ({
 		if (passwordStatus) setPasswordStatus(null);
 	};
 
-	// Обработчик очистки формы смены пароля
-	const handleClearPasswordForm = () => {
-		if (resetPasswordForm)
+	// Обработчик очистки форм
+	const handleClearForm = () => {
+		if (resetProfileForm) {
+			resetProfileForm({
+				avatar: '',
+				bio: userData.bio || '',
+			});
+
+			setProfileStatus(null);
+		}
+
+		if (resetPasswordForm) {
 			resetPasswordForm({
 				oldPassword: '',
 				newPassword: '',
 				confirmPassword: '',
 			});
 
-		setPasswordStatus(null);
-	};
-
-	// Обработчик для кнопки '"Ок"
-	const handleOkayClick = async () => {
-		if (activeTab === 'profile' && isProfileChanged) {
-			await handleProfileSubmit();
-			onClose();
-		} else {
-			onClose();
+			setPasswordStatus(null);
 		}
 	};
-
-	// Есть ли несохраненные изменения во вкладке профиля
-	const isProfileChanged =
-		profileValues.bio !== (userData.bio || '') ||
-		profileValues.avatar !== (userData.avatar || '');
 
 	return (
 		<Modal onClose={onClose}>
@@ -218,6 +263,28 @@ export const UserSettingsModal = ({
 								/>
 								<StatusMessage message={profileErrors.bio} type='error' />
 							</div>
+							<div className={styles.fieldGroup}>
+								<div className={styles.changePasswordActions}>
+									<Button
+										size='large'
+										onClick={handleProfileSubmit}
+										disabled={
+											!isProfileChanged || isProfileLoading || !isProfileValid
+										}>
+										{isProfileLoading ? 'сохранение...' : 'сохранить'}
+									</Button>
+									<Button
+										size='large'
+										onClick={handleClearForm}
+										disabled={isProfileLoading}>
+										сбросить
+									</Button>
+								</div>
+								<StatusMessage
+									message={profileStatus?.text}
+									type={profileStatus?.type}
+								/>
+							</div>
 						</div>
 					)}
 
@@ -276,7 +343,7 @@ export const UserSettingsModal = ({
 									</Button>
 									<Button
 										size='large'
-										onClick={handleClearPasswordForm}
+										onClick={handleClearForm}
 										disabled={isSecurityLoading}>
 										очистить
 									</Button>
@@ -289,35 +356,39 @@ export const UserSettingsModal = ({
 						</div>
 					)}
 
-					{/* TODO: Сделать вкладку медиа */}
-					{activeTab === 'audio' && <div></div>}
+					{/* Медиа */}
+					{activeTab === 'audio' && (
+						<div className={styles.contentSection}>
+							<Select
+								label='микрофон:'
+								options={availableMics}
+								value={selectedMic}
+								onChange={handleMicChange}
+								fallbackText='микрофоны не найдены'
+							/>
+							<Select
+								label='камера:'
+								options={availableCams}
+								value={selectedCam}
+								onChange={handleCamChange}
+								fallbackText='камеры не найдены'
+							/>
+							<Select
+								label='шумоподавление:'
+								options={NOISE_OPTIONS}
+								value={noiseMode}
+								onChange={handleNoiseModeChange}
+							/>
+						</div>
+					)}
 
 					{/* TODO: Сделать вкладку интеграций */}
 					{activeTab === 'integration' && <div></div>}
 				</div>
 
 				<footer className={styles.footer}>
-					<Button
-						size='medium'
-						onClick={handleOkayClick}
-						disabled={
-							isProfileLoading || (activeTab === 'profile' && !isProfileValid)
-						}>
-						ок
-					</Button>
-					<Button size='medium' onClick={onClose}>
-						отмена
-					</Button>
-					<Button
-						size='large'
-						onClick={handleProfileSubmit}
-						disabled={
-							activeTab !== 'profile' ||
-							!isProfileChanged ||
-							isProfileLoading ||
-							!isProfileValid
-						}>
-						применить
+					<Button onClick={onClose} style={{ flex: '1' }}>
+						закрыть настройки
 					</Button>
 				</footer>
 			</Window>
