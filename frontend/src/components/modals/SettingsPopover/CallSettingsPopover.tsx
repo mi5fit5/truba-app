@@ -10,30 +10,28 @@ import styles from './CallSettingsPopover.module.scss';
 
 interface CallSettingsPopoverProps {
 	isOpen: boolean;
-	onClose: () => void;
 	callStatus: TCallStatus;
 	remoteVolume: number;
-	onRemoteVolumeChange: (value: number) => void;
-	selectedNoiseMode: TNoiseMode;
-	onNoiseModeChange: (mode: TNoiseMode) => void;
 	isCamMuted: boolean;
+	onClose: () => void;
+	onRemoteVolumeChange: (value: number) => void;
 }
 
 export const CallSettingsPopover = ({
 	isOpen,
 	callStatus,
 	remoteVolume,
-	selectedNoiseMode,
 	isCamMuted,
 	onClose,
 	onRemoteVolumeChange,
-	onNoiseModeChange,
 }: CallSettingsPopoverProps) => {
 	const {
 		availableMics,
 		availableCams,
 		selectedMic,
 		selectedCam,
+		noiseMode,
+		applyNoiseMode,
 		switchDevice,
 	} = usePeerContext();
 
@@ -77,9 +75,7 @@ export const CallSettingsPopover = ({
 				label='микрофон:'
 				options={availableMics}
 				value={selectedMic}
-				onChange={(e) =>
-					switchDevice('audio', e.target.value, selectedNoiseMode)
-				}
+				onChange={(e) => switchDevice('audio', e.target.value, noiseMode)}
 				fallbackText='микрофоны не найдены'
 				disabled={isConnecting}
 			/>
@@ -87,17 +83,15 @@ export const CallSettingsPopover = ({
 				label='камера:'
 				options={availableCams}
 				value={selectedCam}
-				onChange={(e) =>
-					switchDevice('video', e.target.value, selectedNoiseMode)
-				}
+				onChange={(e) => switchDevice('video', e.target.value, noiseMode)}
 				fallbackText='Камеры не найдены'
 				disabled={isConnecting || isCamMuted}
 			/>
 			<Select
 				label='шумоподавление:'
 				options={NOISE_OPTIONS}
-				value={selectedNoiseMode}
-				onChange={(e) => onNoiseModeChange(e.target.value as TNoiseMode)}
+				value={noiseMode}
+				onChange={(e) => applyNoiseMode(e.target.value as TNoiseMode)}
 			/>
 			<Slider
 				label='громкость собеседника:'

@@ -1,7 +1,6 @@
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
 
-import type { TNoiseMode } from '@types';
 import { SocketContext, usePeerContext } from '@context';
 import { useDispatch, useSelector } from '@store';
 import {
@@ -58,7 +57,6 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		remoteStream,
 		isDummyVideoRef,
 		upgradeVideoTrack,
-		applyNoiseMode,
 		disableCamera,
 		toggleScreenShare,
 	} = usePeerContext();
@@ -75,8 +73,6 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 
 	// Стейты для настроек звонка
 	const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-	const [selectedNoiseMode, setSelectedNoiseMode] =
-		useState<TNoiseMode>('standard');
 	const [remoteVolume, setRemoteVolume] = useState(100);
 
 	// Стейт для фокуса участника
@@ -246,13 +242,6 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 			isDummyVideoRef,
 		]
 	);
-
-	// Изменение режима шумоподавления
-	const handleNoiseModeChange = (mode: string) => {
-		const newMode = mode as TNoiseMode;
-		setSelectedNoiseMode(newMode);
-		applyNoiseMode(newMode);
-	};
 
 	// Звуковые эффекты звонка
 	useEffect(() => {
@@ -505,8 +494,6 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								callStatus={callStatus}
 								remoteVolume={remoteVolume}
 								onRemoteVolumeChange={setRemoteVolume}
-								selectedNoiseMode={selectedNoiseMode}
-								onNoiseModeChange={handleNoiseModeChange}
 								isCamMuted={isCamMuted}
 							/>
 						</div>
