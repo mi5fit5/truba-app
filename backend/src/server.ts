@@ -45,10 +45,10 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Маршруты
+app.use('/api/auth/steam', steamRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/messages', messageRoutes);
-app.use('/api/auth/steam', steamRoutes);
 
 connectDB().then(() => {
 	server.listen(+PORT, () => {
