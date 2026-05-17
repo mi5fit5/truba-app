@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import clsx from 'clsx';
 
 import { NOISE_OPTIONS } from '@constants';
@@ -10,9 +10,14 @@ import type {
 	TNoiseMode,
 } from '@types';
 import { usePeerContext } from '@context';
-import { useDispatch } from '@store';
-import { changeUserPassword, updateUserProfile } from '@slices';
-import { useFormWithValidation } from '@hooks';
+import { useDispatch, useSelector } from '@store';
+import {
+	changeUserPassword,
+	fetchCurrentUser,
+	selectUserData,
+	updateUserProfile,
+} from '@slices';
+import { useFormWithValidation, useSteamProfile } from '@hooks';
 import { changePasswordValidators, profileValidators } from '@utils/validators';
 
 import {
@@ -23,9 +28,12 @@ import {
 	StatusMessage,
 	TextArea,
 	Select,
+	Text,
+	Avatar,
+	Preloader,
 } from '@ui';
 import styles from './UserSettingsModal.module.scss';
-import { settingsIcon } from '@icons';
+import { rejectIcon, settingsIcon } from '@icons';
 
 interface UserSettingsModalProps {
 	onClose: () => void;
@@ -50,6 +58,17 @@ export const UserSettingsModal = ({
 		applyNoiseMode,
 	} = usePeerContext();
 
+	const user = useSelector(selectUserData);
+
+	const {
+		steamProfile,
+		isLoadingSteam,
+		isUnlinking,
+		steamError,
+		fetchSteamProfile,
+		unlinkSteamProfile,
+	} = useSteamProfile();
+
 	// Обработчики смены медиа-устройств и шумодава
 	const handleMicChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
 		switchDevice('audio', e.target.value, noiseMode);
@@ -68,6 +87,13 @@ export const UserSettingsModal = ({
 	};
 
 	const [activeTab, setActiveTab] = useState<TUserSettingsTab>('profile');
+
+	// Подтягиваем профиль Steam при активной вкладке привязки
+	useEffect(() => {
+		if (activeTab === 'integration' && user?.steamId) {
+			fetchSteamProfile();
+		}
+	}, [activeTab, user?.steamId, fetchSteamProfile]);
 
 	// Валидация пароля
 	const {
@@ -192,6 +218,16 @@ export const UserSettingsModal = ({
 			});
 
 			setPasswordStatus(null);
+		}
+	};
+
+	// Обработчик отвязки Steam
+	const handleUnlinkSteam = async () => {
+		try {
+			await unlinkSteamProfile();
+			await dispatch(fetchCurrentUser()).unwrap();
+		} catch (err: unknown) {
+			console.error('Не удалось отвязать Steam аккаунт:', err);
 		}
 	};
 
@@ -396,10 +432,77 @@ export const UserSettingsModal = ({
 						</div>
 					)}
 
-					{/* TODO: Сделать вкладку интеграций */}
-					{activeTab === 'integration' && <div></div>}
-				</div>
+					{/* Привязка Steam */}
+					{activeTab === 'integration' && (
+						<div className={styles.contentSection}>
+							<div className={styles.fieldGroup}>
+								<Text as='span' size={22} align='left'>
+									привязка steam-аккаунта:
+								</Text>
+								<Button
+									onClick={() =>
+										(window.location.href =
+											'http://localhost:3000/api/auth/steam')
+									}
+									size='huge'
+									style={{ width: '100%', height: '50px' }}
+									disabled={!!user?.steamId}>
+									{user?.steamId
+										? 'аккаунт steam привязан'
+										: 'подключить steam'}
+								</Button>
+							</div>
+							<div className={styles.profilePanel}>
+								{user?.steamId ? (
+									<div className={styles.steamItemContainer}>
+										{isLoadingSteam ? (
+											<Preloader />
+										) : steamProfile ? (
+											<>
+												<div className={styles.steamInfoWrapper}>
+													<Avatar
+														src={steamProfile.avatar}
+														name={steamProfile.steamName}
+														size='medium'
+													/>
+													<div className={styles.steamUserInfo}>
+														<Text as='p' size={22} align='left'>
+															{steamProfile.steamName}
+														</Text>
+														<Text as='span' size={12} lowercase align='left'>
+															подключено
+														</Text>
+													</div>
+												</div>
 
+												<button
+													className={styles.rejectIcon}
+													disabled={isUnlinking}
+													title='Отвязать аккаунт Steam'
+													onClick={handleUnlinkSteam}>
+													<img src={rejectIcon} alt='Отвязать: крестик' />
+												</button>
+											</>
+										) : (
+											<StatusMessage
+												message={steamError || 'ошибка загрузки'}
+												type='error'
+											/>
+										)}
+									</div>
+								) : (
+									<Text
+										as='p'
+										size={14}
+										className={styles.emptyText}
+										align='center'>
+										нет подключенных аккаунтов
+									</Text>
+								)}
+							</div>
+						</div>
+					)}
+				</div>
 				<footer className={styles.footer}>
 					<Button onClick={onClose} style={{ flex: '1' }}>
 						закрыть настройки
