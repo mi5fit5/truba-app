@@ -19,6 +19,16 @@ export type TUser = {
 	avatar: string;
 	bio: string;
 	friends: string[];
+	steamId?: string;
+};
+
+// Тип для профиля Steam
+export type TSteamProfile = {
+	steamName: string;
+	profileUrl: string;
+	avatar: string;
+	onlineState: number;
+	currentGame?: string;
 };
 
 // Тип смены пароля

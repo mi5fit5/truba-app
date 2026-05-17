@@ -1,4 +1,4 @@
-import { api } from './index';
+import { api } from '@utils-api';
 
 // Объект с запросами
 export const chatRequests = {
