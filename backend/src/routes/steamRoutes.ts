@@ -1,7 +1,11 @@
 import express from 'express';
 import passport from 'passport';
 import { authMiddleware, AuthRequest } from '../middlewares/auth';
-import { getUserSteamProfileById } from '../controllers/steamController';
+import {
+	getSteamProfile,
+	getFriendSteamProfile,
+	unlinkSteam,
+} from '../controllers/steamController';
 
 const router = express.Router();
 
@@ -32,7 +36,11 @@ router.get(
 	}
 );
 
-// Получение данных профиля
-router.get('/:userId/steam', authMiddleware, getUserSteamProfileById);
+// Получение данных профиля (своего и друга)
+router.get('/profile', authMiddleware, getSteamProfile);
+router.get('/:userId/steam', authMiddleware, getFriendSteamProfile);
+
+// Отвязка Steam от аккаунта
+router.delete('/', authMiddleware, unlinkSteam);
 
 export default router;
