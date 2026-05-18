@@ -7,6 +7,7 @@ import {
 	sendFriendRequest,
 	getCurrentUser,
 	updateUserProfile,
+	removeFriend,
 } from '../controllers/userController';
 import { authMiddleware } from '../middlewares/auth';
 
@@ -19,6 +20,7 @@ router.get('/me', getCurrentUser);
 router.patch('/me', updateUserProfile);
 
 router.get('/friends', getCurrentUserFriends);
+router.delete('/friends/:id', removeFriend);
 
 router.get('/friend-requests', getIncomingFriendRequests);
 router.post('/friend-request/:id', sendFriendRequest);

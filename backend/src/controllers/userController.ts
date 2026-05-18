@@ -197,6 +197,34 @@ export const rejectFriendRequest = async (req: AuthRequest, res: Response) => {
 	}
 };
 
+export const removeFriend = async (req: AuthRequest, res: Response) => {
+	try {
+		if (!req.user) {
+			return res.status(401).json({ message: 'Вы не авторизованы' });
+		}
+
+		const userId = req.user._id;
+		const friendToRemove = req.params.id;
+
+		// Убираем друга из массива текущего пользователя
+		const currentUserUpdate = User.findByIdAndUpdate(userId, {
+			$pull: { friends: friendToRemove },
+		});
+
+		// И наоборот
+		const friendUpdate = User.findByIdAndUpdate(friendToRemove, {
+			$pull: { friends: userId },
+		});
+
+		await Promise.all([currentUserUpdate, friendUpdate]);
+
+		res.status(200).json({ message: 'Пользователь успешно удален из друзей' });
+	} catch (err: unknown) {
+		console.error('Ошибка при удалении из друзей:', err);
+		return res.status(500).json({ message: 'Ошибка сервера' });
+	}
+};
+
 // Получение списка входящих заявок в друзья
 export const getIncomingFriendRequests = async (
 	req: AuthRequest,
@@ -222,6 +250,7 @@ export const getIncomingFriendRequests = async (
 	}
 };
 
+// Обновление информации из профиля
 export const updateUserProfile = async (req: AuthRequest, res: Response) => {
 	try {
 		const { avatar, bio } = req.body;
