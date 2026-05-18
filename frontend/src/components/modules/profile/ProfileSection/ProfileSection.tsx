@@ -2,22 +2,35 @@ import { useState } from 'react';
 
 import { useDispatch, useSelector } from '@store';
 import { logoutUser, selectUserData } from '@slices';
+import type { TPopoverUserData } from '@types';
+
+import { UserPopover, UserSettingsModal } from '@modals';
 
 import { Button, Text, Avatar } from '@ui';
 
 import styles from './ProfileSection.module.scss';
 import { settingsIcon, logoutIcon } from '@icons';
 import { defaultAvatar } from '@images';
-import { UserSettingsModal } from '@modals';
-
 export const ProfileSection = () => {
 	const dispatch = useDispatch();
 	const userData = useSelector(selectUserData);
 
 	const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+	const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
 	const username = userData?.username || 'nickname';
 	const avatarUrl = userData?.avatar || defaultAvatar;
+
+	const popoverData: TPopoverUserData | null = userData
+		? {
+				_id: userData._id,
+				username: userData.username,
+				avatar: userData.avatar,
+				bio: userData.bio,
+				isOnline: true,
+				currentGame: undefined,
+			}
+		: null;
 
 	const handleLogout = () => {
 		dispatch(logoutUser());
@@ -26,17 +39,25 @@ export const ProfileSection = () => {
 	return (
 		<>
 			<div className={styles.container}>
-				<div className={styles.userInfo}>
-					<Avatar src={avatarUrl} name={username} size='medium' />
-					<div className={styles.textWrapper}>
-						<Text as='p' size={22} align='left' className={styles.username}>
-							{username}
-						</Text>
-						<div className={styles.statusContainer}>
-							<div className={styles.status}></div>
-							<Text as='p' size={12} align='left'>
-								онлайн
+				<div
+					className={styles.userInfoWrapper}
+					onClick={(e) => {
+						e.stopPropagation();
+						setIsPopoverOpen(!isPopoverOpen);
+					}}
+					onMouseDown={(e) => e.stopPropagation()}>
+					<div className={styles.userInfo} title='Посмотреть профиль'>
+						<Avatar src={avatarUrl} name={username} size='medium' />
+						<div className={styles.textWrapper}>
+							<Text as='p' size={22} align='left' className={styles.username}>
+								{username}
 							</Text>
+							<div className={styles.statusContainer}>
+								<div className={styles.status}></div>
+								<Text as='p' size={12} align='left'>
+									онлайн
+								</Text>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -51,6 +72,27 @@ export const ProfileSection = () => {
 						<img src={logoutIcon} alt='Иконка выхода из приложения' />
 					</Button>
 				</div>
+
+				{popoverData && (
+					<div className={styles.popoverCenterTop}>
+						<UserPopover
+							isOpen={isPopoverOpen}
+							user={popoverData}
+							isSelf={true}
+							onClose={() => setIsPopoverOpen(false)}>
+							<Button
+								onClick={(e) => {
+									e.stopPropagation();
+									setIsPopoverOpen(false);
+									setIsSettingsOpen(true);
+								}}
+								style={{ flex: '1' }}
+								title='Редактировать профиль'>
+								редактировать профиль
+							</Button>
+						</UserPopover>
+					</div>
+				)}
 			</div>
 
 			{isSettingsOpen && userData && (

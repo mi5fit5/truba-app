@@ -2,13 +2,14 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	// border: 2px solid;
-	// border-color: #fff #262626 #262626 #fff;
-	// padding: 10px;
-	// box-shadow:
-	// 	inset 1px 1px #fff,
-	// 	inset -2px -2px #7e7e7e;
-	// background-color: #c0c0c0;
+}
+
+.friendInfoWrapper {
+	position: relative;
+	cursor: var(--cursor-pointer, pointer);
+	user-select: none;
+	display: flex;
+	align-items: center;
 }
 
 .friendInfo {
@@ -65,4 +66,12 @@
 
 .searchBlock {
 	width: 260px;
+}
+
+.popoverCenterBottom {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 2;
+	cursor: default;
 }

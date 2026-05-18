@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { TCallType, TFriend } from '@types';
+import type { TCallType, TFriend, TPopoverUserData } from '@types';
 import { useDispatch, useSelector } from '@store';
 import {
 	fetchChatHistory,
@@ -13,6 +13,7 @@ import { Avatar, Text, Button, ActionInput } from '@ui';
 
 import styles from './ChatHeader.module.scss';
 import { phoneCallIcon, videoCallIcon, findMessageIcon } from '@icons';
+import { UserPopover } from '@modals';
 
 interface ChatHeaderProps {
 	friend: TFriend;
@@ -22,9 +23,20 @@ export const ChatHeader = ({ friend }: ChatHeaderProps) => {
 	const dispatch = useDispatch();
 	const onlineUsers = useSelector(selectOnlineUsers);
 	const { callToFriend } = usePeerContext();
+
 	const [searchQuery, setSearchQuery] = useState('');
+	const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
 	const isOnline = onlineUsers.includes(friend._id);
+
+	const popoverData: TPopoverUserData = {
+		_id: friend._id,
+		username: friend.username,
+		avatar: friend.avatar,
+		bio: friend.bio,
+		isOnline: isOnline,
+		currentGame: undefined,
+	};
 
 	// Обработка изменений инпута для поиска сообщений
 	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,25 +71,53 @@ export const ChatHeader = ({ friend }: ChatHeaderProps) => {
 
 	return (
 		<div className={styles.container}>
-			<div className={styles.friendInfo}>
-				<Avatar
-					src={friend.avatar || ''}
-					name={friend.username}
-					size='medium'
-				/>
-				<div className={styles.textWrapper}>
-					<Text as='p' size={22} align='left' className={styles.username}>
-						{friend.username}
-					</Text>
-					<div className={styles.statusContainer}>
-						<div
-							className={`${styles.status} ${isOnline ? styles.online : styles.offline}`}></div>
-						<Text as='p' size={12} align='left'>
-							{isOnline ? 'онлайн' : 'офлайн'}
+			<div
+				className={styles.friendInfoWrapper}
+				onClick={(e) => {
+					e.stopPropagation();
+					setIsPopoverOpen(!isPopoverOpen);
+				}}
+				onMouseDown={(e) => e.stopPropagation()}>
+				<div className={styles.friendInfo} title='Посмотреть профиль'>
+					<Avatar
+						src={friend.avatar || ''}
+						name={friend.username}
+						size='medium'
+					/>
+					<div className={styles.textWrapper}>
+						<Text as='p' size={22} align='left' className={styles.username}>
+							{friend.username}
 						</Text>
+						<div className={styles.statusContainer}>
+							<div
+								className={`${styles.status} ${isOnline ? styles.online : styles.offline}`}></div>
+							<Text as='p' size={12} align='left'>
+								{isOnline ? 'онлайн' : 'офлайн'}
+							</Text>
+						</div>
 					</div>
 				</div>
+
+				<div
+					className={styles.popoverCenterBottom}
+					onClick={(e) => e.stopPropagation()}>
+					<UserPopover
+						isOpen={isPopoverOpen}
+						user={popoverData}
+						isSelf={false}
+						onClose={() => setIsPopoverOpen(false)}>
+						<Button
+							title='Удалить из друзей'
+							style={{ flex: '1', backgroundColor: '#ffcccc' }}
+							onClick={(e) => {
+								e.stopPropagation();
+							}}>
+							удалить из друзей
+						</Button>
+					</UserPopover>
+				</div>
 			</div>
+
 			<div className={styles.chatTools}>
 				<div className={styles.callButtons}>
 					<Button

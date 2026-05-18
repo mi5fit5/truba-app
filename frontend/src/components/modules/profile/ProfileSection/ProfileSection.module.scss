@@ -1,4 +1,5 @@
 .container {
+	position: relative;
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
@@ -9,6 +10,12 @@
 		inset 1px 1px #fff,
 		inset -2px -2px #7e7e7e;
 	background-color: #c0c0c0;
+}
+
+.userInfoWrapper {
+	position: relative;
+	cursor: pointer;
+	user-select: none;
 }
 
 .userInfo {
@@ -48,4 +55,13 @@
 	display: flex;
 	flex-shrink: 0;
 	gap: 6px;
+}
+
+.popoverCenterTop {
+	position: absolute;
+	bottom: calc(100% + 10px);
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 2;
+	cursor: default;
 }
