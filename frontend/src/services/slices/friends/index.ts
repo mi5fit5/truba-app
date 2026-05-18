@@ -117,6 +117,20 @@ export const rejectRequest = createAsyncThunk<
 	}
 );
 
+export const removeFriend = createAsyncThunk<
+	string,
+	string,
+	{ rejectValue: string }
+>('friends/removeFriend', async (friendId: string, { rejectWithValue }) => {
+	try {
+		await friendsRequests.removeFriend(friendId);
+
+		return friendId;
+	} catch (err: unknown) {
+		return rejectWithValue(getErrorMessage(err));
+	}
+});
+
 // Слайс
 const friendsSlice = createSlice({
 	name: 'friends',
@@ -203,6 +217,22 @@ const friendsSlice = createSlice({
 			})
 			.addCase(rejectRequest.fulfilled, (state) => {
 				state.isActionLoading = false;
+			})
+
+			// Удаление из друзей
+			.addCase(removeFriend.pending, (state) => {
+				state.isActionLoading = true;
+				state.error = null;
+			})
+			.addCase(removeFriend.rejected, (state, action) => {
+				state.isActionLoading = false;
+				state.error = action.payload || 'Ошибка при удалении из друзей';
+			})
+			.addCase(removeFriend.fulfilled, (state, action) => {
+				state.isActionLoading = false;
+				state.friendList = state.friendList.filter(
+					(friend) => friend._id !== action.payload
+				);
 			});
 	},
 });

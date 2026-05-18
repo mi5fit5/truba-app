@@ -6,10 +6,10 @@
 
 .friendInfoWrapper {
 	position: relative;
-	cursor: var(--cursor-pointer, pointer);
-	user-select: none;
 	display: flex;
 	align-items: center;
+	cursor: var(--cursor-pointer, pointer);
+	user-select: none;
 }
 
 .friendInfo {

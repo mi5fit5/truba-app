@@ -36,6 +36,7 @@ export {
 	sendFriendRequest,
 	acceptRequest,
 	rejectRequest,
+	removeFriend,
 	setOnlineUsers,
 	selectFriends,
 	selectOnlineUsers,

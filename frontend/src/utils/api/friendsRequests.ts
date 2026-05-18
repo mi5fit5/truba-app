@@ -19,4 +19,7 @@ export const friendsRequests = {
 	// Отклонить запрос дружбы
 	rejectRequest: (requestId: string) =>
 		api.delete(`/users/friend-request/${requestId}`),
+
+	// Удалить пользователя из друзей
+	removeFriend: (friendId: string) => api.delete(`/users/friends/${friendId}`),
 };

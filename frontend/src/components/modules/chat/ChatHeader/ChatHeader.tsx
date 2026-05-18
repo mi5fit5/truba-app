@@ -5,6 +5,7 @@ import {
 	fetchChatHistory,
 	fetchSearchedMessages,
 	initiateCall,
+	removeFriend,
 	selectOnlineUsers,
 } from '@slices';
 import { usePeerContext } from '@context';
@@ -63,10 +64,16 @@ export const ChatHeader = ({ friend }: ChatHeaderProps) => {
 		avatar: friend.avatar,
 	};
 
-	// Обработка звнока
+	// Обработка звонка
 	const handleCall = (type: TCallType) => {
 		dispatch(initiateCall({ participant: participantData, type }));
 		callToFriend(friend._id, type);
+	};
+
+	// Удаление из друзей
+	const handleRemoveFriend = () => {
+		dispatch(removeFriend(friend._id));
+		setIsPopoverOpen(false);
 	};
 
 	return (
@@ -109,9 +116,7 @@ export const ChatHeader = ({ friend }: ChatHeaderProps) => {
 						<Button
 							title='Удалить из друзей'
 							style={{ flex: '1', backgroundColor: '#ffcccc' }}
-							onClick={(e) => {
-								e.stopPropagation();
-							}}>
+							onClick={handleRemoveFriend}>
 							удалить из друзей
 						</Button>
 					</UserPopover>
