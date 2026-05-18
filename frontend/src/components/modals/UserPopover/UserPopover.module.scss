@@ -1,0 +1,150 @@
+.popoverWrapper {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	width: 280px;
+	border: 2px solid;
+	border-color: #fff #262626 #262626 #fff;
+	padding: 12px;
+	box-shadow:
+		inset 1px 1px #fff,
+		inset -2px -2px #7e7e7e;
+	background-color: #c0c0c0;
+	cursor: default;
+}
+
+.sectionContainer {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.sectionTitle {
+	font-weight: bold;
+	letter-spacing: 2px;
+}
+
+.profilePanel {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	width: 100%;
+	min-height: 74px;
+	border: 2px solid;
+	border-color: #262626 #f0f0f0 #f0f0f0 #262626;
+	padding: 6px;
+	box-shadow:
+		inset 1px 1px #262626,
+		inset -2px -2px #c3c3c3;
+	background-color: #fff;
+}
+
+.staticItemContainer {
+	display: flex;
+	align-items: center;
+	padding: 4px;
+}
+
+.interactiveItemContainer {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 4px;
+	color: inherit;
+	text-decoration: none;
+	transition: background 0.2s ease;
+	cursor: var(--cursor-pointer, pointer);
+
+	&:focus {
+		outline: none;
+	}
+
+	&:focus-within,
+	&:hover {
+		border-color: transparent;
+		background: linear-gradient(
+			90deg,
+			rgba(2, 0, 127, 1) 0%,
+			rgba(9, 73, 172, 1) 50%,
+			rgba(16, 130, 207, 1) 100%
+		);
+
+		* {
+			color: #fff !important;
+		}
+	}
+}
+
+.infoWrapper {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	user-select: none;
+}
+
+.infoText {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 2px;
+
+	p {
+		max-width: 170px;
+		margin: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+}
+
+.username {
+	font-weight: bold;
+}
+
+.statusWrapper {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.statusIndicator {
+	width: 8px;
+	border: 1px solid #000;
+	aspect-ratio: 1;
+}
+
+.online {
+	background-color: #33ff00;
+}
+
+.offline {
+	background-color: #ff6b6b;
+}
+
+.bioPanel {
+	justify-content: flex-start;
+	max-height: 100px;
+	overflow-y: auto;
+}
+
+.bioText {
+	font-style: italic;
+}
+
+.emptyText {
+	margin: 0;
+	color: #888;
+	user-select: none;
+}
+
+.loaderWrapper {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 10px 0;
+}
+
+.actionsSection {
+	display: flex;
+	width: 100%;
+}

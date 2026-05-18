@@ -31,6 +31,15 @@ export type TSteamProfile = {
 	currentGame?: string;
 };
 
+// Тип для данных внутри поповера пользователя
+export type TPopoverUserData = Pick<
+	TUser,
+	'_id' | 'username' | 'avatar' | 'bio'
+> & {
+	isOnline: boolean;
+	currentGame?: string | null;
+};
+
 // Тип смены пароля
 export type TChangePasswordData = {
 	oldPassword: string;

@@ -6,7 +6,7 @@ import { defaultAvatar } from '@images';
 interface AvatarProps {
 	src?: string;
 	name: string;
-	size?: 'large' | 'medium';
+	size?: 'huge' | 'large' | 'medium';
 	className?: string;
 }
 

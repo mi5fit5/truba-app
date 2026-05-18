@@ -12,7 +12,7 @@ import { deleteCookie, setCookie } from '@utils/cookie';
 import { getErrorMessage } from '@utils/getErrorMessage';
 
 // Типизация стейта
-type TUserState = {
+export type TUserState = {
 	data: TUser | null;
 	isInit: boolean; // Проверка инициализации
 	isAuth: boolean; // Проверка авторизации
