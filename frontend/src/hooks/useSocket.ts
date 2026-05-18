@@ -13,6 +13,8 @@ import {
 	updatePeerMedia,
 	selectActiveFriendId,
 	selectIsChatOpen,
+	setCurrentUserGameStatus,
+	setFriendGameStatus,
 } from '@slices';
 import { playSystemSound } from '@utils/audioUtils';
 
@@ -25,6 +27,8 @@ export const useSocket = () => {
 	const callStatus = useSelector(selectCallStatus);
 	const activeFriendId = useSelector(selectActiveFriendId);
 	const isCallChatOpen = useSelector(selectIsChatOpen);
+
+	const currentUserId = currentUser?._id;
 
 	const statusRef = useRef(callStatus);
 	const activeFriendIdRef = useRef(activeFriendId);
@@ -41,12 +45,12 @@ export const useSocket = () => {
 	const [socket, setSocket] = useState<Socket | null>(null);
 
 	useEffect(() => {
-		if (!currentUser) return;
+		if (!currentUserId) return;
 
 		// Устанавливаем связь с сервером
 		const newSocket = io('http://localhost:3000', {
 			query: {
-				userId: currentUser._id, // Передаём id пользователя
+				userId: currentUserId, // Передаём id пользователя
 			},
 		});
 
@@ -59,13 +63,25 @@ export const useSocket = () => {
 			dispatch(setOnlineUsers(users));
 		});
 
+		// Изменения игрового статуса
+		newSocket.on(
+			'gameStatusChanged',
+			(data: { userId: string; currentGame: string | null }) => {
+				if (currentUserId === data.userId) {
+					dispatch(setCurrentUserGameStatus(data.currentGame));
+				} else {
+					dispatch(setFriendGameStatus(data));
+				}
+			}
+		);
+
 		// Новые сообщения
 		newSocket.on('newMessage', (message) => {
 			dispatch(addMessage(message)); // Добавляем сообщение в историю чата без перезагрузки
 
 			// Звук нового сообщения (если не открыт чат с другом / чат в модалке активного звонка)
 			const isFromActiveFriend = message.sender === activeFriendIdRef.current;
-			const isCurrentUser = message.sender === currentUser._id;
+			const isCurrentUser = message.sender === currentUserId;
 			const isModalActive =
 				statusRef.current === 'connected' || statusRef.current === 'calling';
 
@@ -106,7 +122,7 @@ export const useSocket = () => {
 			newSocket.close(); // Закрываем соединение
 			setSocket(null); // Очищаем стейт при размонтировании
 		};
-	}, [currentUser, dispatch]);
+	}, [currentUserId, dispatch]);
 
 	return socket; // Возвращаем стейт
 };

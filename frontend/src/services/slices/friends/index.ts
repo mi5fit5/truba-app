@@ -139,6 +139,17 @@ const friendsSlice = createSlice({
 		setOnlineUsers: (state, action: PayloadAction<string[]>) => {
 			state.onlineUsers = action.payload;
 		},
+
+		// Обновление статуса игры у друга
+		setFriendGameStatus: (
+			state,
+			action: PayloadAction<{ userId: string; currentGame: string | null }>
+		) => {
+			const { userId, currentGame } = action.payload;
+			const friend = state.friendList.find((f) => f._id === userId);
+
+			if (friend) friend.currentGame = currentGame;
+		},
 	},
 	selectors: {
 		// Селекторы
@@ -237,7 +248,7 @@ const friendsSlice = createSlice({
 	},
 });
 
-export const { setOnlineUsers } = friendsSlice.actions;
+export const { setOnlineUsers, setFriendGameStatus } = friendsSlice.actions;
 export const {
 	selectFriends,
 	selectOnlineUsers,

@@ -20,6 +20,7 @@ export type TUser = {
 	bio: string;
 	friends: string[];
 	steamId?: string;
+	currentGame?: string | null;
 };
 
 // Тип для профиля Steam

@@ -1,4 +1,8 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {
+	createSlice,
+	createAsyncThunk,
+	type PayloadAction,
+} from '@reduxjs/toolkit';
 
 import type {
 	TChangePasswordData,
@@ -134,6 +138,13 @@ const userSlice = createSlice({
 		clearAuthError: (state) => {
 			state.authError = null;
 		},
+
+		// Обновление статуса игры у текущего пользователя
+		setCurrentUserGameStatus: (state, action: PayloadAction<string | null>) => {
+			if (state.data) {
+				state.data.currentGame = action.payload;
+			}
+		},
 	},
 	selectors: {
 		// Селекторы
@@ -194,7 +205,7 @@ const userSlice = createSlice({
 	},
 });
 
-export const { clearAuthError } = userSlice.actions;
+export const { clearAuthError, setCurrentUserGameStatus } = userSlice.actions;
 
 export const {
 	selectUserData,
