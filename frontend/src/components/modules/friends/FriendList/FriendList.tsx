@@ -45,6 +45,7 @@ export const FriendList = ({ friends }: FriendListProps) => {
 								username={friend.username}
 								avatar={friend.avatar}
 								isOnline={isFriendOnline}
+								currentGame={friend.currentGame}
 								isSelected={activeFriendId === friend._id}
 								hasUnread={hasUnreadMessages}
 								onClick={() => dispatch(setActiveFriendId(friend._id))}

@@ -81,7 +81,7 @@ export const UserPopover = ({
 											user.isOnline ? styles.online : styles.offline
 										)}
 									/>
-									<Text as='span' size={12} lowercase align='left'>
+									<Text as='span' size={12} align='left'>
 										{user.currentGame
 											? `играет в ${user.currentGame}`
 											: user.isOnline

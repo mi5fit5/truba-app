@@ -36,7 +36,7 @@ export const ChatHeader = ({ friend }: ChatHeaderProps) => {
 		avatar: friend.avatar,
 		bio: friend.bio,
 		isOnline: isOnline,
-		currentGame: undefined,
+		currentGame: friend.currentGame,
 	};
 
 	// Обработка изменений инпута для поиска сообщений
@@ -98,8 +98,16 @@ export const ChatHeader = ({ friend }: ChatHeaderProps) => {
 						<div className={styles.statusContainer}>
 							<div
 								className={`${styles.status} ${isOnline ? styles.online : styles.offline}`}></div>
-							<Text as='p' size={12} align='left'>
-								{isOnline ? 'онлайн' : 'офлайн'}
+							<Text
+								as='p'
+								size={12}
+								align='left'
+								className={friend.currentGame ? styles.playingText : ''}>
+								{friend.currentGame
+									? `играет в ${friend.currentGame}`
+									: isOnline
+										? 'онлайн'
+										: 'офлайн'}
 							</Text>
 						</div>
 					</div>

@@ -28,7 +28,7 @@ export const ProfileSection = () => {
 				avatar: userData.avatar,
 				bio: userData.bio,
 				isOnline: true,
-				currentGame: undefined,
+				currentGame: userData.currentGame,
 			}
 		: null;
 
@@ -54,8 +54,12 @@ export const ProfileSection = () => {
 							</Text>
 							<div className={styles.statusContainer}>
 								<div className={styles.status}></div>
-								<Text as='p' size={12} align='left'>
-									онлайн
+								<Text
+									as='p'
+									size={12}
+									align='left'
+									className={userData?.currentGame ? styles.playingText : ''}>
+									{userData?.currentGame ? `${userData.currentGame}` : 'онлайн'}
 								</Text>
 							</div>
 						</div>

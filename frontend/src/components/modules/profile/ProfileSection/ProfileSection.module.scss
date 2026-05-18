@@ -51,6 +51,13 @@
 	}
 }
 
+.playingText {
+	max-width: 70px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
 .profileActions {
 	display: flex;
 	flex-shrink: 0;

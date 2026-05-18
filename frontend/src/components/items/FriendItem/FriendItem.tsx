@@ -10,6 +10,7 @@ interface FriendItemProps {
 	username: string;
 	avatar: string;
 	isOnline: boolean;
+	currentGame?: string | null;
 	isSelected?: boolean;
 	hasUnread?: boolean;
 	onClick?: () => void;
@@ -19,6 +20,7 @@ export const FriendItem = ({
 	username,
 	avatar,
 	isOnline,
+	currentGame,
 	isSelected,
 	hasUnread,
 	onClick,
@@ -47,8 +49,16 @@ export const FriendItem = ({
 							isOnline ? styles.online : styles.offline
 						)}
 					/>
-					<Text as='span' size={12} lowercase align='left'>
-						{isOnline ? 'онлайн' : 'офлайн'}
+					<Text
+						as='span'
+						size={12}
+						align='left'
+						className={currentGame ? styles.playingText : ''}>
+						{currentGame
+							? `играет в ${currentGame}`
+							: isOnline
+								? 'онлайн'
+								: 'офлайн'}
 					</Text>
 				</div>
 			</div>

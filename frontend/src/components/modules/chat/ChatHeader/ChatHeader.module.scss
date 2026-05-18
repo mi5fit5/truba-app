@@ -52,6 +52,13 @@
 	}
 }
 
+.playingText {
+	max-width: 200px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
 .chatTools {
 	display: flex;
 	flex-shrink: 0;

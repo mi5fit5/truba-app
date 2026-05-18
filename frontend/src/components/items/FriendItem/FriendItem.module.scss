@@ -62,9 +62,16 @@
 	background-color: #ff6b6b;
 }
 
+.playingText {
+	max-width: 140px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
 .unreadIcon {
-	margin-left: auto;
 	margin-right: 4px;
+	margin-left: auto;
 	animation: blink 1s step-end infinite;
 
 	img {
