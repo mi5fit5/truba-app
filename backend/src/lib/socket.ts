@@ -5,6 +5,7 @@ import { Server } from 'socket.io';
 import User from '../models/User';
 import Message from '../models/Message';
 import { formatCallDuration } from '../utils/dateUtils';
+import { startSteamPolling } from './steamPolling';
 
 // Структура активных звонков
 interface ActiveCall {
@@ -173,5 +174,8 @@ io.on('connection', (socket) => {
 		io.emit('getOnlineUsers', Object.keys(userSocketMap));
 	});
 });
+
+// Запуск поллинга Steam
+startSteamPolling(io, () => Object.keys(userSocketMap));
 
 export { app, io, server };
