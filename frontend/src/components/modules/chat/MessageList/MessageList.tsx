@@ -90,6 +90,8 @@ export const MessageList = ({
 
 											<MessageItem
 												type={type}
+												messageCategory={msg.type || 'text'}
+												gameData={msg.gameData}
 												timestamp={formatMessageDate(msg.createdAt)}
 												senderName={senderName}
 												text={msg.text}

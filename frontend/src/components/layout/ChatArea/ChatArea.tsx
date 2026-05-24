@@ -11,14 +11,13 @@ import {
 	selectUserData,
 } from '@slices';
 
-import { ChatHeader, MessageList, MessageInput } from '@components';
+import { ChatHeader, MessageList, ChatFooter } from '@components';
 import { Text } from '@ui';
 
 import styles from './ChatArea.module.scss';
 
 export const ChatArea = () => {
 	const dispatch = useDispatch();
-
 	const activeFriendId = useSelector(selectActiveFriendId);
 	const friends = useSelector(selectFriends);
 	const activeFriend = friends.find((friend) => friend._id === activeFriendId);
@@ -61,7 +60,7 @@ export const ChatArea = () => {
 				</div>
 			</div>
 			<div className={styles.panel}>
-				<MessageInput friendId={activeFriend._id} />
+				<ChatFooter friendId={activeFriend._id} />
 			</div>
 		</div>
 	);

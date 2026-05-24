@@ -1,12 +1,19 @@
 .container {
 	display: flex;
+	flex-direction: column;
 	align-items: flex-start;
-	gap: 2px;
+	gap: 6px;
 	padding: 3px 2px;
 	font-size: 16px;
 	line-height: auto;
 	text-align: left;
 	background-color: #000;
+}
+
+.messageHeader {
+	display: flex;
+	align-items: flex-start;
+	gap: 2px;
 }
 
 .icon {
@@ -35,4 +42,85 @@
 
 .text {
 	color: #fff;
+}
+
+.inviteCard {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	width: 100%;
+	padding: 4px;
+	background: linear-gradient(
+		90deg,
+		rgba(2, 0, 127, 1) 0%,
+		rgba(9, 73, 172, 1) 50%,
+		rgba(16, 130, 207, 1) 100%
+	);
+
+	* {
+		color: #fff;
+	}
+}
+
+.inviteInfoWrapper {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	user-select: none;
+}
+
+.inviteText {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 2px;
+}
+
+.gameTitle {
+	max-width: 250px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.inviteActions {
+	display: flex;
+	padding-right: 8px;
+}
+
+.acceptButton {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin: 0;
+	border: none;
+	padding: 0;
+	outline: none;
+	background: transparent;
+	cursor: var(--cursor-pointer);
+
+	img {
+		width: 20px;
+		aspect-ratio: 1;
+	}
+
+	&:focus-visible {
+		border-radius: 50%;
+		outline: 2px dotted #fff;
+		outline-offset: 1px;
+	}
+
+	&:hover:not(:disabled) {
+		transform: scale(1.05);
+	}
+
+	&:active:not(:disabled) {
+		transform: scale(0.95);
+	}
+
+	&:disabled {
+		opacity: 1;
+		filter: grayscale(100%);
+		cursor: not-allowed;
+	}
 }

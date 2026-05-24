@@ -21,7 +21,7 @@
 		aspect-ratio: 1;
 	}
 
-	&:hover {
+	&:not(:disabled):hover {
 		background-color: #e4e4e4;
 	}
 

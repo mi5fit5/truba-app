@@ -19,7 +19,7 @@ import {
 	selectIsScreenSharing,
 } from '@slices';
 
-import { MessageList, MessageInput } from '@components';
+import { MessageList, ChatFooter } from '@components';
 import { CallSettingsPopover } from '@modals';
 import { Avatar, Button, Modal, Preloader, Text, Window } from '@ui';
 
@@ -524,7 +524,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 							</div>
 						</div>
 						<div className={styles.panel}>
-							<MessageInput friendId={participant._id} />
+							<ChatFooter friendId={participant._id} buttonSize='medium' />
 						</div>
 					</div>
 				)}

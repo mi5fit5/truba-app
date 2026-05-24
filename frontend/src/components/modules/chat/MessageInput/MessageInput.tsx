@@ -6,9 +6,13 @@ import { ActionInput } from '@ui';
 
 interface MessageInputProps {
 	friendId: string;
+	buttonSize?: 'small' | 'medium' | 'large';
 }
 
-export const MessageInput = ({ friendId }: MessageInputProps) => {
+export const MessageInput = ({
+	friendId,
+	buttonSize = 'large',
+}: MessageInputProps) => {
 	const dispatch = useDispatch();
 	const [message, setMessage] = useState('');
 
@@ -31,7 +35,7 @@ export const MessageInput = ({ friendId }: MessageInputProps) => {
 			onChange={handleChange}
 			placeholder='введите сообщение...'
 			buttonTitle='Отправить сообщение'
-			buttonSize='large'
+			buttonSize={buttonSize}
 			buttonText={isSending ? 'отправка...' : 'отправить'}
 			onAction={handleSend}
 			disabled={isSending}

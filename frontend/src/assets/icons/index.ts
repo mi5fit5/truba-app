@@ -3,6 +3,7 @@ import addFriendIcon from './add-friend_icon.png';
 import authIcon from './auth_icon.png';
 import findMessageIcon from './find-message_icon.png';
 import friendMessageIcon from './friend-message_icon.png';
+import gameInviteIcon from './game_invite-icon.png';
 import logoutIcon from './logout_icon.png';
 import networkModalIcon from './network-modal_icon.png';
 import newMessageIcon from './new-message_icon.png';
@@ -26,6 +27,7 @@ export {
 	authIcon,
 	findMessageIcon,
 	friendMessageIcon,
+	gameInviteIcon,
 	logoutIcon,
 	networkModalIcon,
 	newMessageIcon,

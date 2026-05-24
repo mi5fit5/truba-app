@@ -3,6 +3,7 @@ export * from './App';
 export * from './layout/AppLayout';
 export * from './layout/ChatArea';
 export * from './modules/chat/ChatHeader';
+export * from './modules/chat/ChatFooter';
 export * from './modules/friends/FriendList';
 export * from './modules/chat/MessageInput';
 export * from './modules/chat/MessageList';
