@@ -140,9 +140,20 @@ const userSlice = createSlice({
 		},
 
 		// Обновление статуса игры у текущего пользователя
-		setCurrentUserGameStatus: (state, action: PayloadAction<string | null>) => {
+		setCurrentUserGameStatus: (
+			state,
+			action: PayloadAction<{
+				currentGame: string | null;
+				appId: string | null;
+				lobbyId: string | null;
+				gameAvatarUrl: string | null;
+			}>
+		) => {
 			if (state.data) {
-				state.data.currentGame = action.payload;
+				state.data.currentGame = action.payload.currentGame;
+				state.data.appId = action.payload.appId;
+				state.data.lobbyId = action.payload.lobbyId;
+				state.data.gameAvatarUrl = action.payload.gameAvatarUrl;
 			}
 		},
 	},

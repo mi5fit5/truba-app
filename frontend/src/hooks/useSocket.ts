@@ -66,9 +66,22 @@ export const useSocket = () => {
 		// Изменения игрового статуса
 		newSocket.on(
 			'gameStatusChanged',
-			(data: { userId: string; currentGame: string | null }) => {
+			(data: {
+				userId: string;
+				currentGame: string | null;
+				appId: string | null;
+				lobbyId: string | null;
+				gameAvatarUrl: string | null;
+			}) => {
 				if (currentUserId === data.userId) {
-					dispatch(setCurrentUserGameStatus(data.currentGame));
+					dispatch(
+						setCurrentUserGameStatus({
+							currentGame: data.currentGame,
+							appId: data.appId,
+							lobbyId: data.lobbyId,
+							gameAvatarUrl: data.gameAvatarUrl,
+						})
+					);
 				} else {
 					dispatch(setFriendGameStatus(data));
 				}

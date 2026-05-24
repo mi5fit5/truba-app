@@ -21,6 +21,9 @@ export type TUser = {
 	friends: string[];
 	steamId?: string;
 	currentGame?: string | null;
+	appId?: string | null;
+	lobbyId?: string | null;
+	gameAvatarUrl?: string | null;
 };
 
 // Тип для профиля Steam
@@ -35,10 +38,21 @@ export type TSteamProfile = {
 // Тип для данных внутри поповера пользователя
 export type TPopoverUserData = Pick<
 	TUser,
-	'_id' | 'username' | 'avatar' | 'bio'
+	'_id' | 'username' | 'avatar' | 'bio' | 'steamId'
 > & {
 	isOnline: boolean;
 	currentGame?: string | null;
+	appId?: string | null;
+	lobbyId?: string | null;
+	gameAvatarUrl?: string | null;
+};
+
+// Тип для приглашения в игру Steam
+export type TGameInvite = {
+	from: string;
+	gameName: string;
+	appId: string;
+	lobbyId: string | null;
 };
 
 // Тип смены пароля
@@ -75,7 +89,13 @@ export type TMessage = {
 	sender: string;
 	recipient: string;
 	text: string;
-	type?: 'text' | 'system';
+	type?: 'text' | 'system' | 'invite';
+	gameData?: {
+		gameName: string;
+		appId: string;
+		lobbyId: string | null;
+		gameAvatarUrl?: string | null;
+	};
 	createdAt: string;
 	updatedAt: string;
 };

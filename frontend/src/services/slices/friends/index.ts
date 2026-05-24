@@ -143,12 +143,24 @@ const friendsSlice = createSlice({
 		// Обновление статуса игры у друга
 		setFriendGameStatus: (
 			state,
-			action: PayloadAction<{ userId: string; currentGame: string | null }>
+			action: PayloadAction<{
+				userId: string;
+				currentGame: string | null;
+				appId: string | null;
+				lobbyId: string | null;
+				gameAvatarUrl: string | null;
+			}>
 		) => {
-			const { userId, currentGame } = action.payload;
+			const { userId, currentGame, appId, lobbyId, gameAvatarUrl } =
+				action.payload;
 			const friend = state.friendList.find((f) => f._id === userId);
 
-			if (friend) friend.currentGame = currentGame;
+			if (friend) {
+				friend.currentGame = currentGame;
+				friend.appId = appId;
+				friend.lobbyId = lobbyId;
+				friend.gameAvatarUrl = gameAvatarUrl;
+			}
 		},
 	},
 	selectors: {
