@@ -1,6 +1,10 @@
+import axios from 'axios';
 import { useState, useCallback } from 'react';
-import { steamRequests } from '@utils-api';
+
 import type { TSteamProfile } from '@types';
+
+import { steamRequests } from '@utils-api';
+import { getErrorMessage } from '@utils/getErrorMessage';
 
 // Хук для работы с профилем Steam
 export const useSteamProfile = () => {
@@ -22,8 +26,13 @@ export const useSteamProfile = () => {
 
 			setSteamProfile(steamData);
 		} catch (err: unknown) {
-			console.error('Ошибка при загрузке Steam:', err);
-			setSteamError('Не удалось загрузить данные Steam');
+			if (axios.isAxiosError(err) && err.response?.status === 404) {
+				setSteamProfile(null);
+				setSteamError(null);
+			} else {
+				console.error('Ошибка при загрузке Steam:', err);
+				setSteamError(getErrorMessage(err));
+			}
 		} finally {
 			setIsLoadingSteam(false);
 		}
