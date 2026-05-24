@@ -3,12 +3,36 @@ import { Server } from 'socket.io';
 import User from '../models/User';
 
 interface ISteamPlayerSummary {
-	steamid: string;
-	gameextrainfo?: string;
+	steamid: string; // Steam ID
+	gameextrainfo?: string; // Название игры
+	gameid?: string; // ID игры
+	lobbysteamid?: string; // ID лобби
+}
+
+// Объект с данными для кэша
+interface IGameStatus {
+	gameName: string | null;
+	appId: string | null;
+	lobbyId: string | null;
+	gameAvatarUrl: string | null;
 }
 
 // Кэш для хранения текущей игры
-const gameStatusCache = new Map<string, string | null>();
+export const gameStatusCache = new Map<string, IGameStatus | null>();
+
+// Вспомогательная функция для сравнения двух статусов
+const hasStatusChanged = (
+	curr: IGameStatus | null,
+	prev?: IGameStatus | null
+) => {
+	if (!curr && !prev) return false;
+	if (!curr || !prev) return true;
+	return (
+		curr.gameName !== prev.gameName ||
+		curr.appId !== prev.appId ||
+		curr.lobbyId !== prev.lobbyId
+	);
+};
 
 export const startSteamPolling = (
 	io: Server,
@@ -49,19 +73,32 @@ export const startSteamPolling = (
 				const user = users.find((u) => u.steamId === player.steamid);
 				if (!user) return;
 
-				const userIdStr = user._id.toString();
+				// Собираем актуальные данные из ответа Steam
+				const currentStatus: IGameStatus | null = player.gameextrainfo
+					? {
+							gameName: player.gameextrainfo,
+							appId: player.gameid || null,
+							lobbyId: player.lobbysteamid || null,
+							gameAvatarUrl: player.gameid
+								? `https://cdn.cloudflare.steamstatic.com/steam/apps/${player.gameid}/header.jpg`
+								: null,
+						}
+					: null;
 
-				const currentGame = player.gameextrainfo || null;
-				const previousGame = gameStatusCache.get(userIdStr);
+				// Достаем прошлый статус из кэша
+				const previousStatus = gameStatusCache.get(String(user._id));
 
-				// Если статус изменился
-				if (currentGame !== previousGame) {
-					gameStatusCache.set(userIdStr, currentGame); // Обновляем кэш
+				// Если статус игры или лобби изменился
+				if (hasStatusChanged(currentStatus, previousStatus)) {
+					gameStatusCache.set(String(user._id), currentStatus); // Обновляем кэш
 
 					io.emit('gameStatusChanged', {
 						// Отправляем информацию об изменении
-						userId: userIdStr,
-						currentGame: currentGame,
+						userId: String(user._id),
+						currentGame: currentStatus?.gameName || null,
+						appId: currentStatus?.appId || null,
+						lobbyId: currentStatus?.lobbyId || null,
+						gameAvatarUrl: currentStatus?.gameAvatarUrl || null,
 					});
 				}
 			});

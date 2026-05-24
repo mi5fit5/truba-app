@@ -5,13 +5,21 @@ import { Server } from 'socket.io';
 import User from '../models/User';
 import Message from '../models/Message';
 import { formatCallDuration } from '../utils/dateUtils';
-import { startSteamPolling } from './steamPolling';
+import { startSteamPolling, gameStatusCache } from './steamPolling';
 
 // Структура активных звонков
-interface ActiveCall {
+interface IActiveCall {
 	startTime: number;
 	initiatorId: string;
 	recipientId: string;
+}
+
+// Структура приглашения в игру Steam
+interface IGameInvite {
+	to: string;
+	gameName: string;
+	appId: string;
+	lobbyId: string | null;
 }
 
 const app = express();
@@ -27,7 +35,7 @@ const io = new Server(server, {
 const userSocketMap: { [key: string]: string } = {};
 
 // Объект для хранения активных звонков
-const activeCallsMap = new Map<string, ActiveCall>();
+const activeCallsMap = new Map<string, IActiveCall>();
 
 // Создание уникального ключа для активного звонка из id пользователей
 function getCallKey(firstUserId: string, secondUserId: string) {
@@ -48,6 +56,18 @@ io.on('connection', (socket) => {
 
 	// Для отправки событий всем подключенным пользователям
 	io.emit('getOnlineUsers', Object.keys(userSocketMap));
+
+	// Проставляем игровые статусы при подключении
+	gameStatusCache.forEach((status, cachedUserId) => {
+		if (status && status.gameName) {
+			socket.emit('gameStatusChanged', {
+				userId: cachedUserId,
+				currentGame: status.gameName,
+				appId: status.appId,
+				lobbyId: status.lobbyId,
+			});
+		}
+	});
 
 	// Инициация звонка
 	socket.on('callToParticipant', async (data) => {
@@ -160,6 +180,47 @@ io.on('connection', (socket) => {
 		// Отправляем сигнал о завершении собеседнику
 		if (targetSocketId) {
 			io.to(targetSocketId).emit('completedCall');
+		}
+	});
+
+	// Отправка приглашения в игру Steam
+	socket.on('sendGameInvite', async (data: IGameInvite) => {
+		const { to, gameName, appId, lobbyId } = data;
+
+		try {
+			const gameAvatarUrl = appId
+				? `https://cdn.cloudflare.steamstatic.com/steam/apps/${appId}/header.jpg`
+				: null;
+
+			// Создаем запись в БД
+			const inviteMessage = await Message.create({
+				sender: userId,
+				recipient: to,
+				text: `Приглашает вас сыграть в ${gameName}!`,
+				type: 'invite',
+				gameData: {
+					gameName,
+					appId,
+					lobbyId,
+					gameAvatarUrl,
+				},
+			});
+
+			// Если друг онлайн, то отправляем ему приглашение в игру
+			const targetSocketId = getReceiverSocketId(to);
+
+			if (targetSocketId) {
+				io.to(targetSocketId).emit('newMessage', inviteMessage);
+			}
+
+			// Отправляем сообщение обратно отправителю
+			const mySocketId = getReceiverSocketId(userId);
+
+			if (mySocketId) {
+				io.to(mySocketId).emit('newMessage', inviteMessage);
+			}
+		} catch (err: unknown) {
+			console.error('Ошибка при обработке отправки приглашения:', err);
 		}
 	});
 
