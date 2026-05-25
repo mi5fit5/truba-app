@@ -6,7 +6,7 @@ import session from 'express-session';
 import passport from 'passport';
 
 import { connectDB } from './lib/db';
-import { app, server } from './lib/socket';
+import { app, server, io } from './lib/socket';
 import './lib/passport';
 
 import authRoutes from './routes/authRoutes';
@@ -43,6 +43,8 @@ app.use(
 
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.set('io', io);
 
 // Маршруты
 app.use('/api/auth/steam', steamRoutes);

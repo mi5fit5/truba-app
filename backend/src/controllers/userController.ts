@@ -272,6 +272,17 @@ export const updateUserProfile = async (req: AuthRequest, res: Response) => {
 
 		const { password: _, ...userData } = updatedUser.toObject();
 
+		// Оповещение всех клиентов об измении профиля другого пользователя
+		const io = req.app.get('io');
+
+		if (io) {
+			io.emit('userProfileUpdated', {
+				userId: updatedUser._id.toString(),
+				avatar: updatedUser.avatar,
+				bio: updatedUser.bio,
+			});
+		}
+
 		return res.status(200).json({
 			message: 'Профиль успешно обновлен',
 			user: userData,
