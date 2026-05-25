@@ -29,10 +29,10 @@ export const UserPopover = ({
 
 	// Загрузка данных Steam при открытии
 	useEffect(() => {
-		if (user._id && user.steamId) {
+		if (isOpen && user._id) {
 			fetchSteamProfile(isSelf ? undefined : user._id);
 		}
-	}, [user._id, user.steamId, isSelf, fetchSteamProfile]);
+	}, [isOpen, user._id, isSelf, fetchSteamProfile]);
 
 	// Закрытие по клику вне поповера
 	useEffect(() => {
