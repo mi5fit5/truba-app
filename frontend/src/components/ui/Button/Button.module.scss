@@ -51,6 +51,15 @@
 	}
 }
 
+.red {
+	background-color: #ff6b6b;
+	color: #fff;
+
+	&:not(:disabled):hover {
+		background-color: #ffa8a8;
+	}
+}
+
 .huge {
 	width: 250px;
 	height: 50px;

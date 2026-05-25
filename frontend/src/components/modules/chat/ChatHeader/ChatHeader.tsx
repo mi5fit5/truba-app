@@ -123,7 +123,8 @@ export const ChatHeader = ({ friend }: ChatHeaderProps) => {
 						onClose={() => setIsPopoverOpen(false)}>
 						<Button
 							title='Удалить из друзей'
-							style={{ flex: '1', backgroundColor: '#ffcccc' }}
+							variant='red'
+							style={{ flex: '1' }}
 							onClick={handleRemoveFriend}>
 							удалить из друзей
 						</Button>

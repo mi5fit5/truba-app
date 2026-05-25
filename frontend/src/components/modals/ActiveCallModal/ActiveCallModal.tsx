@@ -480,7 +480,11 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								<img src={settingsIcon} alt='Настройки' />
 								{/* настройки */}
 							</Button>
-							<Button title='Завершить звонок' size='huge' onClick={onEndCall}>
+							<Button
+								title='Завершить звонок'
+								variant='red'
+								size='huge'
+								onClick={onEndCall}>
 								завершить звонок
 							</Button>
 
