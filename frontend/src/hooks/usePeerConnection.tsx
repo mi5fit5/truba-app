@@ -141,7 +141,7 @@ export const usePeerConnection = () => {
 
 			const audioConstraints = savedMic
 				? {
-						deviceId: { exact: savedMic },
+						deviceId: { ideal: savedMic },
 						echoCancellation: true,
 						noiseSuppression: true,
 						autoGainControl: true,
@@ -155,7 +155,7 @@ export const usePeerConnection = () => {
 			const videoConstraints =
 				type === 'video'
 					? savedCam
-						? { deviceId: { exact: savedCam } }
+						? { deviceId: { ideal: savedCam } }
 						: true
 					: false;
 
@@ -230,7 +230,7 @@ export const usePeerConnection = () => {
 
 			// Запрос доступ к камере
 			const newStream = await navigator.mediaDevices.getUserMedia({
-				video: savedCam ? { deviceId: { exact: savedCam } } : true,
+				video: savedCam ? { deviceId: { ideal: savedCam } } : true,
 			});
 
 			// Проверка статуса звонка
