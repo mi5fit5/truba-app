@@ -16,6 +16,48 @@
 	position: relative;
 	cursor: pointer;
 	user-select: none;
+	z-index: 1;
+
+	&::before {
+		content: '';
+		color: #fff;
+		position: absolute;
+		top: -4px;
+		bottom: -4px;
+		left: -4px;
+		right: -4px;
+		z-index: -1;
+	}
+
+	&:hover {
+		* {
+			color: #fff;
+		}
+
+		&::before {
+			background: linear-gradient(
+				90deg,
+				rgba(2, 0, 127, 1) 0%,
+				rgba(9, 73, 172, 1) 50%,
+				rgba(16, 130, 207, 1) 100%
+			);
+		}
+	}
+
+	&.active {
+		* {
+			color: #fff;
+		}
+
+		&::before {
+			background: linear-gradient(
+				90deg,
+				rgba(2, 0, 127, 1) 0%,
+				rgba(9, 73, 172, 1) 50%,
+				rgba(16, 130, 207, 1) 100%
+			);
+		}
+	}
 }
 
 .userInfo {
@@ -33,6 +75,7 @@
 }
 
 .username {
+	width: 70px;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -52,7 +95,7 @@
 }
 
 .playingText {
-	max-width: 70px;
+	width: 70px;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;

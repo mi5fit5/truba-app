@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+
 import type { TCallType, TFriend, TPopoverUserData } from '@types';
 import { useDispatch, useSelector } from '@store';
 import {
@@ -112,7 +113,9 @@ export const ChatHeader = ({ friend }: ChatHeaderProps) => {
 						</div>
 					</div>
 				</div>
+			</div>
 
+			{isPopoverOpen && (
 				<div
 					className={styles.popoverCenterBottom}
 					onClick={(e) => e.stopPropagation()}>
@@ -130,7 +133,7 @@ export const ChatHeader = ({ friend }: ChatHeaderProps) => {
 						</Button>
 					</UserPopover>
 				</div>
-			</div>
+			)}
 
 			<div className={styles.chatTools}>
 				<div className={styles.callButtons}>

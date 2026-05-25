@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { clsx } from 'clsx';
 
 import { useDispatch, useSelector } from '@store';
 import { logoutUser, selectUserData } from '@slices';
@@ -40,7 +41,10 @@ export const ProfileSection = () => {
 		<>
 			<div className={styles.container}>
 				<div
-					className={styles.userInfoWrapper}
+					className={clsx(
+						styles.userInfoWrapper,
+						isPopoverOpen && styles.active
+					)}
 					onClick={(e) => {
 						e.stopPropagation();
 						setIsPopoverOpen(!isPopoverOpen);
