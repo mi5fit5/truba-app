@@ -140,6 +140,20 @@ const friendsSlice = createSlice({
 			state.onlineUsers = action.payload;
 		},
 
+		// Обновление данных профиля у друга
+		updateFriendProfile: (
+			state,
+			action: PayloadAction<{ userId: string; avatar: string; bio: string }>
+		) => {
+			const { userId, avatar, bio } = action.payload;
+			const friend = state.friendList.find((f) => f._id === userId);
+
+			if (friend) {
+				friend.avatar = avatar;
+				friend.bio = bio;
+			}
+		},
+
 		// Обновление статуса игры у друга
 		setFriendGameStatus: (
 			state,
@@ -260,7 +274,8 @@ const friendsSlice = createSlice({
 	},
 });
 
-export const { setOnlineUsers, setFriendGameStatus } = friendsSlice.actions;
+export const { setOnlineUsers, updateFriendProfile, setFriendGameStatus } =
+	friendsSlice.actions;
 export const {
 	selectFriends,
 	selectOnlineUsers,

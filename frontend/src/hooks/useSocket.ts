@@ -15,6 +15,7 @@ import {
 	selectIsChatOpen,
 	setCurrentUserGameStatus,
 	setFriendGameStatus,
+	updateFriendProfile,
 } from '@slices';
 import { playSystemSound } from '@utils/audioUtils';
 
@@ -62,6 +63,16 @@ export const useSocket = () => {
 		newSocket.on('getOnlineUsers', (users: string[]) => {
 			dispatch(setOnlineUsers(users));
 		});
+
+		// Обновление профилей
+		newSocket.on(
+			'userProfileUpdated',
+			(data: { userId: string; avatar: string; bio: string }) => {
+				if (currentUserId !== data.userId) {
+					dispatch(updateFriendProfile(data));
+				}
+			}
+		);
 
 		// Изменения игрового статуса
 		newSocket.on(

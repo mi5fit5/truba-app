@@ -38,6 +38,7 @@ export {
 	rejectRequest,
 	removeFriend,
 	setOnlineUsers,
+	updateFriendProfile,
 	setFriendGameStatus,
 	selectFriends,
 	selectOnlineUsers,
