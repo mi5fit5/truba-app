@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
-import type { TIncomingCall } from '@types';
+import type { TFriendRequest, TIncomingCall } from '@types';
 import { useDispatch, useSelector } from '@store';
 import {
 	selectUserData,
@@ -16,6 +16,8 @@ import {
 	setCurrentUserGameStatus,
 	setFriendGameStatus,
 	updateFriendProfile,
+	addIncomingRequest,
+	fetchFriends,
 } from '@slices';
 import { playSystemSound } from '@utils/audioUtils';
 
@@ -128,6 +130,23 @@ export const useSocket = () => {
 		// Входящий звонок
 		newSocket.on('incomingCall', (data: TIncomingCall) => {
 			dispatch(receiveCall(data));
+		});
+
+		// Пришла заявка в друзья
+		newSocket.on('newFriendRequest', (newRequest: TFriendRequest) => {
+			dispatch(addIncomingRequest(newRequest));
+			playSystemSound(messageSound);
+		});
+
+		// Заявка дружбы принята другим пользователем
+		newSocket.on('friendRequestAccepted', () => {
+			dispatch(fetchFriends());
+			playSystemSound(messageSound);
+		});
+
+		// Удаление из списка друзей
+		newSocket.on('friendRemoved', () => {
+			dispatch(fetchFriends());
 		});
 
 		// Звонок завершён или сброшен собеседником

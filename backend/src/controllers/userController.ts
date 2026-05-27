@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../middlewares/auth';
 import FriendRequest from '../models/FriendRequest';
 import User from '../models/User';
+import { getReceiverSocketId, io } from '../lib/socket';
 
 // Получение данных текущего пользователя
 export const getCurrentUser = async (req: AuthRequest, res: Response) => {
@@ -91,6 +92,7 @@ export const sendFriendRequest = async (req: AuthRequest, res: Response) => {
 				{ sender: senderId, recipient: recipientId },
 				{ sender: recipientId, recipient: senderId },
 			],
+			status: 'pending',
 		});
 
 		if (existingRequest) {
@@ -103,6 +105,14 @@ export const sendFriendRequest = async (req: AuthRequest, res: Response) => {
 			recipient: recipientId,
 			status: 'pending',
 		});
+
+		await newFriendRequest.populate('sender', 'username avatar email');
+
+		const targetSocketId = getReceiverSocketId(recipientId);
+
+		if (targetSocketId) {
+			io.to(targetSocketId).emit('newFriendRequest', newFriendRequest);
+		}
 
 		res.status(201).json(newFriendRequest);
 	} catch (err: unknown) {
@@ -151,6 +161,12 @@ export const acceptFriendRequest = async (req: AuthRequest, res: Response) => {
 				$addToSet: { friends: friendRequest.sender },
 			}),
 		]);
+
+		const senderSocketId = getReceiverSocketId(friendRequest.sender.toString());
+
+		if (senderSocketId) {
+			io.to(senderSocketId).emit('friendRequestAccepted');
+		}
 
 		res.status(200).json({
 			message: 'Запрос дружбы принят',
@@ -203,8 +219,8 @@ export const removeFriend = async (req: AuthRequest, res: Response) => {
 			return res.status(401).json({ message: 'Вы не авторизованы' });
 		}
 
-		const userId = req.user._id;
-		const friendToRemove = req.params.id;
+		const userId = req.user._id.toString();
+		const friendToRemove = String(req.params.id);
 
 		// Убираем друга из массива текущего пользователя
 		const currentUserUpdate = User.findByIdAndUpdate(userId, {
@@ -216,7 +232,21 @@ export const removeFriend = async (req: AuthRequest, res: Response) => {
 			$pull: { friends: userId },
 		});
 
-		await Promise.all([currentUserUpdate, friendUpdate]);
+		// Удаление старой заявки в друзья
+		const deleteRequests = FriendRequest.deleteMany({
+			$or: [
+				{ sender: userId, recipient: friendToRemove },
+				{ sender: friendToRemove, recipient: userId },
+			],
+		});
+
+		await Promise.all([currentUserUpdate, friendUpdate, deleteRequests]);
+
+		const targetSocketId = getReceiverSocketId(friendToRemove);
+
+		if (targetSocketId) {
+			io.to(targetSocketId).emit('friendRemoved');
+		}
 
 		res.status(200).json({ message: 'Пользователь успешно удален из друзей' });
 	} catch (err: unknown) {

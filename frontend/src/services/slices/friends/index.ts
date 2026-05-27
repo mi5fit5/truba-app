@@ -176,6 +176,17 @@ const friendsSlice = createSlice({
 				friend.gameAvatarUrl = gameAvatarUrl;
 			}
 		},
+
+		// Добавление новой заявки в друзья
+		addIncomingRequest: (state, action: PayloadAction<TFriendRequest>) => {
+			const exists = state.incomingRequests.some(
+				(req) => req._id === action.payload._id
+			);
+
+			if (!exists) {
+				state.incomingRequests.push(action.payload);
+			}
+		},
 	},
 	selectors: {
 		// Селекторы
@@ -274,8 +285,12 @@ const friendsSlice = createSlice({
 	},
 });
 
-export const { setOnlineUsers, updateFriendProfile, setFriendGameStatus } =
-	friendsSlice.actions;
+export const {
+	setOnlineUsers,
+	updateFriendProfile,
+	setFriendGameStatus,
+	addIncomingRequest,
+} = friendsSlice.actions;
 export const {
 	selectFriends,
 	selectOnlineUsers,

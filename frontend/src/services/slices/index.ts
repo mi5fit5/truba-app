@@ -40,6 +40,7 @@ export {
 	setOnlineUsers,
 	updateFriendProfile,
 	setFriendGameStatus,
+	addIncomingRequest,
 	selectFriends,
 	selectOnlineUsers,
 	selectRequests,
