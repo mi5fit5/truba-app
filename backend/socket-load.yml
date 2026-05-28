@@ -1,0 +1,39 @@
+config:
+  target: "http://localhost:3000?userId=load_test"
+  phases:
+    # Тест 1: 10 новых пользователей каждую секунду в течение 30 сек.
+    - duration: 30
+      arrivalRate: 10
+      name: "Warm-up"
+    # Тест 2: 50 новых пользователей каждую секунду в течение 1 мин.
+    - duration: 60
+      arrivalRate: 50
+      name: "Peak load"
+  engines:
+    socketio: {}
+
+# Тестирование нагрузки на сервер
+scenarios:
+  - name: "Emulate WebRTC calling flow"
+    engine: socketio
+    flow:
+      # Пауза перед началом активности
+      - think: 1
+
+      # Инициация
+      - emit:
+          channel: "callToParticipant"
+          data:
+            userToCall: "friend_123"
+            signalData: { type: "offer", sdp: "fake_sdp_string" }
+            callType: "audio"
+            mediaState: { micMuted: false, camMuted: true }
+
+      # Имитация разговора
+      - think: 3
+
+      # Завершаение звонка
+      - emit:
+          channel: "endCall"
+          data:
+            to: "friend_123"

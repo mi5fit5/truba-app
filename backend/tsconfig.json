@@ -8,9 +8,10 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "typeRoots": ["./node_modules/@types", "./src"]
+    "typeRoots": ["./node_modules/@types", "./src"],
+    "types": ["jest", "node"]
   },
-  "include": ["src/**/*.ts", "src/global.d.ts"],
+  "include": ["src/**/*.ts", "src/global.d.ts", "src/tests/**/*"],
   "exclude": ["node_modules"],
   "ts-node": {
     "files": true
