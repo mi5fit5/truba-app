@@ -52,8 +52,12 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/messages', messageRoutes);
 
-connectDB().then(() => {
-	server.listen(+PORT, () => {
-		console.log(`Сервер запущен на порту ${PORT}`);
+if (process.env.NODE_ENV !== 'test') {
+	connectDB().then(() => {
+		server.listen(+PORT, () => {
+			console.log(`Сервер запущен на порту ${PORT}`);
+		});
 	});
-});
+}
+
+export { app };

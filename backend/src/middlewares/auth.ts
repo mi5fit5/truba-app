@@ -29,7 +29,10 @@ export const authMiddleware = (
 
 		next();
 	} catch (err) {
-		console.error('Ошибка:', err);
+		if (process.env.NODE_ENV !== 'test') {
+			console.error('Ошибка:', err);
+		}
+
 		return res.status(401).json({ message: 'Неверный токен' });
 	}
 };

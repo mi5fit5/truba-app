@@ -111,6 +111,7 @@ const callSlice = createSlice({
 			state.incomingSignal = null;
 			state.remoteMedia = { isMicMuted: false, isCamMuted: false };
 			state.isChatOpen = false;
+			state.isScreenSharing = false;
 		},
 	},
 	selectors: {

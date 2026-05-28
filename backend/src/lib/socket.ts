@@ -39,6 +39,8 @@ const activeCallsMap = new Map<string, IActiveCall>();
 
 // Создание уникального ключа для активного звонка из id пользователей
 function getCallKey(firstUserId: string, secondUserId: string) {
+	if (!firstUserId || !secondUserId) return '';
+
 	return [firstUserId.toString(), secondUserId.toString()].sort().join('-');
 }
 
@@ -237,6 +239,8 @@ io.on('connection', (socket) => {
 });
 
 // Запуск поллинга Steam
-startSteamPolling(io, () => Object.keys(userSocketMap));
+if (process.env.NODE_ENV !== 'test') {
+	startSteamPolling(io, () => Object.keys(userSocketMap));
+}
 
 export { app, io, server };
