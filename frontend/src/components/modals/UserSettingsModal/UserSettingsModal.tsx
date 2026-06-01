@@ -71,11 +71,11 @@ export const UserSettingsModal = ({
 
 	// Обработчики смены медиа-устройств и шумодава
 	const handleMicChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-		switchDevice('audio', e.target.value, noiseMode);
+		switchDevice('audio', e.target.value);
 	};
 
 	const handleCamChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-		switchDevice('video', e.target.value, noiseMode);
+		switchDevice('video', e.target.value);
 	};
 
 	const handleSpeakerChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

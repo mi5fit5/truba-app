@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
 
 import { SocketContext, usePeerContext } from '@context';
@@ -49,6 +49,11 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 	const callType = useSelector(selectCallType);
 	const isChatOpen = useSelector(selectIsChatOpen);
 	const isScreenSharing = useSelector(selectIsScreenSharing);
+	const chatMessages = useSelector(selectChatMessages);
+	const isLoadingHistory = useSelector(selectIsLoadingHistory);
+	const isSearchActive = useSelector(selectIsSearchActive);
+
+	const socket = useContext(SocketContext);
 
 	const {
 		localVideoRef,
@@ -56,227 +61,158 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		remoteAudioRef,
 		localStream,
 		remoteStream,
-		isDummyVideoRef,
-		upgradeVideoTrack,
-		disableCamera,
+		remoteStreamRevision,
 		toggleScreenShare,
+		toggleLocalAudio,
+		toggleLocalVideo,
 	} = usePeerContext();
-	const socket = useContext(SocketContext);
-
-	// Данные собеседника
-	const remoteMedia = useSelector(selectRemoteMedia);
-	const isRemoteMicMuted = remoteMedia.isMicMuted;
-	const isRemoteCamMuted = remoteMedia.isCamMuted;
-
-	const chatMessages = useSelector(selectChatMessages);
-	const isLoadingHistory = useSelector(selectIsLoadingHistory);
-	const isSearchActive = useSelector(selectIsSearchActive);
 
 	// Стейты для настроек звонка
 	const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 	const [remoteVolume, setRemoteVolume] = useState(100);
-
-	// Стейт для фокуса участника
 	const [focusedParticipant, setFocusedParticipant] = useState<
 		'local' | 'remote' | null
 	>(null);
 
-	// Стейты для отслеживания предыдущих значений
-	const [prevCallStatus, setPrevCallStatus] = useState(callStatus);
-	const [prevIsScreenSharing, setPrevIsScreenSharing] =
-		useState(isScreenSharing);
-	const [prevIsChatOpen, setPrevIsChatOpen] = useState(isChatOpen);
+	// Данные собеседника
+	const remoteMedia = useSelector(selectRemoteMedia);
 
-	// Локальные стейты для медиа текущего пользователя
+	// Стейт для отслеживания предыдущего статуса
+	const [prevCallStatus, setPrevCallStatus] = useState(callStatus);
+
+	// Стейты локального юзера
 	const [isMicMuted, setIsMicMuted] = useState(false);
 	const [isCamMuted, setIsCamMuted] = useState(callType === 'audio');
 
-	// Показывать аватар или камеру
-	const showLocalAvatar = (isCamMuted && !isScreenSharing) || !localStream;
-	const showRemoteAvatar = isRemoteCamMuted || !remoteStream;
-
-	const prevCallStatusAudioRef = useRef(callStatus);
 	const outgoingAudioRef = useRef<HTMLAudioElement | null>(null);
+	const prevCallStatusAudioRef = useRef<string | null>(null);
 
-	// Сброс локальных стейтов при новом звонке / завершении
+	// Синхронизация состояния камеры
 	if (callStatus !== prevCallStatus) {
 		setPrevCallStatus(callStatus);
-		setFocusedParticipant(null);
 
-		if (callStatus === 'calling' || callStatus === 'receiving') {
+		if (
+			callStatus === 'calling' ||
+			callStatus === 'receiving' ||
+			callStatus === 'connected'
+		) {
 			setIsMicMuted(false);
 			setIsCamMuted(callType === 'audio');
-			setChatOpen(false);
-			setRemoteVolume(100);
 		}
 	}
 
-	if (isScreenSharing !== prevIsScreenSharing) {
-		setPrevIsScreenSharing(isScreenSharing);
-
-		if (isScreenSharing) {
-			setIsCamMuted(false);
-		} else {
-			setIsCamMuted(true);
-		}
-	}
-
-	if (isChatOpen !== prevIsChatOpen) {
-		setPrevIsChatOpen(isChatOpen);
-
-		if (isChatOpen) setFocusedParticipant(null);
-	}
-
-	// Обработчик открытия чата
-	const handleToggleChat = () => {
-		if (!isChatOpen && participant) {
-			dispatch(setActiveFriendId(participant._id));
-			dispatch(fetchChatHistory(participant._id));
-		}
-
-		dispatch(setChatOpen(!isChatOpen));
-	};
-
-	// Обработчик клика по видео (для фокуса участника)
-	const handleVideoClick = (target: 'local' | 'remote') => {
-		if (isChatOpen) return;
-
-		setFocusedParticipant((prev) => (prev === target ? null : target));
-	};
-
-	// Все переключения аудио/видео применяются к собеседнику при его принятии звонка
+	// Привязка локального видео
 	useEffect(() => {
-		if (callStatus === 'connected' && socket && participant) {
-			socket.emit('toggleMedia', {
-				to: participant._id,
-				type: 'video',
-				isMuted: isCamMuted,
-			});
+		const videoNode = localVideoRef.current;
 
-			socket.emit('toggleMedia', {
-				to: participant._id,
-				type: 'audio',
-				isMuted: isMicMuted,
-			});
+		if (videoNode && localStream) {
+			videoNode.srcObject = null;
+			videoNode.srcObject = localStream;
+			videoNode
+				.play()
+				.catch((err) => console.warn('Ошибка локального видео', err));
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [callStatus]);
+	}, [localStream, localVideoRef, callStatus]);
 
-	// Изменение громкости собеседника
+	// Привязка удаленного видео и аудио
+	useEffect(() => {
+		const videoNode = remoteVideoRef.current;
+		const audioNode = remoteAudioRef.current;
+
+		if (videoNode && remoteStream) {
+			videoNode.srcObject = null;
+			videoNode.srcObject = remoteStream;
+			videoNode
+				.play()
+				.catch((e) => console.warn('Ошибка удаленного видео:', e));
+		}
+
+		if (audioNode && remoteStream) {
+			audioNode.srcObject = null;
+			audioNode.srcObject = remoteStream;
+			audioNode
+				.play()
+				.catch((e) => console.warn('Ошибка удаленного аудио:', e));
+		}
+	}, [
+		remoteStream,
+		callStatus,
+		remoteStreamRevision,
+		remoteVideoRef,
+		remoteAudioRef,
+	]);
+
+	// Громкость собеседника
 	useEffect(() => {
 		if (remoteAudioRef.current) {
 			remoteAudioRef.current.volume = remoteVolume / 100;
 		}
 	}, [remoteVolume, remoteAudioRef]);
 
-	// Привязка медиа-потоков к DOM
+	// Звуковое сопровождение
 	useEffect(() => {
-		// Видео или голос локального пользователя
-		if (localVideoRef.current && localStream) {
-			localVideoRef.current.srcObject = localStream;
-		}
-	}, [localStream, localVideoRef]);
-
-	useEffect(() => {
-		// Голос собеседника
-		if (remoteAudioRef.current && remoteStream) {
-			remoteAudioRef.current.srcObject = remoteStream;
-		}
-
-		// Видео собеседника
-		if (remoteVideoRef.current && remoteStream) {
-			remoteVideoRef.current.srcObject = remoteStream;
-		}
-	}, [remoteStream, remoteVideoRef, remoteAudioRef]);
-
-	// Переключение микрофона / камеры
-	const toggleMedia = useCallback(
-		async (type: 'audio' | 'video') => {
-			if (!localStream || !socket || !participant) return;
-
-			// Включение камеры при аудиозвонке
-			if (type === 'video') {
-				// Запрашиваем реальную веб-камеру
-				if (isDummyVideoRef?.current && upgradeVideoTrack) {
-					const newTrack = await upgradeVideoTrack();
-					if (!newTrack) return;
-
-					setIsCamMuted(false);
-					socket.emit('toggleMedia', {
-						to: participant._id,
-						type: 'video',
-						isMuted: false,
-					});
-				} else {
-					// Выключаем камеру
-					disableCamera();
-					setIsCamMuted(true);
-					socket.emit('toggleMedia', {
-						to: participant._id,
-						type: 'video',
-						isMuted: true,
-					});
-				}
-				return;
-			}
-
-			// Обычное переключение
-			const track = localStream.getAudioTracks()[0];
-
-			if (track) {
-				// Переключаем состояние трека
-				track.enabled = !track.enabled;
-				setIsMicMuted(!track.enabled);
-				socket.emit('toggleMedia', {
-					to: participant._id,
-					type: 'audio',
-					isMuted: !track.enabled,
-				});
-			}
-		},
-		[
-			localStream,
-			socket,
-			participant,
-			upgradeVideoTrack,
-			disableCamera,
-			isDummyVideoRef,
-		]
-	);
-
-	// Звуковые эффекты звонка
-	useEffect(() => {
-		// Исходящий звонок
 		if (callStatus === 'calling') {
 			playSystemSound(initCallSound, true).then((audio) => {
 				outgoingAudioRef.current = audio;
 			});
-		} else {
-			if (outgoingAudioRef.current) {
-				outgoingAudioRef.current.pause();
-				outgoingAudioRef.current.currentTime = 0;
-				outgoingAudioRef.current = null;
-			}
+		} else if (outgoingAudioRef.current) {
+			outgoingAudioRef.current.pause();
+			outgoingAudioRef.current.currentTime = 0;
+			outgoingAudioRef.current = null;
 		}
 
-		// Завершение звонка
-		if (
-			(prevCallStatusAudioRef.current === 'connected' ||
-				prevCallStatusAudioRef.current === 'calling') &&
-			callStatus === 'idle'
-		) {
-			playSystemSound(callEndSound, false);
+		if (callStatus === 'idle') {
+			if (
+				prevCallStatusAudioRef.current === 'connected' ||
+				prevCallStatusAudioRef.current === 'calling'
+			) {
+				playSystemSound(callEndSound, false);
+			}
 		}
 
 		prevCallStatusAudioRef.current = callStatus;
-
-		return () => {
-			if (outgoingAudioRef.current) {
-				outgoingAudioRef.current.pause();
-				outgoingAudioRef.current.currentTime = 0;
-			}
-		};
 	}, [callStatus]);
+
+	const handleToggleVideo = async () => {
+		const isVideoNowOn = await toggleLocalVideo();
+
+		setIsCamMuted(!isVideoNowOn);
+
+		if (socket && participant) {
+			socket.emit('toggleMedia', {
+				to: participant._id,
+				type: 'video',
+				isMuted: !isVideoNowOn,
+			});
+		}
+	};
+
+	const handleToggleAudio = () => {
+		const isAudioNowOn = toggleLocalAudio();
+
+		setIsMicMuted(!isAudioNowOn);
+
+		if (socket && participant) {
+			socket.emit('toggleMedia', {
+				to: participant._id,
+				type: 'audio',
+				isMuted: !isAudioNowOn,
+			});
+		}
+	};
+
+	const handleToggleScreenShare = async () => {
+		await toggleScreenShare();
+		setIsCamMuted(true);
+	};
+
+	const handleToggleChat = () => {
+		if (!isChatOpen && participant) {
+			dispatch(setActiveFriendId(participant._id));
+			dispatch(fetchChatHistory(participant._id));
+		}
+		dispatch(setChatOpen(!isChatOpen));
+	};
 
 	if (
 		(callStatus !== 'calling' && callStatus !== 'connected') ||
@@ -285,6 +221,11 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 	) {
 		return null;
 	}
+
+	const isLocalVideoActive =
+		(!isCamMuted || isScreenSharing) && !!localStream?.getVideoTracks().length;
+	const isRemoteVideoActive =
+		!remoteMedia.isCamMuted && !!remoteStream?.getVideoTracks().length;
 
 	return (
 		<Modal onClose={onEndCall}>
@@ -328,8 +269,10 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								focusedParticipant === 'local' && styles.focused,
 								focusedParticipant === 'remote' && styles.unfocused
 							)}
-							onClick={() => handleVideoClick('local')}>
-							{showLocalAvatar && (
+							onClick={() =>
+								setFocusedParticipant((p) => (p === 'local' ? null : 'local'))
+							}>
+							{!isLocalVideoActive && (
 								<Avatar
 									src={currentUser.avatar}
 									name={currentUser.username}
@@ -347,7 +290,9 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 									isScreenSharing && styles.containVideo
 								)}
 								style={{
-									display: isCamMuted && !isScreenSharing ? 'none' : 'block',
+									opacity: isLocalVideoActive ? 1 : 0,
+									position: isLocalVideoActive ? 'relative' : 'absolute',
+									pointerEvents: isLocalVideoActive ? 'auto' : 'none',
 								}}
 							/>
 							<div className={styles.usernameBadge}>
@@ -358,7 +303,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 									<img
 										src={mutedSoundIcon}
 										className={styles.mutedIcon}
-										alt='Микрофон выключен'
+										alt='muted'
 									/>
 								)}
 							</div>
@@ -371,14 +316,15 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								focusedParticipant === 'remote' && styles.focused,
 								focusedParticipant === 'local' && styles.unfocused
 							)}
-							onClick={() => handleVideoClick('remote')}>
+							onClick={() =>
+								setFocusedParticipant((p) => (p === 'remote' ? null : 'remote'))
+							}>
 							{callStatus === 'calling' && (
 								<div className={styles.callingOverlay}>
 									<Preloader />
 								</div>
 							)}
-
-							{showRemoteAvatar && (
+							{!isRemoteVideoActive && (
 								<Avatar
 									src={participant.avatar}
 									name={participant.username}
@@ -390,22 +336,22 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								ref={remoteVideoRef}
 								autoPlay
 								playsInline
-								muted
-								className={clsx(
-									styles.videoElement,
-									isScreenSharing && styles.containVideo
-								)}
-								style={{ display: isRemoteCamMuted ? 'none' : 'block' }}
+								className={styles.videoElement}
+								style={{
+									opacity: isRemoteVideoActive ? 1 : 0,
+									position: isRemoteVideoActive ? 'relative' : 'absolute',
+									pointerEvents: isRemoteVideoActive ? 'auto' : 'none',
+								}}
 							/>
 							<div className={styles.usernameBadge}>
 								<Text as='span' size={30} lowercase>
 									{participant.username}
 								</Text>
-								{isRemoteMicMuted && (
+								{remoteMedia.isMicMuted && (
 									<img
 										src={mutedSoundIcon}
 										className={styles.mutedIcon}
-										alt='Микрофон выключен'
+										alt='muted'
 									/>
 								)}
 							</div>
@@ -419,7 +365,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								title={isMicMuted ? 'Включить микрофон' : 'Выключить микрофон'}
 								size='small'
 								className={styles.toggleBtn}
-								onClick={() => toggleMedia('audio')}>
+								onClick={handleToggleAudio}>
 								<div className={styles.toggleIconWrapper}>
 									{isMicMuted && (
 										<img
@@ -437,11 +383,13 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 							</Button>
 							<Button
 								title={
-									isCamMuted ? 'Включить веб-камеру' : 'Выключить веб-камеру'
+									isCamMuted || isScreenSharing
+										? 'Включить веб-камеру'
+										: 'Выключить веб-камеру'
 								}
 								size='small'
 								className={styles.toggleBtn}
-								onClick={() => toggleMedia('video')}
+								onClick={handleToggleVideo}
 								disabled={isScreenSharing}>
 								<div className={styles.toggleIconWrapper}>
 									{(isCamMuted || isScreenSharing) && (
@@ -469,7 +417,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 									styles.toggleBtn,
 									isScreenSharing && styles.activeControl
 								)}
-								onClick={toggleScreenShare}>
+								onClick={handleToggleScreenShare}>
 								<img src={shareScreenIcon} alt='Демонстрация экрана' />
 							</Button>
 							<Button

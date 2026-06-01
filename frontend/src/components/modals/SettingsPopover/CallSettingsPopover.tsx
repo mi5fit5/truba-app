@@ -78,7 +78,7 @@ export const CallSettingsPopover = ({
 				label='микрофон:'
 				options={availableMics}
 				value={selectedMic}
-				onChange={(e) => switchDevice('audio', e.target.value, noiseMode)}
+				onChange={(e) => switchDevice('audio', e.target.value)}
 				fallbackText='микрофоны не найдены'
 				disabled={isConnecting}
 			/>
@@ -94,7 +94,7 @@ export const CallSettingsPopover = ({
 				label='камера:'
 				options={availableCams}
 				value={selectedCam}
-				onChange={(e) => switchDevice('video', e.target.value, noiseMode)}
+				onChange={(e) => switchDevice('video', e.target.value)}
 				fallbackText='Камеры не найдены'
 				disabled={isConnecting || isCamMuted}
 			/>

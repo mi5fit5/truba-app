@@ -34,6 +34,7 @@ export const usePeerConnection = () => {
 	// Стейты для потоков
 	const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 	const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+	const [remoteStreamRevision, setRemoteStreamRevision] = useState(0);
 
 	// Стейты для списков доступных устройств
 	const [availableMics, setAvailableMics] = useState<TSelectOption[]>([]);
@@ -59,15 +60,15 @@ export const usePeerConnection = () => {
 	);
 
 	// Рефы для работы с DOM-элементами; хранения соединения и потока;
-	// активности звонка; пустого видео; демонстрации экрана
+	// активности звонка; демонстрации экрана
 	const localVideoRef = useRef<HTMLVideoElement>(null);
 	const remoteVideoRef = useRef<HTMLVideoElement>(null);
 	const remoteAudioRef = useRef<HTMLAudioElement>(null);
 	const peerRef = useRef<Instance | null>(null);
 	const localStreamRef = useRef<MediaStream | null>(null);
 	const isCallActiveRef = useRef<boolean>(false);
-	const isDummyVideoRef = useRef<boolean>(false);
-	const screenTrackRef = useRef<MediaStreamTrack | null>(null);
+	const screenStreamRef = useRef<MediaStream | null>(null);
+	const isConnectingRef = useRef<boolean>(false);
 
 	// Получение списка доступных устройств при старте звонка
 	useEffect(() => {
@@ -104,26 +105,6 @@ export const usePeerConnection = () => {
 			);
 	}, []);
 
-	// Создание пустого видео-трека
-	const createEmptyVideoTrack = () => {
-		const canvas = document.createElement('canvas');
-		const ctx = canvas.getContext('2d');
-
-		canvas.width = 640;
-		canvas.height = 480;
-
-		if (ctx) {
-			ctx.fillStyle = '#000';
-			ctx.fillRect(0, 0, canvas.width, canvas.height);
-		}
-
-		const stream = canvas.captureStream(30);
-		const track = stream.getVideoTracks()[0];
-		track.enabled = false;
-
-		return track;
-	};
-
 	// Захват видео и аудио
 	const startMedia = async (type: TCallType) => {
 		try {
@@ -132,238 +113,99 @@ export const usePeerConnection = () => {
 			// Очищаем старые потоки
 			if (localStreamRef.current) {
 				localStreamRef.current.getTracks().forEach((track) => track.stop());
-				localStreamRef.current = null;
 			}
 
-			// Достаем микрофон и вебку из памяти
-			const savedMic = localStorage.getItem('voice_chat_selected_mic');
-			const savedCam = localStorage.getItem('voice_chat_selected_cam');
-
-			const audioConstraints = savedMic
+			// Ограничения
+			const audioConstraints = selectedMic
 				? {
-						deviceId: { ideal: savedMic },
+						deviceId: { ideal: selectedMic },
 						echoCancellation: true,
 						noiseSuppression: true,
-						autoGainControl: true,
 					}
-				: {
-						echoCancellation: true,
-						noiseSuppression: true,
-						autoGainControl: true,
-					};
-
+				: true;
 			const videoConstraints =
 				type === 'video'
-					? savedCam
-						? { deviceId: { ideal: savedCam } }
+					? selectedCam
+						? { deviceId: { ideal: selectedCam } }
 						: true
 					: false;
 
-			// Запрос медиа-устрйств с учетом сохраненных
+			// Поток
 			const stream = await navigator.mediaDevices.getUserMedia({
 				audio: audioConstraints,
 				video: videoConstraints,
 			});
 
-			// Сохранение в память при первом входе
-			const currentMicId = stream.getAudioTracks()[0]?.getSettings().deviceId;
-
-			if (currentMicId && !savedMic) {
-				setSelectedMic(currentMicId);
-				localStorage.setItem('voice_chat_selected_mic', currentMicId);
-			}
-
-			if (type === 'video') {
-				const currentCamId = stream.getVideoTracks()[0]?.getSettings().deviceId;
-
-				if (currentCamId && !savedCam) {
-					setSelectedCam(currentCamId);
-					localStorage.setItem('voice_chat_selected_cam', currentCamId);
-				}
-			}
-
-			// Добавляем пустое видео, если это аудиозвонок
-			isDummyVideoRef.current = type !== 'video';
-
-			if (type !== 'video') {
-				const dummyVideoTrack = createEmptyVideoTrack();
-				stream.addTrack(dummyVideoTrack);
-			}
-
-			// Проверка на случай, если пользователь сбросил звонок
 			if (!isCallActiveRef.current) {
 				stream.getTracks().forEach((track) => track.stop());
 				return null;
 			}
 
-			// Сохраняем поток
 			setLocalStream(stream);
 			localStreamRef.current = stream;
-
-			// Сохраняем сырой звук для работы нейросети
 			rawAudioTrackRef.current = stream.getAudioTracks()[0];
 
-			// Привязываем видео
-			if (localVideoRef.current) {
-				localVideoRef.current.srcObject = stream;
-			}
-
-			// Применяем сохраненный режим шумоподавления
-			if (noiseMode === 'rnnoise') {
-				await applyNoiseMode('rnnoise');
-			}
+			if (noiseMode === 'rnnoise') await applyNoiseMode('rnnoise');
 
 			return stream;
 		} catch (err: unknown) {
-			console.error('Ошибка доступа к устройствам:', err);
+			console.error('Ошибка медиа:', err);
 			return null;
 		}
 	};
 
-	// Добавление видео-трека в аудиозвонок
-	const upgradeVideoTrack = async () => {
-		if (!localStreamRef.current || !peerRef.current) return null;
+	// Управление видео
+	const toggleLocalVideo = async (): Promise<boolean> => {
+		if (!localStreamRef.current || !peerRef.current) return false;
 
-		try {
-			// Достаем камеру из памяти
-			const savedCam = localStorage.getItem('voice_chat_selected_cam');
+		const currentVideoTrack = localStreamRef.current.getVideoTracks()[0];
 
-			// Запрос доступ к камере
-			const newStream = await navigator.mediaDevices.getUserMedia({
-				video: savedCam ? { deviceId: { ideal: savedCam } } : true,
-			});
+		// Если была включена камера -> полностью её выключаем
+		if (currentVideoTrack) {
+			currentVideoTrack.stop();
+			localStreamRef.current.removeTrack(currentVideoTrack);
+			peerRef.current.removeTrack(currentVideoTrack, localStreamRef.current);
 
-			// Проверка статуса звонка
-			if (
-				!isCallActiveRef.current ||
-				!localStreamRef.current ||
-				!peerRef.current
-			) {
-				newStream.getTracks().forEach((track) => track.stop());
-				return null;
-			}
+			setLocalStream(new MediaStream(localStreamRef.current.getTracks()));
 
-			// Если пусто, то записываем новую камеру в память
-			const currentCamId = newStream
-				.getVideoTracks()[0]
-				?.getSettings().deviceId;
-
-			if (currentCamId && !savedCam) {
-				setSelectedCam(currentCamId);
-				localStorage.setItem('voice_chat_selected_cam', currentCamId);
-			}
-			const newVideoTrack = newStream.getVideoTracks()[0];
-			const oldVideoTrack = localStreamRef.current.getVideoTracks()[0];
-
-			// Подменяем трек внутри активного соединения
-			if (oldVideoTrack) {
-				peerRef.current.replaceTrack(
-					oldVideoTrack,
-					newVideoTrack,
-					localStreamRef.current
-				);
-				localStreamRef.current.removeTrack(oldVideoTrack); // Удаляем пустое видео из локального потока
-			}
-
-			localStreamRef.current.addTrack(newVideoTrack);
-			isDummyVideoRef.current = false;
-
-			// Пересоздание медиапотока
-			const updatedStream = new MediaStream(localStreamRef.current.getTracks());
-			setLocalStream(updatedStream);
-
-			if (localVideoRef.current) {
-				localVideoRef.current.srcObject = updatedStream;
-			}
-
-			return newVideoTrack;
-		} catch (err: unknown) {
-			console.error('Ошибка переключения камеры:', err);
-			return null;
-		}
-	};
-
-	// Применение сохраненных динамиков
-	useEffect(() => {
-		const applySpeaker = async () => {
-			if (selectedSpeaker && remoteAudioRef.current && remoteStream) {
-				if (typeof remoteAudioRef.current.setSinkId === 'function') {
-					try {
-						await remoteAudioRef.current.setSinkId(selectedSpeaker);
-					} catch (error) {
-						console.error('Ошибка применения динамиков:', error);
-					}
-				}
-			}
-		};
-		applySpeaker();
-	}, [selectedSpeaker, remoteStream]);
-
-	// Управление шумоподавлением (пропускать звук через нейросеть или нет)
-	const applyNoiseMode = async (mode: TNoiseMode) => {
-		// Сохраняем режим в стейт и память
-		setNoiseMode(mode);
-		localStorage.setItem('voice_chat_noise_mode', mode);
-
-		const rawTrack = rawAudioTrackRef.current;
-		if (!rawTrack || !localStreamRef.current) return;
-
-		// Если 'standard' - включаем стандартное шумоподавление WebRTC
-		const isStandard = mode === 'standard';
-
-		try {
-			await rawTrack.applyConstraints({
-				echoCancellation: true,
-				noiseSuppression: isStandard,
-				autoGainControl: false,
-			});
-		} catch (err: unknown) {
-			console.error('Ошибка применения ограничений аудио:', err);
-		}
-
-		const oldTrackToSend = localStreamRef.current.getAudioTracks()[0];
-		let newTrackToSend = rawTrack;
-
-		// Прогоняем сырой звук через нейросеть
-		if (mode === 'rnnoise') {
-			stopNoiseSuppression();
-
-			// Кладем сырой трек в поток и передаем процессору
-			const rawStream = new MediaStream([rawTrack]);
-			const cleanTrack = await startNoiseSuppression(rawStream);
-
-			// Отправляем собеседнику очищенный звук при рабочей нейросети
-			if (cleanTrack) {
-				newTrackToSend = cleanTrack;
-			}
+			return false;
 		} else {
-			stopNoiseSuppression(); // Выключаем работу нейросети в других режимах
-		}
+			// А если была выключена, то добавляем новый трек
+			try {
+				const camStream = await navigator.mediaDevices.getUserMedia({
+					video: selectedCam ? { deviceId: { ideal: selectedCam } } : true,
+				});
+				const newTrack = camStream.getVideoTracks()[0];
 
-		// Физичеческая замена треков
-		if (oldTrackToSend && oldTrackToSend !== newTrackToSend) {
-			if (peerRef.current) {
-				peerRef.current.replaceTrack(
-					// Замена трека в P2P соединении
-					oldTrackToSend,
-					newTrackToSend,
-					localStreamRef.current
-				);
+				localStreamRef.current.addTrack(newTrack);
+				peerRef.current.addTrack(newTrack, localStreamRef.current);
+
+				setLocalStream(new MediaStream(localStreamRef.current.getTracks()));
+
+				return true;
+			} catch (err: unknown) {
+				console.error('Отсутсвует доступ к камере:', err);
+				return false;
 			}
-
-			// Обновление локального стейта потока
-			localStreamRef.current.removeTrack(oldTrackToSend);
-			localStreamRef.current.addTrack(newTrackToSend);
 		}
 	};
 
-	// Физическое переключение медиа-устройств (смена вебки или микрофона)
-	const switchDevice = async (
-		type: 'audio' | 'video',
-		deviceId: string,
-		currentNoiseMode: TNoiseMode = 'standard'
-	) => {
-		// Обновляем память и стейт микрофона и камеры
+	// Управление аудио
+	const toggleLocalAudio = (): boolean => {
+		if (!localStreamRef.current) return false;
+
+		const audioTrack = localStreamRef.current.getAudioTracks()[0];
+
+		if (audioTrack) {
+			audioTrack.enabled = !audioTrack.enabled;
+
+			return audioTrack.enabled;
+		}
+		return false;
+	};
+
+	// Переключение устройства (микрофон, камера) / шумодава
+	const switchDevice = async (type: 'audio' | 'video', deviceId: string) => {
 		if (type === 'audio') {
 			setSelectedMic(deviceId);
 			localStorage.setItem('voice_chat_selected_mic', deviceId);
@@ -375,118 +217,105 @@ export const usePeerConnection = () => {
 		if (!localStreamRef.current || !peerRef.current) return;
 
 		try {
-			// Формируем настройки в зависимости от типа устройства
-			const constraints: MediaStreamConstraints =
+			const constraints =
 				type === 'audio'
 					? { audio: { deviceId: { exact: deviceId } } }
 					: { video: { deviceId: { exact: deviceId } } };
 
 			const newStream = await navigator.mediaDevices.getUserMedia(constraints);
+			const newTrack =
+				type === 'audio'
+					? newStream.getAudioTracks()[0]
+					: newStream.getVideoTracks()[0];
 
-			// Проверка статуса звонка
-			if (
-				!isCallActiveRef.current ||
-				!localStreamRef.current ||
-				!peerRef.current
-			) {
-				newStream.getTracks().forEach((track) => track.stop());
-				return;
-			}
+			const oldTrack =
+				type === 'audio'
+					? localStreamRef.current.getAudioTracks()[0]
+					: localStreamRef.current.getVideoTracks()[0];
 
-			if (type === 'audio') {
-				const newRawAudio = newStream.getAudioTracks()[0];
+			if (oldTrack && newTrack) {
+				peerRef.current.replaceTrack(
+					oldTrack,
+					newTrack,
+					localStreamRef.current
+				);
+				localStreamRef.current.removeTrack(oldTrack);
+				oldTrack.stop();
+				localStreamRef.current.addTrack(newTrack);
 
-				// Обновляем память для микрофона
-				const currentMicId = newRawAudio.getSettings().deviceId;
+				setLocalStream(new MediaStream(localStreamRef.current.getTracks()));
 
-				if (currentMicId) {
-					setSelectedMic(currentMicId);
-					localStorage.setItem('voice_chat_selected_mic', currentMicId);
-				}
-
-				const oldRawAudio = rawAudioTrackRef.current;
-				if (oldRawAudio) oldRawAudio.stop(); // Отключаем старое устройство
-				rawAudioTrackRef.current = newRawAudio;
-				await applyNoiseMode(currentNoiseMode); // Пропускаем новое аудио-устройство через нейронку
-			} else {
-				// Берем новый видео-трек и сразу заменяем старый
-				const newTrack = newStream.getVideoTracks()[0];
-
-				// Обновляем память для камеры
-				const currentCamId = newTrack.getSettings().deviceId;
-
-				if (currentCamId) {
-					setSelectedCam(currentCamId);
-					localStorage.setItem('voice_chat_selected_cam', currentCamId);
-				}
-
-				const oldTrack = localStreamRef.current.getVideoTracks()[0];
-
-				if (oldTrack && newTrack) {
-					peerRef.current.replaceTrack(
-						oldTrack,
-						newTrack,
-						localStreamRef.current
-					);
-					localStreamRef.current.removeTrack(oldTrack);
-					oldTrack.stop();
-					localStreamRef.current.addTrack(newTrack);
-
-					const updatedStream = new MediaStream(
-						localStreamRef.current.getTracks()
-					);
-					setLocalStream(updatedStream);
-
-					if (localVideoRef.current)
-						localVideoRef.current.srcObject = updatedStream;
+				if (type === 'audio') {
+					rawAudioTrackRef.current = newTrack;
+					await applyNoiseMode(noiseMode);
 				}
 			}
 		} catch (err: unknown) {
-			console.error(`Ошибка переключения ${type}-устройства:`, err);
+			console.error(`Ошибка переключения ${type}:`, err);
 		}
 	};
 
-	// Физическое переключение устройства вывода звука
+	// Переключение устройства вывода
 	const switchSpeaker = async (deviceId: string) => {
-		// Обновляем память и стейт динамиков
 		setSelectedSpeaker(deviceId);
 		localStorage.setItem('voice_chat_selected_speaker', deviceId);
 
-		if (remoteAudioRef.current) {
-			if (typeof remoteAudioRef.current.setSinkId === 'function') {
-				try {
-					await remoteAudioRef.current.setSinkId(deviceId);
-				} catch (error) {
-					console.error('Ошибка при переключении динамиков:', error);
-				}
-			} else {
-				console.warn('Браузер не поддерживает выбор устройства вывода звука');
+		if (
+			remoteAudioRef.current &&
+			typeof remoteAudioRef.current.setSinkId === 'function'
+		) {
+			try {
+				await remoteAudioRef.current.setSinkId(deviceId);
+			} catch (error) {
+				console.error('Ошибка Переключения динамиков:', error);
 			}
 		}
 	};
 
-	// Отключение камеры
-	const disableCamera = () => {
-		if (!localStreamRef.current || !peerRef.current || isDummyVideoRef.current)
-			return;
+	// Управление шумоподавлением (пропускать звук через нейросеть или нет)
+	const applyNoiseMode = async (mode: TNoiseMode) => {
+		// Сохраняем режим в стейт и память
+		setNoiseMode(mode);
+		localStorage.setItem('voice_chat_noise_mode', mode);
 
-		const oldTrack = localStreamRef.current.getVideoTracks()[0];
-		const dummyTrack = createEmptyVideoTrack(); // Создаем пустой видео-трек
+		const rawTrack = rawAudioTrackRef.current;
 
-		// Заменяем трек
-		peerRef.current.replaceTrack(oldTrack, dummyTrack, localStreamRef.current);
+		if (!rawTrack || !localStreamRef.current) return;
 
-		localStreamRef.current.removeTrack(oldTrack);
-		oldTrack.stop(); // Останавливаем текущий трек
-		localStreamRef.current.addTrack(dummyTrack);
+		try {
+			await rawTrack.applyConstraints({
+				echoCancellation: true,
+				noiseSuppression: mode === 'standard',
+				autoGainControl: false,
+			});
+		} catch (err: unknown) {
+			console.error('Ошибка применения ограничений аудио:', err);
+		}
 
-		isDummyVideoRef.current = true;
+		const oldTrack = localStreamRef.current.getAudioTracks()[0];
+		let newTrack = rawTrack;
 
-		const updatedStream = new MediaStream(localStreamRef.current.getTracks());
-		setLocalStream(updatedStream);
+		// Прогоняем сырой звук через нейросеть
+		if (mode === 'rnnoise') {
+			stopNoiseSuppression();
 
-		if (localVideoRef.current) {
-			localVideoRef.current.srcObject = updatedStream;
+			// Кладем сырой трек в поток и передаем процессору
+			const rawStream = new MediaStream([rawTrack]);
+			const cleanTrack = await startNoiseSuppression(rawStream);
+
+			// Отправляем собеседнику очищенный звук при рабочей нейросети
+			if (cleanTrack) {
+				newTrack = cleanTrack;
+			}
+		} else {
+			stopNoiseSuppression(); // Выключаем работу нейросети в других режимах
+		}
+
+		// Физичеческая замена треков
+		if (oldTrack && oldTrack !== newTrack && peerRef.current) {
+			peerRef.current.replaceTrack(oldTrack, newTrack, localStreamRef.current);
+			localStreamRef.current.removeTrack(oldTrack);
+			localStreamRef.current.addTrack(newTrack);
 		}
 	};
 
@@ -495,80 +324,70 @@ export const usePeerConnection = () => {
 		if (!localStreamRef.current || !peerRef.current || !isCallActiveRef.current)
 			return;
 
-		try {
-			// Выключение демонстрации
-			if (isScreenSharing) {
-				if (isScreenSharing) {
-					if (screenTrackRef.current) {
-						// Отвязываем обработчик закрытия экрана
-						screenTrackRef.current.onended = null;
-						screenTrackRef.current = null;
-					}
-
-					disableCamera(); // Возвращаем аватарку вместо запроса камеры
-
-					dispatch(setScreenSharing(false));
-
-					if (participant && socket) {
-						socket.emit('toggleMedia', {
-							to: participant._id,
-							type: 'video',
-							isMuted: true,
-						});
-					}
-					return;
-				}
+		// Выключение демонстрации
+		if (isScreenSharing) {
+			if (screenStreamRef.current) {
+				screenStreamRef.current.getTracks().forEach((track) => track.stop());
+				screenStreamRef.current = null;
 			}
 
-			// Включение
+			const currentVideoTrack = localStreamRef.current.getVideoTracks()[0];
+
+			if (currentVideoTrack) {
+				localStreamRef.current.removeTrack(currentVideoTrack);
+				peerRef.current.removeTrack(currentVideoTrack, localStreamRef.current);
+			}
+
+			setLocalStream(new MediaStream(localStreamRef.current.getTracks()));
+			dispatch(setScreenSharing(false));
+
+			if (participant && socket) {
+				socket.emit('toggleMedia', {
+					to: participant._id,
+					type: 'video',
+					isMuted: true,
+				});
+			}
+
+			return;
+		}
+
+		try {
 			const screenStream = await navigator.mediaDevices.getDisplayMedia({
 				video: true,
 				audio: false,
 			});
-			const screenTrack = screenStream.getVideoTracks()[0];
-			screenTrackRef.current = screenTrack; // Сохраняем в реф для очистки при сбросе
 
+			screenStreamRef.current = screenStream;
+
+			const screenTrack = screenStream.getVideoTracks()[0];
 			const currentVideoTrack = localStreamRef.current.getVideoTracks()[0];
 
-			if (currentVideoTrack && screenTrack) {
-				// Заменяем трек экраном
+			if (currentVideoTrack) {
 				peerRef.current.replaceTrack(
 					currentVideoTrack,
 					screenTrack,
 					localStreamRef.current
 				);
-
-				isDummyVideoRef.current = false;
-
-				// Обновляем локальный поток
 				localStreamRef.current.removeTrack(currentVideoTrack);
-				currentVideoTrack.stop(); // Останавливаем камеру
-				localStreamRef.current.addTrack(screenTrack);
-
-				// Обновляем видео-элемент
-				const updatedStream = new MediaStream(
-					localStreamRef.current.getTracks()
-				);
-				setLocalStream(updatedStream);
-
-				if (localVideoRef.current) {
-					localVideoRef.current.srcObject = updatedStream;
-				}
-
-				dispatch(setScreenSharing(true));
-
-				if (participant && socket) {
-					socket.emit('toggleMedia', {
-						to: participant._id,
-						type: 'video',
-						isMuted: false,
-					});
-				}
-				// Возвращаем камеру, если пользователь отменил демонстрацию экрана в браузере
-				screenTrack.onended = async () => {
-					await toggleScreenShare();
-				};
+				currentVideoTrack.stop();
+			} else {
+				peerRef.current.addTrack(screenTrack, localStreamRef.current);
 			}
+
+			localStreamRef.current.addTrack(screenTrack);
+			setLocalStream(new MediaStream(localStreamRef.current.getTracks()));
+			dispatch(setScreenSharing(true));
+
+			if (participant && socket) {
+				socket.emit('toggleMedia', {
+					to: participant._id,
+					type: 'video',
+					isMuted: false,
+				});
+			}
+
+			screenTrack.onended = () => toggleScreenShare();
 		} catch (err: unknown) {
 			console.error('Ошибка с демонстрацией экрана:', err);
 		}
@@ -578,13 +397,18 @@ export const usePeerConnection = () => {
 	// Разрываем p2p соединение; очищаем стейты
 	const cleanupMedia = useCallback(() => {
 		isCallActiveRef.current = false;
+		isConnectingRef.current = false;
 
 		stopNoiseSuppression(); // Отключаем нейросеть
 
-		if (screenTrackRef.current) {
-			screenTrackRef.current.onended = null;
-			screenTrackRef.current.stop();
-			screenTrackRef.current = null;
+		if (screenStreamRef.current) {
+			screenStreamRef.current.getTracks().forEach((track) => track.stop());
+			screenStreamRef.current = null;
+		}
+
+		if (rawAudioTrackRef.current) {
+			rawAudioTrackRef.current.stop();
+			rawAudioTrackRef.current = null;
 		}
 
 		if (localStreamRef.current) {
@@ -596,24 +420,10 @@ export const usePeerConnection = () => {
 		if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
 		if (remoteAudioRef.current) remoteAudioRef.current.srcObject = null;
 
-		if (peerRef.current) {
-			try {
-				if (!peerRef.current.destroyed) {
-					peerRef.current.destroy();
-				}
-			} catch (err: unknown) {
-				if (
-					err instanceof Error &&
-					(err.message.includes('Abort') || err.message.includes('Close'))
-				) {
-					console.warn('Соединение WebRTC закрыто');
-				} else {
-					console.error('Ошибка при уничтожении Peer:', err);
-				}
-			} finally {
-				peerRef.current = null;
-			}
-		}
+		if (peerRef.current && !peerRef.current.destroyed)
+			peerRef.current.destroy();
+
+		peerRef.current = null;
 
 		setLocalStream(null);
 		setRemoteStream(null);
@@ -623,70 +433,79 @@ export const usePeerConnection = () => {
 		dispatch(setScreenSharing(false));
 	}, [socket, stopNoiseSuppression, dispatch]);
 
-	// Исходящий звонок
-	const callToFriend = async (friendToCallId: string, type: TCallType) => {
+	// Маршрутизация входящих сигналов
+	useEffect(() => {
 		if (!socket) return;
 
-		const stream = await startMedia(type);
-		if (!stream) return;
-
-		// Начальные стейты аудио/видео для отправки собеседнику
-		const initialMediaState = {
-			micMuted: false,
-			camMuted: type === 'audio',
+		const handleSignal = (data: { signal: SignalData }) => {
+			if (peerRef.current && !peerRef.current.destroyed) {
+				peerRef.current.signal(data.signal);
+			}
 		};
 
-		// Создаем инициатора звонка
-		const peer = new Peer({
-			initiator: true,
-			trickle: false,
-			stream: stream,
-		});
+		socket.on('silentSignal', handleSignal);
+
+		return () => {
+			socket.off('silentSignal', handleSignal);
+		};
+	}, [socket]);
+
+	const getPeerConfig = (initiator: boolean, stream: MediaStream) => ({
+		initiator,
+		trickle: false,
+		stream,
+		config: {
+			iceServers: [
+				{ urls: 'stun:stun.l.google.com:19302' },
+				{ urls: 'stun:global.stun.twilio.com:3478' },
+			],
+		},
+	});
+
+	// Исходящий звонок
+	const callToFriend = async (friendToCallId: string, type: TCallType) => {
+		if (!socket || isConnectingRef.current) return;
+		isConnectingRef.current = true;
+
+		const stream = await startMedia(type);
+
+		if (!stream) {
+			isConnectingRef.current = false;
+			return;
+		}
+
+		const peer = new Peer(getPeerConfig(true, stream));
+
+		let initialSignalSent = false;
 
 		// Отправляем сигнал собеседнику через сервер
 		peer.on('signal', (data) => {
-			socket.emit('callToParticipant', {
-				userToCall: friendToCallId,
-				signalData: data,
-				callType: type,
-				mediaState: initialMediaState,
-			});
-		});
+			if (!initialSignalSent) {
+				socket.emit('callToParticipant', {
+					userToCall: friendToCallId,
+					signalData: data,
+					callType: type,
+					mediaState: { micMuted: false, camMuted: type === 'audio' },
+				});
 
-		// При ответе получаем видео собеседника
-		peer.on('stream', (currentStream) => {
-			setRemoteStream(currentStream);
-
-			// Передаем оригинальные потоки
-			if (remoteVideoRef.current) {
-				remoteVideoRef.current.srcObject = currentStream;
-			}
-
-			if (remoteAudioRef.current) {
-				remoteAudioRef.current.srcObject = currentStream;
-			}
-		});
-
-		// Обработка обрывов соединения
-		peer.on('error', (err: Error & { code?: string }) => {
-			if (
-				err.message.includes('Abort') ||
-				err.message.includes('Close') ||
-				err.code === 'ERR_WEBRTC_SUPPORT'
-			) {
-				console.warn('Соединение прервано собеседником');
+				initialSignalSent = true;
 			} else {
-				console.error('Ошибка WebRTC:', err);
+				socket.emit('silentSignal', { to: friendToCallId, signal: data });
 			}
-			cleanupMedia();
 		});
 
-		peer.on('close', () => {
-			console.log('Соединение WebRTC закрыто');
-			cleanupMedia();
+		peer.on('stream', (str) => {
+			setRemoteStream(str);
+			setRemoteStreamRevision((r) => r + 1);
+		});
+		peer.on('track', (track, str) => {
+			setRemoteStream(str);
+			setRemoteStreamRevision((r) => r + 1);
 		});
 
-		// Получаем ответ от собеседника вместе с его актуальными стейтами
+		peer.on('error', () => cleanupMedia());
+		peer.on('close', () => cleanupMedia());
+
 		socket.once(
 			'acceptedCall',
 			(data: {
@@ -703,67 +522,54 @@ export const usePeerConnection = () => {
 
 	// Входящий звонок
 	const callFromFriend = async () => {
-		if (!socket || !incomingSignal || !participant || !callType) return;
+		if (
+			!socket ||
+			!incomingSignal ||
+			!participant ||
+			!callType ||
+			isConnectingRef.current
+		)
+			return;
+
+		isConnectingRef.current = true;
 
 		const stream = await startMedia(callType);
-		if (!stream) return;
+
+		if (!stream) {
+			isConnectingRef.current = false;
+			return;
+		}
 
 		dispatch(acceptCall());
 
-		// Начальные стейты для ответа инициатору
-		const initialMediaState = {
-			micMuted: false,
-			camMuted: callType === 'audio',
-		};
+		const peer = new Peer(getPeerConfig(false, stream));
 
-		// Отвечает на готовый сигнал от собеседника
-		const peer = new Peer({
-			initiator: false,
-			trickle: false,
-			stream: stream,
-		});
+		let initialSignalSent = false;
 
-		// Отправляем ответ инициатору звонка
 		peer.on('signal', (data) => {
-			socket.emit('answerCall', {
-				signal: data,
-				to: participant._id,
-				mediaState: initialMediaState,
-			});
-		});
-
-		// Получаем видеопоток от звонящего
-		peer.on('stream', (currentStream) => {
-			setRemoteStream(currentStream);
-
-			// Передаем оригинальные потоки
-			if (remoteVideoRef.current) {
-				remoteVideoRef.current.srcObject = currentStream;
-			}
-
-			if (remoteAudioRef.current) {
-				remoteAudioRef.current.srcObject = currentStream;
-			}
-		});
-
-		// Обработка обрывов соединения
-		peer.on('error', (err: Error & { code?: string }) => {
-			if (
-				err.message.includes('Abort') ||
-				err.message.includes('Close') ||
-				err.code === 'ERR_WEBRTC_SUPPORT'
-			) {
-				console.warn('Соединение прервано собеседником');
+			if (!initialSignalSent) {
+				socket.emit('answerCall', {
+					signal: data,
+					to: participant._id,
+					mediaState: { micMuted: false, camMuted: callType === 'audio' },
+				});
+				initialSignalSent = true;
 			} else {
-				console.error('Ошибка WebRTC:', err);
+				socket.emit('silentSignal', { to: participant._id, signal: data });
 			}
-			cleanupMedia();
 		});
 
-		peer.on('close', () => {
-			console.log('Соединение WebRTC закрыто');
-			cleanupMedia();
+		peer.on('stream', (str) => {
+			setRemoteStream(str);
+			setRemoteStreamRevision((r) => r + 1);
 		});
+		peer.on('track', (track, str) => {
+			setRemoteStream(str);
+			setRemoteStreamRevision((r) => r + 1);
+		});
+
+		peer.on('error', () => cleanupMedia());
+		peer.on('close', () => cleanupMedia());
 
 		peer.signal(incomingSignal);
 		peerRef.current = peer;
@@ -789,26 +595,16 @@ export const usePeerConnection = () => {
 		};
 	}, [socket, cleanupMedia]);
 
-	useEffect(() => {
-		const handleBeforeUnload = () => {
-			if (participant && socket && isCallActiveRef.current) {
-				socket.emit('endCall', { to: participant._id });
-			}
-		};
-		window.addEventListener('beforeunload', handleBeforeUnload);
-		return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-	}, [participant, socket]);
-
 	return {
 		callToFriend,
 		callFromFriend,
 		completeCall,
-		upgradeVideoTrack,
+		applyNoiseMode,
+		toggleScreenShare,
+		toggleLocalVideo,
+		toggleLocalAudio,
 		switchDevice,
 		switchSpeaker,
-		applyNoiseMode,
-		disableCamera,
-		toggleScreenShare,
 		availableMics,
 		availableCams,
 		availableSpeakers,
@@ -816,11 +612,11 @@ export const usePeerConnection = () => {
 		selectedCam,
 		selectedSpeaker,
 		noiseMode,
-		isDummyVideoRef,
 		localVideoRef,
 		remoteVideoRef,
 		remoteAudioRef,
 		localStream,
 		remoteStream,
+		remoteStreamRevision,
 	};
 };

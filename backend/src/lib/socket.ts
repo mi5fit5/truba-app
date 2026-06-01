@@ -226,6 +226,16 @@ io.on('connection', (socket) => {
 		}
 	});
 
+	// "Тихая" маршрутизация WebRTC
+	socket.on('silentSignal', (data) => {
+		const { to, signal } = data;
+		const targetSocketId = getReceiverSocketId(to);
+
+		if (targetSocketId) {
+			io.to(targetSocketId).emit('silentSignal', { signal });
+		}
+	});
+
 	// Отключение
 	socket.on('disconnect', () => {
 		// Удаляем пользователя из объекта при его отключении
