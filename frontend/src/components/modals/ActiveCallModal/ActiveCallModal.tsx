@@ -1,7 +1,7 @@
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
 
-import { SocketContext, usePeerContext } from '@context';
+import { usePeerContext } from '@context';
 import { useDispatch, useSelector } from '@store';
 import {
 	fetchChatHistory,
@@ -53,8 +53,6 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 	const isLoadingHistory = useSelector(selectIsLoadingHistory);
 	const isSearchActive = useSelector(selectIsSearchActive);
 
-	const socket = useContext(SocketContext);
-
 	const {
 		localVideoRef,
 		remoteVideoRef,
@@ -91,11 +89,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 	if (callStatus !== prevCallStatus) {
 		setPrevCallStatus(callStatus);
 
-		if (
-			callStatus === 'calling' ||
-			callStatus === 'receiving' ||
-			callStatus === 'connected'
-		) {
+		if (callStatus === 'calling' || callStatus === 'receiving') {
 			setIsMicMuted(false);
 			setIsCamMuted(callType === 'audio');
 		}
@@ -106,11 +100,12 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		const videoNode = localVideoRef.current;
 
 		if (videoNode && localStream) {
-			videoNode.srcObject = null;
-			videoNode.srcObject = localStream;
-			videoNode
-				.play()
-				.catch((err) => console.warn('Ошибка локального видео', err));
+			if (videoNode.srcObject !== localStream) {
+				videoNode.srcObject = localStream;
+				videoNode
+					.play()
+					.catch((err) => console.warn('Ошибка локального видео', err));
+			}
 		}
 	}, [localStream, localVideoRef, callStatus]);
 
@@ -175,35 +170,18 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 
 	const handleToggleVideo = async () => {
 		const isVideoNowOn = await toggleLocalVideo();
-
 		setIsCamMuted(!isVideoNowOn);
-
-		if (socket && participant) {
-			socket.emit('toggleMedia', {
-				to: participant._id,
-				type: 'video',
-				isMuted: !isVideoNowOn,
-			});
-		}
 	};
 
 	const handleToggleAudio = () => {
 		const isAudioNowOn = toggleLocalAudio();
-
 		setIsMicMuted(!isAudioNowOn);
-
-		if (socket && participant) {
-			socket.emit('toggleMedia', {
-				to: participant._id,
-				type: 'audio',
-				isMuted: !isAudioNowOn,
-			});
-		}
 	};
 
 	const handleToggleScreenShare = async () => {
-		await toggleScreenShare();
-		setIsCamMuted(true);
+		const isSharingNow = await toggleScreenShare();
+
+		if (isSharingNow) setIsCamMuted(true);
 	};
 
 	const handleToggleChat = () => {
@@ -291,7 +269,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								)}
 								style={{
 									opacity: isLocalVideoActive ? 1 : 0,
-									position: isLocalVideoActive ? 'relative' : 'absolute',
+									position: 'absolute',
 									pointerEvents: isLocalVideoActive ? 'auto' : 'none',
 								}}
 							/>
@@ -339,7 +317,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								className={styles.videoElement}
 								style={{
 									opacity: isRemoteVideoActive ? 1 : 0,
-									position: isRemoteVideoActive ? 'relative' : 'absolute',
+									position: 'absolute',
 									pointerEvents: isRemoteVideoActive ? 'auto' : 'none',
 								}}
 							/>
