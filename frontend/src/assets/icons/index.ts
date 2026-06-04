@@ -20,6 +20,7 @@ import toggleCamera from './toggle-camera_icon.png';
 import systemMessageIcon from './call-message_icon.png';
 import userMessageIcon from './user-message_icon.png';
 import videoCallIcon from './video-call_icon.png';
+import warningIcon from './warning_icon.png';
 
 export {
 	acceptIcon,
@@ -44,4 +45,5 @@ export {
 	systemMessageIcon,
 	userMessageIcon,
 	videoCallIcon,
+	warningIcon,
 };

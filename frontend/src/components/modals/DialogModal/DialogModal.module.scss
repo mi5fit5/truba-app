@@ -1,0 +1,53 @@
+.dialogWindow {
+	width: 400px;
+	max-width: 90vw;
+}
+
+.dialogBody {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 10px;
+	background-color: #c3c3c3;
+}
+
+.content {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 10px;
+
+	border: 2px solid;
+	border-color: #262626 #f0f0f0 #f0f0f0 #262626;
+	padding: 70px 10px;
+	box-shadow:
+		inset 1px 1px #262626,
+		inset -2px -2px #c3c3c3;
+	text-align: center;
+	background-color: #ffffff;
+}
+
+.icon {
+	width: 50px;
+	aspect-ratio: 1;
+	object-fit: contain;
+}
+
+.actions {
+	display: flex;
+	justify-content: space-between;
+	gap: 10px;
+
+	> button {
+		flex: 1;
+	}
+}
+
+.singleButton {
+	justify-content: center;
+
+	> button {
+		flex: none;
+		width: 100%;
+	}
+}

@@ -11,11 +11,11 @@ import {
 } from '@slices';
 import { usePeerContext } from '@context';
 
+import { UserPopover, DialogModal } from '@modals';
 import { Avatar, Text, Button, ActionInput } from '@ui';
 
 import styles from './ChatHeader.module.scss';
 import { phoneCallIcon, videoCallIcon, findMessageIcon } from '@icons';
-import { UserPopover } from '@modals';
 
 interface ChatHeaderProps {
 	friend: TFriend;
@@ -28,6 +28,7 @@ export const ChatHeader = ({ friend }: ChatHeaderProps) => {
 
 	const [searchQuery, setSearchQuery] = useState('');
 	const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
 	const isOnline = onlineUsers.includes(friend._id);
 
@@ -72,8 +73,13 @@ export const ChatHeader = ({ friend }: ChatHeaderProps) => {
 	};
 
 	// Удаление из друзей
-	const handleRemoveFriend = () => {
+	const handleDeleteClick = () => {
+		setIsDeleteModalOpen(true);
+	};
+
+	const confirmRemoveFriend = () => {
 		dispatch(removeFriend(friend._id));
+		setIsDeleteModalOpen(false);
 		setIsPopoverOpen(false);
 	};
 
@@ -128,7 +134,7 @@ export const ChatHeader = ({ friend }: ChatHeaderProps) => {
 							title='Удалить из друзей'
 							variant='red'
 							style={{ flex: '1' }}
-							onClick={handleRemoveFriend}>
+							onClick={handleDeleteClick}>
 							удалить из друзей
 						</Button>
 					</UserPopover>
@@ -162,6 +168,17 @@ export const ChatHeader = ({ friend }: ChatHeaderProps) => {
 					onAction={handleSearchSubmit}
 				/>
 			</div>
+
+			<DialogModal
+				isOpen={isDeleteModalOpen}
+				type='warning'
+				title='внимание - тРУба.exe'
+				message={`Удалить ${friend.username} из списка друзей?`}
+				confirmText='удалить'
+				cancelText='отмена'
+				onClose={() => setIsDeleteModalOpen(false)}
+				onConfirm={confirmRemoveFriend}
+			/>
 		</div>
 	);
 };
