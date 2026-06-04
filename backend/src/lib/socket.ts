@@ -163,14 +163,19 @@ io.on('connection', (socket) => {
 						type: 'system',
 					});
 
+					const messagePayload = {
+						...systemMessage.toJSON(),
+						isSystem: true,
+					};
+
 					// Отправляем новое сообщение обоим участникам в чат
 					const initiatorSocketId = getReceiverSocketId(activeCall.initiatorId);
 					const recipientSocketId = getReceiverSocketId(activeCall.recipientId);
 
 					if (initiatorSocketId)
-						io.to(initiatorSocketId).emit('newMessage', systemMessage);
+						io.to(initiatorSocketId).emit('newMessage', messagePayload);
 					if (recipientSocketId)
-						io.to(recipientSocketId).emit('newMessage', systemMessage);
+						io.to(recipientSocketId).emit('newMessage', messagePayload);
 				}
 			} catch (err: unknown) {
 				console.error('Ошибка отправки системного сообщения:', err);

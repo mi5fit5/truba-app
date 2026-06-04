@@ -113,6 +113,7 @@ export const useSocket = () => {
 
 			if (
 				!isCurrentUser &&
+				!message.isSystem &&
 				(!isFromActiveFriend || (isModalActive && !isCallChatOpenRef.current))
 			) {
 				playSystemSound(messageSound);
