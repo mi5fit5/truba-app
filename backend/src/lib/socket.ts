@@ -1,10 +1,13 @@
 import http from 'http';
 import express from 'express';
 import { Server } from 'socket.io';
+import jwt from 'jsonwebtoken';
+import cookie from 'cookie';
 
 import User from '../models/User';
 import Message from '../models/Message';
 import { formatCallDuration } from '../utils/dateUtils';
+import { getCallKey } from '../utils/socketUtils';
 import { startSteamPolling, gameStatusCache } from './steamPolling';
 
 // Структура активных звонков
@@ -27,8 +30,37 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
 	cors: {
-		origin: 'http://localhost:8080',
+		origin: process.env.CLIENT_URL || 'http://localhost:8080',
+		credentials: true,
 	},
+});
+
+// Аутентификация WebSocket-подключений через JWT
+io.use((socket, next) => {
+	if (!socket.handshake.headers.cookie) {
+		return next(new Error('Отсутствует cookie для аутентификации'));
+	}
+
+	const cookies = cookie.parse(socket.handshake.headers.cookie);
+	const token = cookies.jwt;
+
+	if (!token) {
+		return next(new Error('JWT токен отсутствует'));
+	}
+
+	try {
+		const decodedToken = jwt.verify(
+			token,
+			process.env.JWT_SECRET_KEY as string
+		) as {
+			_id: string;
+		};
+
+		socket.data.userId = decodedToken._id;
+		next();
+	} catch {
+		return next(new Error('Невалидный JWT токен'));
+	}
 });
 
 // Объект для хранения подключенных пользователей (userId: sockedId)
@@ -37,22 +69,15 @@ const userSocketMap: { [key: string]: string } = {};
 // Объект для хранения активных звонков
 const activeCallsMap = new Map<string, IActiveCall>();
 
-// Создание уникального ключа для активного звонка из id пользователей
-function getCallKey(firstUserId: string, secondUserId: string) {
-	if (!firstUserId || !secondUserId) return '';
-
-	return [firstUserId.toString(), secondUserId.toString()].sort().join('-');
-}
-
 // Поиск конкретного пользователя по его id из БД
 export function getReceiverSocketId(userId: string) {
 	return userSocketMap[userId];
 }
 
 io.on('connection', (socket) => {
-	const userId = socket.handshake.query.userId as string;
+	const userId = socket.data.userId as string;
 
-	if (userId && userId !== 'undefined') {
+	if (userId) {
 		userSocketMap[userId] = socket.id;
 	}
 

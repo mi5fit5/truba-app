@@ -52,9 +52,7 @@ export const useSocket = () => {
 
 		// Устанавливаем связь с сервером
 		const newSocket = io('http://localhost:3000', {
-			query: {
-				userId: currentUserId, // Передаём id пользователя
-			},
+			withCredentials: true,
 		});
 
 		newSocket.on('connect', () => {
