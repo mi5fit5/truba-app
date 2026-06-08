@@ -41,7 +41,7 @@ export const fetchChatHistory = createAsyncThunk<
 
 		return response.data;
 	} catch (err: unknown) {
-		rejectWithValue(getErrorMessage(err));
+		return rejectWithValue(getErrorMessage(err));
 	}
 });
 
@@ -56,7 +56,7 @@ export const sendMessage = createAsyncThunk<
 
 		return response.data;
 	} catch (err: unknown) {
-		rejectWithValue(getErrorMessage(err));
+		return rejectWithValue(getErrorMessage(err));
 	}
 });
 
@@ -70,7 +70,7 @@ export const fetchSearchedMessages = createAsyncThunk<
 
 		return response.data;
 	} catch (err: unknown) {
-		rejectWithValue(getErrorMessage(err));
+		return rejectWithValue(getErrorMessage(err));
 	}
 });
 
@@ -87,6 +87,10 @@ const chatSlice = createSlice({
 		},
 		addMessage: (state, action: PayloadAction<TMessage>) => {
 			const newMessage = action.payload;
+
+			if (state.messages.some((message) => message._id === newMessage._id))
+				return;
+
 			const isChatActive =
 				state.activeFriendId === newMessage.sender ||
 				state.activeFriendId === newMessage.recipient;
