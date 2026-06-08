@@ -156,7 +156,9 @@ io.on('connection', (socket) => {
 		const { to, type, isMuted } = data;
 		const targetSocketId = getReceiverSocketId(to);
 
-		io.to(targetSocketId).emit('peerMediaToggled', { type, isMuted });
+		if (targetSocketId) {
+			io.to(targetSocketId).emit('peerMediaToggled', { type, isMuted });
+		}
 	});
 
 	// Завершение звонка
