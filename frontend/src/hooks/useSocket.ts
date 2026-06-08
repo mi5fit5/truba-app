@@ -156,8 +156,6 @@ export const useSocket = () => {
 			) {
 				playSystemSound(declineCallSound);
 			}
-
-			dispatch(endCall());
 		});
 
 		return () => {
