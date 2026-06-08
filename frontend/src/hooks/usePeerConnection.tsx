@@ -22,7 +22,7 @@ interface IDummyMediaTrack extends MediaStreamTrack {
 }
 
 // Функция создания заглушки для аудиозвонка
-const createDummyVideoTrack = () => {
+const createDummyVideoTrack = (): IDummyMediaTrack => {
 	const canvas = document.createElement('canvas');
 	canvas.width = 640;
 	canvas.height = 480;
@@ -33,7 +33,7 @@ const createDummyVideoTrack = () => {
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 	}
 
-	const stream = canvas.captureStream(30);
+	const stream = canvas.captureStream(0);
 	const track = stream.getVideoTracks()[0] as IDummyMediaTrack;
 
 	track.enabled = false;
@@ -85,7 +85,7 @@ export const usePeerConnection = () => {
 	);
 
 	// Рефы для работы с DOM-элементами; хранения соединения и потока;
-	// активности звонка; демонстрации экрана
+	// активности звонка; демонстрации экрана; для актуальных значений устройств и шумодава
 	const localVideoRef = useRef<HTMLVideoElement>(null);
 	const remoteVideoRef = useRef<HTMLVideoElement>(null);
 	const remoteAudioRef = useRef<HTMLAudioElement>(null);
@@ -94,6 +94,19 @@ export const usePeerConnection = () => {
 	const isCallActiveRef = useRef<boolean>(false);
 	const screenStreamRef = useRef<MediaStream | null>(null);
 	const isConnectingRef = useRef<boolean>(false);
+	const selectedMicRef = useRef(selectedMic);
+	const selectedCamRef = useRef(selectedCam);
+	const noiseModeRef = useRef(noiseMode);
+
+	useEffect(() => {
+		selectedMicRef.current = selectedMic;
+	}, [selectedMic]);
+	useEffect(() => {
+		selectedCamRef.current = selectedCam;
+	}, [selectedCam]);
+	useEffect(() => {
+		noiseModeRef.current = noiseMode;
+	}, [noiseMode]);
 
 	// Вспомогательная функция для динамического получения аппаратного стейта
 	const getCurrentMediaState = useCallback(() => {
@@ -157,16 +170,18 @@ export const usePeerConnection = () => {
 
 			// Ограничения
 			const audioConstraints = {
-				deviceId: selectedMic ? { ideal: selectedMic } : undefined,
+				deviceId: selectedMicRef.current
+					? { ideal: selectedMicRef.current }
+					: undefined,
 				echoCancellation: true,
-				noiseSuppression: noiseMode === 'standard',
+				noiseSuppression: noiseModeRef.current === 'standard',
 				autoGainControl: false,
 			};
 
 			const videoConstraints =
 				type === 'video'
-					? selectedCam
-						? { deviceId: { ideal: selectedCam } }
+					? selectedCamRef.current
+						? { deviceId: { ideal: selectedCamRef.current } }
 						: true
 					: false;
 
@@ -190,7 +205,7 @@ export const usePeerConnection = () => {
 			localStreamRef.current = stream;
 			rawAudioTrackRef.current = stream.getAudioTracks()[0];
 
-			await applyNoiseMode(noiseMode);
+			await applyNoiseMode(noiseModeRef.current);
 
 			return stream;
 		} catch (err: unknown) {
@@ -219,7 +234,7 @@ export const usePeerConnection = () => {
 					);
 				}
 			} catch (err: unknown) {
-				console.warn('Ошибка замены на заглушку', err);
+				console.warn('Ошибка замены на заглушку:', err);
 			}
 
 			localStreamRef.current.removeTrack(currentVideoTrack);
@@ -240,7 +255,9 @@ export const usePeerConnection = () => {
 		} else {
 			try {
 				const camStream = await navigator.mediaDevices.getUserMedia({
-					video: selectedCam ? { deviceId: { ideal: selectedCam } } : true,
+					video: selectedCamRef.current
+						? { deviceId: { ideal: selectedCamRef.current } }
+						: true,
 				});
 				const newRealTrack = camStream.getVideoTracks()[0];
 
@@ -254,7 +271,7 @@ export const usePeerConnection = () => {
 							);
 						}
 					} catch (err: unknown) {
-						console.warn('WebRTC: Ошибка замены на реальную камеру', err);
+						console.warn('Ошибка замены на реальную камеру', err);
 					}
 
 					localStreamRef.current.removeTrack(currentVideoTrack);
@@ -345,7 +362,8 @@ export const usePeerConnection = () => {
 
 				if (type === 'audio') {
 					rawAudioTrackRef.current = newTrack;
-					await applyNoiseMode(noiseMode);
+
+					await applyNoiseMode(noiseModeRef.current);
 				}
 			}
 		} catch (err: unknown) {
@@ -365,7 +383,7 @@ export const usePeerConnection = () => {
 			try {
 				await remoteAudioRef.current.setSinkId(deviceId);
 			} catch (error) {
-				console.error('Ошибка Переключения динамиков:', error);
+				console.error('Ошибка переключения динамиков:', error);
 			}
 		}
 	};
@@ -447,7 +465,7 @@ export const usePeerConnection = () => {
 						);
 					}
 				} catch (err: unknown) {
-					console.warn('Возврат к заглушке после экрана', err);
+					console.warn('Ошибка заглушки экрана:', err);
 				}
 			}
 
@@ -500,7 +518,11 @@ export const usePeerConnection = () => {
 				});
 			}
 
-			screenTrack.onended = () => toggleScreenShare();
+			screenTrack.onended = () => {
+				if (isCallActiveRef.current) {
+					toggleScreenShare();
+				}
+			};
 
 			return true;
 		} catch (err: unknown) {
@@ -518,7 +540,10 @@ export const usePeerConnection = () => {
 		stopNoiseSuppression(); // Отключаем нейросеть
 
 		if (screenStreamRef.current) {
-			screenStreamRef.current.getTracks().forEach((track) => track.stop());
+			screenStreamRef.current.getTracks().forEach((track) => {
+				track.onended = null;
+				track.stop();
+			});
 			screenStreamRef.current = null;
 		}
 
