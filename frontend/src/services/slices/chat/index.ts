@@ -143,7 +143,10 @@ const chatSlice = createSlice({
 			})
 			.addCase(sendMessage.fulfilled, (state, action) => {
 				state.isSending = false;
-				state.messages.push(action.payload);
+
+				if (!state.messages.some((m) => m._id === action.payload._id)) {
+					state.messages.push(action.payload);
+				}
 			})
 
 			// Поиск сообщений
