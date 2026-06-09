@@ -8,7 +8,6 @@ import {
 	setOnlineUsers,
 	addMessage,
 	receiveCall,
-	endCall,
 	selectCallStatus,
 	updatePeerMedia,
 	selectActiveFriendId,
@@ -57,6 +56,10 @@ export const useSocket = () => {
 
 		newSocket.on('connect', () => {
 			setSocket(newSocket); // Записываем активное подключение в стейт
+		});
+
+		newSocket.on('connect_error', (err) => {
+			console.error('Ошибка подключения к серверу:', err.message);
 		});
 
 		// Онлайн-статусы

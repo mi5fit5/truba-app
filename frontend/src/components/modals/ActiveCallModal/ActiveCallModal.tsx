@@ -84,6 +84,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 
 	const outgoingAudioRef = useRef<HTMLAudioElement | null>(null);
 	const prevCallStatusAudioRef = useRef<string | null>(null);
+	const prevCamMutedRef = useRef(isCamMuted);
 
 	// Синхронизация состояния камеры
 	if (callStatus !== prevCallStatus) {
@@ -181,7 +182,12 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 	const handleToggleScreenShare = async () => {
 		const isSharingNow = await toggleScreenShare();
 
-		if (isSharingNow) setIsCamMuted(true);
+		if (isSharingNow) {
+			prevCamMutedRef.current = isCamMuted;
+			setIsCamMuted(true);
+		} else {
+			setIsCamMuted(prevCamMutedRef.current);
+		}
 	};
 
 	const handleToggleChat = () => {
