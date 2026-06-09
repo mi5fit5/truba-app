@@ -24,19 +24,24 @@ interface IDummyMediaTrack extends MediaStreamTrack {
 	isDummyTrack?: boolean;
 }
 
+// Глобальный кэш холста для заглушки
+let dummyCanvas: HTMLCanvasElement | null = null;
+
 // Функция создания заглушки для аудиозвонка
 const createDummyVideoTrack = (): IDummyMediaTrack => {
-	const canvas = document.createElement('canvas');
-	canvas.width = 640;
-	canvas.height = 480;
-	const ctx = canvas.getContext('2d');
+	if (!dummyCanvas) {
+		dummyCanvas = document.createElement('canvas');
+		dummyCanvas.width = 640;
+		dummyCanvas.height = 480;
+		const ctx = dummyCanvas.getContext('2d');
 
-	if (ctx) {
-		ctx.fillStyle = '#000000';
-		ctx.fillRect(0, 0, canvas.width, canvas.height);
+		if (ctx) {
+			ctx.fillStyle = '#000000';
+			ctx.fillRect(0, 0, dummyCanvas.width, dummyCanvas.height);
+		}
 	}
 
-	const stream = canvas.captureStream(0);
+	const stream = dummyCanvas.captureStream(0);
 	const track = stream.getVideoTracks()[0] as IDummyMediaTrack;
 
 	track.enabled = false;
@@ -44,6 +49,19 @@ const createDummyVideoTrack = (): IDummyMediaTrack => {
 
 	return track;
 };
+
+// Функция для получения конфигурации WebRTC-соединения
+const getPeerConfig = (initiator: boolean, stream: MediaStream) => ({
+	initiator,
+	trickle: false,
+	stream,
+	config: {
+		iceServers: [
+			{ urls: 'stun:stun.l.google.com:19302' },
+			{ urls: 'stun:global.stun.twilio.com:3478' },
+		],
+	},
+});
 
 // Хук для управления WebRTC-соединением
 export const usePeerConnection = () => {
@@ -606,7 +624,6 @@ export const usePeerConnection = () => {
 
 		setLocalStream(null);
 		setRemoteStream(null);
-		socket?.off('acceptedCall');
 
 		dispatch(endCall());
 		dispatch(setScreenSharing(false));
@@ -628,18 +645,6 @@ export const usePeerConnection = () => {
 			socket.off('silentSignal', handleSignal);
 		};
 	}, [socket]);
-
-	const getPeerConfig = (initiator: boolean, stream: MediaStream) => ({
-		initiator,
-		trickle: false,
-		stream,
-		config: {
-			iceServers: [
-				{ urls: 'stun:stun.l.google.com:19302' },
-				{ urls: 'stun:global.stun.twilio.com:3478' },
-			],
-		},
-	});
 
 	// Исходящий звонок
 	const callToFriend = useCallback(
