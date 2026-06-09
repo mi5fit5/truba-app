@@ -22,16 +22,18 @@ type TCallState = {
 	isScreenSharing: boolean; // Идёт ли демонстрация экрана
 };
 
+const initialRemoteMedia = {
+	isMicMuted: false,
+	isCamMuted: false,
+};
+
 // Начальное состояние
 const initialState: TCallState = {
 	status: 'idle',
 	callType: null,
 	participant: null,
 	incomingSignal: null,
-	remoteMedia: {
-		isMicMuted: false,
-		isCamMuted: false,
-	},
+	remoteMedia: initialRemoteMedia,
 	isChatOpen: false,
 	isScreenSharing: false,
 };
@@ -109,7 +111,8 @@ const callSlice = createSlice({
 			state.callType = null;
 			state.participant = null;
 			state.incomingSignal = null;
-			state.remoteMedia = { isMicMuted: false, isCamMuted: false };
+			state.remoteMedia.isMicMuted = false;
+			state.remoteMedia.isCamMuted = false;
 			state.isChatOpen = false;
 			state.isScreenSharing = false;
 		},
