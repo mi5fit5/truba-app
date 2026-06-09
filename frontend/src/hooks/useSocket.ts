@@ -21,7 +21,7 @@ import {
 } from '@slices';
 import { playSystemSound } from '@utils/audioUtils';
 
-import { declineCallSound, messageSound } from '@audio';
+import { messageSound } from '@audio';
 
 // Хук для подключения сокета и слушателей
 export const useSocket = () => {
@@ -146,16 +146,6 @@ export const useSocket = () => {
 		// Удаление из списка друзей
 		newSocket.on('friendRemoved', () => {
 			dispatch(fetchFriends());
-		});
-
-		// Звонок завершён или сброшен собеседником
-		newSocket.on('completedCall', () => {
-			if (
-				statusRef.current === 'calling' ||
-				statusRef.current === 'receiving'
-			) {
-				playSystemSound(declineCallSound);
-			}
 		});
 
 		return () => {

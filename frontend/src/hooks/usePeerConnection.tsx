@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from '@store';
 import {
 	acceptCall,
 	endCall,
+	selectCallStatus,
 	selectCallType,
 	selectIncomingSignal,
 	selectIsScreenSharing,
@@ -16,6 +17,8 @@ import { useSocketInstance } from '@context';
 import { useAudioProcessor } from '@hooks';
 
 import { truncateOptionsText } from '@utils/textUtils';
+import { playSystemSound } from '@utils/audioUtils';
+import { declineCallSound } from '@audio';
 
 interface IDummyMediaTrack extends MediaStreamTrack {
 	isDummyTrack?: boolean;
@@ -51,6 +54,7 @@ export const usePeerConnection = () => {
 	const participant = useSelector(selectParticipant);
 	const callType = useSelector(selectCallType);
 	const isScreenSharing = useSelector(selectIsScreenSharing);
+	const callStatus = useSelector(selectCallStatus);
 
 	// Инициализация нейросети + реф для хранения сырого звука
 	const { startNoiseSuppression, stopNoiseSuppression } = useAudioProcessor();
@@ -85,7 +89,7 @@ export const usePeerConnection = () => {
 	);
 
 	// Рефы для работы с DOM-элементами; хранения соединения и потока;
-	// активности звонка; демонстрации экрана; для актуальных значений устройств и шумодава
+	// активности звонка; демонстрации экрана; для актуальных значений устройств, шумодава и статуса
 	const localVideoRef = useRef<HTMLVideoElement>(null);
 	const remoteVideoRef = useRef<HTMLVideoElement>(null);
 	const remoteAudioRef = useRef<HTMLAudioElement>(null);
@@ -97,6 +101,8 @@ export const usePeerConnection = () => {
 	const selectedMicRef = useRef(selectedMic);
 	const selectedCamRef = useRef(selectedCam);
 	const noiseModeRef = useRef(noiseMode);
+	const callStatusRef = useRef(callStatus);
+	const isScreenSharingRef = useRef(isScreenSharing);
 
 	useEffect(() => {
 		selectedMicRef.current = selectedMic;
@@ -107,6 +113,12 @@ export const usePeerConnection = () => {
 	useEffect(() => {
 		noiseModeRef.current = noiseMode;
 	}, [noiseMode]);
+	useEffect(() => {
+		callStatusRef.current = callStatus;
+	}, [callStatus]);
+	useEffect(() => {
+		isScreenSharingRef.current = isScreenSharing;
+	}, [isScreenSharing]);
 
 	// Вспомогательная функция для динамического получения аппаратного стейта
 	const getCurrentMediaState = useCallback(() => {
@@ -408,6 +420,8 @@ export const usePeerConnection = () => {
 						: localStreamRef.current.getVideoTracks()[0];
 
 				if (oldTrack && newTrack) {
+					if (peerRef.current.destroyed) return;
+
 					peerRef.current.replaceTrack(
 						oldTrack,
 						newTrack,
@@ -457,7 +471,7 @@ export const usePeerConnection = () => {
 		const currentVideoTrack = localStreamRef.current.getVideoTracks()[0];
 
 		// Выключение демонстрации
-		if (isScreenSharing) {
+		if (isScreenSharingRef.current) {
 			if (screenStreamRef.current) {
 				screenStreamRef.current.getTracks().forEach((track) => track.stop());
 				screenStreamRef.current = null;
@@ -509,6 +523,8 @@ export const usePeerConnection = () => {
 			const currentVideoTrack = localStreamRef.current.getVideoTracks()[0];
 
 			if (currentVideoTrack) {
+				if (peerRef.current.destroyed) return false;
+
 				peerRef.current.replaceTrack(
 					currentVideoTrack,
 					screenTrack,
@@ -543,13 +559,21 @@ export const usePeerConnection = () => {
 			console.error('Ошибка с демонстрацией экрана:', err);
 			return false;
 		}
-	}, [isScreenSharing, dispatch, participant, socket]);
+	}, [dispatch, participant, socket]);
 
 	// Очищаем все потоки медиаданных; отвязываем потоки от DOM
 	// Разрываем p2p соединение; очищаем стейты
 	const cleanupMedia = useCallback(() => {
 		isCallActiveRef.current = false;
 		isConnectingRef.current = false;
+
+		// Воспроизводим звук отклонения, если звонок не был установлен
+		if (
+			callStatusRef.current === 'calling' ||
+			callStatusRef.current === 'receiving'
+		) {
+			playSystemSound(declineCallSound);
+		}
 
 		stopNoiseSuppression(); // Отключаем нейросеть
 
