@@ -38,13 +38,7 @@ export const registerUser = createAsyncThunk<
 	{ rejectValue: string }
 >('auth/register', async (data, { rejectWithValue }) => {
 	try {
-		const response = await authRequests.register(data);
-		const { user, refreshToken, accessToken } = response;
-
-		// Сохраняем токены
-		localStorage.setItem('refreshToken', refreshToken);
-		setCookie('accessToken', accessToken);
-
+		const { user } = await authRequests.register(data);
 		return user;
 	} catch (err: unknown) {
 		return rejectWithValue(getErrorMessage(err));
@@ -58,12 +52,7 @@ export const loginUser = createAsyncThunk<
 	{ rejectValue: string }
 >('auth/login', async (data, { rejectWithValue }) => {
 	try {
-		const response = await authRequests.login(data);
-		const { user, refreshToken, accessToken } = response;
-
-		localStorage.setItem('refreshToken', refreshToken);
-		setCookie('accessToken', accessToken);
-
+		const { user } = await authRequests.login(data);
 		return user;
 	} catch (err: unknown) {
 		return rejectWithValue(getErrorMessage(err));
@@ -76,10 +65,6 @@ export const logoutUser = createAsyncThunk<void, void, { rejectValue: string }>(
 	async (_, { rejectWithValue }) => {
 		try {
 			await authRequests.logout();
-
-			// Очищаем токены
-			localStorage.removeItem('refreshToken');
-			deleteCookie('accessToken');
 		} catch (err: unknown) {
 			return rejectWithValue(getErrorMessage(err));
 		}
