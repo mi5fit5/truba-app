@@ -482,102 +482,109 @@ export const usePeerConnection = () => {
 	}, []);
 
 	// Демонстрация экрана
-	const toggleScreenShare = useCallback(async (): Promise<boolean> => {
-		if (!localStreamRef.current || !peerRef.current || !isCallActiveRef.current)
-			return false;
+	const toggleScreenShare = useCallback(
+		async function performToggleScreenShare(): Promise<boolean> {
+			if (
+				!localStreamRef.current ||
+				!peerRef.current ||
+				!isCallActiveRef.current
+			)
+				return false;
 
-		const currentVideoTrack = localStreamRef.current.getVideoTracks()[0];
-
-		// Выключение демонстрации
-		if (isScreenSharingRef.current) {
-			if (screenStreamRef.current) {
-				screenStreamRef.current.getTracks().forEach((track) => track.stop());
-				screenStreamRef.current = null;
-			}
-
-			if (currentVideoTrack) {
-				const dummyTrack = createDummyVideoTrack();
-
-				try {
-					if (!peerRef.current.destroyed) {
-						peerRef.current.replaceTrack(
-							currentVideoTrack,
-							dummyTrack,
-							localStreamRef.current
-						);
-					}
-				} catch (err: unknown) {
-					console.warn('Ошибка заглушки экрана:', err);
-				}
-
-				localStreamRef.current.removeTrack(currentVideoTrack);
-				currentVideoTrack.stop();
-				localStreamRef.current.addTrack(dummyTrack);
-			}
-
-			setLocalStream(new MediaStream(localStreamRef.current.getTracks()));
-			dispatch(setScreenSharing(false));
-
-			if (participant && socket) {
-				socket.emit('toggleMedia', {
-					to: participant._id,
-					type: 'video',
-					isMuted: true,
-				});
-			}
-
-			return false;
-		}
-
-		try {
-			const screenStream = await navigator.mediaDevices.getDisplayMedia({
-				video: true,
-				audio: false,
-			});
-
-			screenStreamRef.current = screenStream;
-
-			const screenTrack = screenStream.getVideoTracks()[0];
 			const currentVideoTrack = localStreamRef.current.getVideoTracks()[0];
 
-			if (currentVideoTrack) {
-				if (peerRef.current.destroyed) return false;
-
-				peerRef.current.replaceTrack(
-					currentVideoTrack,
-					screenTrack,
-					localStreamRef.current
-				);
-				localStreamRef.current.removeTrack(currentVideoTrack);
-				currentVideoTrack.stop();
-			} else {
-				peerRef.current.addTrack(screenTrack, localStreamRef.current);
-			}
-
-			localStreamRef.current.addTrack(screenTrack);
-			setLocalStream(new MediaStream(localStreamRef.current.getTracks()));
-			dispatch(setScreenSharing(true));
-
-			if (participant && socket) {
-				socket.emit('toggleMedia', {
-					to: participant._id,
-					type: 'video',
-					isMuted: false,
-				});
-			}
-
-			screenTrack.onended = () => {
-				if (isCallActiveRef.current) {
-					toggleScreenShare();
+			// Выключение демонстрации
+			if (isScreenSharingRef.current) {
+				if (screenStreamRef.current) {
+					screenStreamRef.current.getTracks().forEach((track) => track.stop());
+					screenStreamRef.current = null;
 				}
-			};
 
-			return true;
-		} catch (err: unknown) {
-			console.error('Ошибка с демонстрацией экрана:', err);
-			return false;
-		}
-	}, [dispatch, participant, socket]);
+				if (currentVideoTrack) {
+					const dummyTrack = createDummyVideoTrack();
+
+					try {
+						if (!peerRef.current.destroyed) {
+							peerRef.current.replaceTrack(
+								currentVideoTrack,
+								dummyTrack,
+								localStreamRef.current
+							);
+						}
+					} catch (err: unknown) {
+						console.warn('Ошибка заглушки экрана:', err);
+					}
+
+					localStreamRef.current.removeTrack(currentVideoTrack);
+					currentVideoTrack.stop();
+					localStreamRef.current.addTrack(dummyTrack);
+				}
+
+				setLocalStream(new MediaStream(localStreamRef.current.getTracks()));
+				dispatch(setScreenSharing(false));
+
+				if (participant && socket) {
+					socket.emit('toggleMedia', {
+						to: participant._id,
+						type: 'video',
+						isMuted: true,
+					});
+				}
+
+				return false;
+			}
+
+			try {
+				const screenStream = await navigator.mediaDevices.getDisplayMedia({
+					video: true,
+					audio: false,
+				});
+
+				screenStreamRef.current = screenStream;
+
+				const screenTrack = screenStream.getVideoTracks()[0];
+				const currentVideoTrack = localStreamRef.current.getVideoTracks()[0];
+
+				if (currentVideoTrack) {
+					if (peerRef.current.destroyed) return false;
+
+					peerRef.current.replaceTrack(
+						currentVideoTrack,
+						screenTrack,
+						localStreamRef.current
+					);
+					localStreamRef.current.removeTrack(currentVideoTrack);
+					currentVideoTrack.stop();
+				} else {
+					peerRef.current.addTrack(screenTrack, localStreamRef.current);
+				}
+
+				localStreamRef.current.addTrack(screenTrack);
+				setLocalStream(new MediaStream(localStreamRef.current.getTracks()));
+				dispatch(setScreenSharing(true));
+
+				if (participant && socket) {
+					socket.emit('toggleMedia', {
+						to: participant._id,
+						type: 'video',
+						isMuted: false,
+					});
+				}
+
+				screenTrack.onended = () => {
+					if (isCallActiveRef.current) {
+						performToggleScreenShare();
+					}
+				};
+
+				return true;
+			} catch (err: unknown) {
+				console.error('Ошибка с демонстрацией экрана:', err);
+				return false;
+			}
+		},
+		[dispatch, participant, socket]
+	);
 
 	// Очищаем все потоки медиаданных; отвязываем потоки от DOM
 	// Разрываем p2p соединение; очищаем стейты
@@ -627,7 +634,7 @@ export const usePeerConnection = () => {
 
 		dispatch(endCall());
 		dispatch(setScreenSharing(false));
-	}, [socket, stopNoiseSuppression, dispatch]);
+	}, [stopNoiseSuppression, dispatch]);
 
 	// Маршрутизация входящих сигналов
 	useEffect(() => {
