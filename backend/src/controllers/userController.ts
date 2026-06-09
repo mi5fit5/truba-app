@@ -110,7 +110,7 @@ export const sendFriendRequest = async (req: AuthRequest, res: Response) => {
 
 		const targetSocketId = getReceiverSocketId(recipientId);
 
-		if (targetSocketId) {
+		if (targetSocketId.length > 0) {
 			io.to(targetSocketId).emit('newFriendRequest', newFriendRequest);
 		}
 
@@ -164,7 +164,7 @@ export const acceptFriendRequest = async (req: AuthRequest, res: Response) => {
 
 		const senderSocketId = getReceiverSocketId(friendRequest.sender.toString());
 
-		if (senderSocketId) {
+		if (senderSocketId.length > 0) {
 			io.to(senderSocketId).emit('friendRequestAccepted');
 		}
 
@@ -244,7 +244,7 @@ export const removeFriend = async (req: AuthRequest, res: Response) => {
 
 		const targetSocketId = getReceiverSocketId(friendToRemove);
 
-		if (targetSocketId) {
+		if (targetSocketId.length > 0) {
 			io.to(targetSocketId).emit('friendRemoved');
 		}
 

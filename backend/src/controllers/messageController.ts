@@ -26,7 +26,7 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
 		// Моментальная отправка сообщений
 		const receiverSocketId = getReceiverSocketId(recipientId);
 
-		if (receiverSocketId) {
+		if (receiverSocketId.length > 0) {
 			io.to(receiverSocketId).emit('newMessage', newMessage); // Только конкретному пользователю
 		}
 

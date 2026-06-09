@@ -63,22 +63,25 @@ io.use((socket, next) => {
 	}
 });
 
-// Объект для хранения подключенных пользователей (userId: sockedId)
-const userSocketMap: { [key: string]: string } = {};
+// Объект для хранения подключенных пользователей
+const userSocketMap: { [key: string]: Set<string> } = {};
 
 // Объект для хранения активных звонков
 const activeCallsMap = new Map<string, IActiveCall>();
 
 // Поиск конкретного пользователя по его id из БД
-export function getReceiverSocketId(userId: string) {
-	return userSocketMap[userId];
+export function getReceiverSocketId(userId: string): string[] {
+	return Array.from(userSocketMap[userId] || []);
 }
 
 io.on('connection', (socket) => {
 	const userId = socket.data.userId as string;
 
 	if (userId) {
-		userSocketMap[userId] = socket.id;
+		if (!userSocketMap[userId]) {
+			userSocketMap[userId] = new Set();
+		}
+		userSocketMap[userId].add(socket.id);
 	}
 
 	// Для отправки событий всем подключенным пользователям
@@ -98,6 +101,8 @@ io.on('connection', (socket) => {
 
 	// Инициация звонка
 	socket.on('callToParticipant', async (data) => {
+		if (!data || typeof data.userToCall !== 'string') return;
+
 		const { userToCall, signalData, callType, mediaState } = data;
 		const targetSocketId = getReceiverSocketId(userToCall);
 
@@ -109,7 +114,7 @@ io.on('connection', (socket) => {
 			recipientId: userToCall,
 		});
 
-		if (targetSocketId) {
+		if (targetSocketId.length > 0) {
 			try {
 				const caller = await User.findById(userId).select(
 					'_id username avatar'
@@ -135,6 +140,8 @@ io.on('connection', (socket) => {
 
 	// Собеседник принял звонок
 	socket.on('answerCall', (data) => {
+		if (!data || typeof data.to !== 'string') return;
+
 		const { to, signal, mediaState } = data;
 		const targetSocketId = getReceiverSocketId(to);
 
@@ -146,23 +153,27 @@ io.on('connection', (socket) => {
 			activeCall.startTime = Date.now();
 		}
 
-		if (targetSocketId) {
+		if (targetSocketId.length > 0) {
 			io.to(targetSocketId).emit('acceptedCall', { signal, mediaState });
 		}
 	});
 
 	// Переключение медиа-устройств во время звонка
 	socket.on('toggleMedia', (data) => {
+		if (!data || typeof data.to !== 'string') return;
+
 		const { to, type, isMuted } = data;
 		const targetSocketId = getReceiverSocketId(to);
 
-		if (targetSocketId) {
+		if (targetSocketId.length > 0) {
 			io.to(targetSocketId).emit('peerMediaToggled', { type, isMuted });
 		}
 	});
 
 	// Завершение звонка
 	socket.on('endCall', async (data) => {
+		if (!data || typeof data.to !== 'string') return;
+
 		const { to } = data;
 		const targetSocketId = getReceiverSocketId(to);
 
@@ -199,9 +210,9 @@ io.on('connection', (socket) => {
 					const initiatorSocketId = getReceiverSocketId(activeCall.initiatorId);
 					const recipientSocketId = getReceiverSocketId(activeCall.recipientId);
 
-					if (initiatorSocketId)
+					if (initiatorSocketId.length > 0)
 						io.to(initiatorSocketId).emit('newMessage', messagePayload);
-					if (recipientSocketId)
+					if (recipientSocketId.length > 0)
 						io.to(recipientSocketId).emit('newMessage', messagePayload);
 				}
 			} catch (err: unknown) {
@@ -212,13 +223,15 @@ io.on('connection', (socket) => {
 		}
 
 		// Отправляем сигнал о завершении собеседнику
-		if (targetSocketId) {
+		if (targetSocketId.length > 0) {
 			io.to(targetSocketId).emit('completedCall');
 		}
 	});
 
 	// Отправка приглашения в игру Steam
 	socket.on('sendGameInvite', async (data: IGameInvite) => {
+		if (!data || typeof data.to !== 'string') return;
+
 		const { to, gameName, appId, lobbyId } = data;
 
 		try {
@@ -243,14 +256,14 @@ io.on('connection', (socket) => {
 			// Если друг онлайн, то отправляем ему приглашение в игру
 			const targetSocketId = getReceiverSocketId(to);
 
-			if (targetSocketId) {
+			if (targetSocketId.length > 0) {
 				io.to(targetSocketId).emit('newMessage', inviteMessage);
 			}
 
 			// Отправляем сообщение обратно отправителю
 			const mySocketId = getReceiverSocketId(userId);
 
-			if (mySocketId) {
+			if (mySocketId.length > 0) {
 				io.to(mySocketId).emit('newMessage', inviteMessage);
 			}
 		} catch (err: unknown) {
@@ -260,10 +273,12 @@ io.on('connection', (socket) => {
 
 	// "Тихая" маршрутизация WebRTC
 	socket.on('silentSignal', (data) => {
+		if (!data || typeof data.to !== 'string') return;
+
 		const { to, signal } = data;
 		const targetSocketId = getReceiverSocketId(to);
 
-		if (targetSocketId) {
+		if (targetSocketId.length > 0) {
 			io.to(targetSocketId).emit('silentSignal', { signal });
 		}
 	});
@@ -271,8 +286,26 @@ io.on('connection', (socket) => {
 	// Отключение
 	socket.on('disconnect', () => {
 		// Удаляем пользователя из объекта при его отключении
-		if (userId) {
-			delete userSocketMap[userId];
+		if (userId && userSocketMap[userId]) {
+			userSocketMap[userId].delete(socket.id);
+			if (userSocketMap[userId].size === 0) {
+				delete userSocketMap[userId];
+
+				// Если у пользователя не осталось активных вкладок -> удаляем его активные звонки
+				for (const [key, call] of activeCallsMap.entries()) {
+					if (call.initiatorId === userId || call.recipientId === userId) {
+						activeCallsMap.delete(key);
+
+						const otherId =
+							call.initiatorId === userId ? call.recipientId : call.initiatorId;
+						const otherSocketId = getReceiverSocketId(otherId);
+
+						if (otherSocketId.length > 0) {
+							io.to(otherSocketId).emit('completedCall');
+						}
+					}
+				}
+			}
 		}
 
 		// Отправляем обновленный список
