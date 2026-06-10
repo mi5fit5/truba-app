@@ -96,6 +96,12 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		}
 	}
 
+	useEffect(() => {
+		if (isChatOpen) {
+			setFocusedParticipant(null);
+		}
+	}, [isChatOpen]);
+
 	// Привязка локального видео
 	useEffect(() => {
 		const videoNode = localVideoRef.current;
@@ -254,6 +260,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								focusedParticipant === 'remote' && styles.unfocused
 							)}
 							onClick={() =>
+								!isChatOpen &&
 								setFocusedParticipant((p) => (p === 'local' ? null : 'local'))
 							}>
 							{!isLocalVideoActive && (
@@ -283,13 +290,15 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								<Text as='span' size={30} lowercase>
 									{currentUser.username}
 								</Text>
-								{isMicMuted && (
-									<img
-										src={mutedSoundIcon}
-										className={styles.mutedIcon}
-										alt='muted'
-									/>
-								)}
+								<img
+									src={mutedSoundIcon}
+									className={styles.mutedIcon}
+									alt='muted'
+									style={{
+										opacity: isMicMuted ? 1 : 0,
+										transition: 'opacity 0.2s',
+									}}
+								/>
 							</div>
 						</div>
 
@@ -301,6 +310,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								focusedParticipant === 'local' && styles.unfocused
 							)}
 							onClick={() =>
+								!isChatOpen &&
 								setFocusedParticipant((p) => (p === 'remote' ? null : 'remote'))
 							}>
 							{callStatus === 'calling' && (
@@ -320,6 +330,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								ref={remoteVideoRef}
 								autoPlay
 								playsInline
+								muted
 								className={styles.videoElement}
 								style={{
 									opacity: isRemoteVideoActive ? 1 : 0,
@@ -331,13 +342,15 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								<Text as='span' size={30} lowercase>
 									{participant.username}
 								</Text>
-								{remoteMedia.isMicMuted && (
-									<img
-										src={mutedSoundIcon}
-										className={styles.mutedIcon}
-										alt='muted'
-									/>
-								)}
+								<img
+									src={mutedSoundIcon}
+									className={styles.mutedIcon}
+									alt='muted'
+									style={{
+										opacity: remoteMedia.isMicMuted ? 1 : 0,
+										transition: 'opacity 0.2s',
+									}}
+								/>
 							</div>
 						</div>
 					</div>
@@ -351,13 +364,15 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								className={styles.toggleBtn}
 								onClick={handleToggleAudio}>
 								<div className={styles.toggleIconWrapper}>
-									{isMicMuted && (
-										<img
-											src={rejectIcon}
-											className={styles.offIcon}
-											alt='Микрофон выключен'
-										/>
-									)}
+									<img
+										src={rejectIcon}
+										className={styles.offIcon}
+										alt='Микрофон выключен'
+										style={{
+											opacity: isMicMuted ? 1 : 0,
+											transition: 'opacity 0.2s',
+										}}
+									/>
 									<img
 										src={toggleMic}
 										className={styles.mainIcon}
@@ -376,13 +391,15 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								onClick={handleToggleVideo}
 								disabled={isScreenSharing}>
 								<div className={styles.toggleIconWrapper}>
-									{(isCamMuted || isScreenSharing) && (
-										<img
-											src={rejectIcon}
-											className={styles.offIcon}
-											alt='Камера выключена'
-										/>
-									)}
+									<img
+										src={rejectIcon}
+										className={styles.offIcon}
+										alt='Камера выключена'
+										style={{
+											opacity: isCamMuted || isScreenSharing ? 1 : 0,
+											transition: 'opacity 0.2s',
+										}}
+									/>
 									<img
 										src={toggleCamera}
 										className={styles.mainIcon}
@@ -419,17 +436,17 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								onClick={onEndCall}>
 								завершить звонок
 							</Button>
-
-							{/* Поповер настроек */}
-							<CallSettingsPopover
-								isOpen={isSettingsOpen}
-								onClose={() => setIsSettingsOpen(false)}
-								callStatus={callStatus}
-								remoteVolume={remoteVolume}
-								onRemoteVolumeChange={setRemoteVolume}
-								isCamMuted={isCamMuted}
-							/>
 						</div>
+
+						{/* Поповер настроек */}
+						<CallSettingsPopover
+							isOpen={isSettingsOpen}
+							onClose={() => setIsSettingsOpen(false)}
+							callStatus={callStatus}
+							remoteVolume={remoteVolume}
+							onRemoteVolumeChange={setRemoteVolume}
+							isCamMuted={isCamMuted}
+						/>
 					</div>
 				</div>
 

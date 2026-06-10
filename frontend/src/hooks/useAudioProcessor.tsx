@@ -68,7 +68,7 @@ export const useAudioProcessor = () => {
 
 			// Уменьшаем громкость выходного сигнала
 			const outputGain = audioContext.createGain();
-			outputGain.gain.value = 0.9;
+			outputGain.gain.value = 0.75;
 			outputGainRef.current = outputGain;
 
 			// Получаем очищенный звук

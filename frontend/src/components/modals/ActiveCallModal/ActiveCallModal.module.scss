@@ -70,6 +70,7 @@
 	&:first-child {
 		background-color: #48adb0;
 	}
+
 	&:last-child {
 		background-color: #9acbad;
 	}
@@ -159,6 +160,7 @@
 		2px 2px 0 #000,
 		4px 4px 0 #000;
 }
+
 .mutedIcon {
 	display: block;
 	width: 16px;
@@ -167,6 +169,7 @@
 }
 
 .controlsWrapper {
+	position: relative;
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -198,6 +201,7 @@
 	width: 22px;
 	aspect-ratio: 1;
 }
+
 .toggleBtn {
 	position: relative;
 }
@@ -207,6 +211,7 @@
 	height: 100%;
 	object-fit: contain;
 }
+
 .offIcon {
 	position: absolute;
 	top: -8px;
