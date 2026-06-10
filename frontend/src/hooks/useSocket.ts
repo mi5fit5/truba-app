@@ -50,7 +50,7 @@ export const useSocket = () => {
 		if (!currentUserId) return;
 
 		// Устанавливаем связь с сервером
-		const newSocket = io('http://localhost:3000', {
+		const newSocket = io('/', {
 			withCredentials: true,
 		});
 
@@ -114,7 +114,7 @@ export const useSocket = () => {
 
 			if (
 				!isCurrentUser &&
-				!message.isSystem &&
+				message.type !== 'system' &&
 				(!isFromActiveFriend || (isModalActive && !isCallChatOpenRef.current))
 			) {
 				playSystemSound(messageSound);

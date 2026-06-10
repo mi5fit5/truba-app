@@ -440,10 +440,7 @@ export const UserSettingsModal = ({
 									привязка steam-аккаунта:
 								</Text>
 								<Button
-									onClick={() =>
-										(window.location.href =
-											'http://localhost:3000/api/auth/steam')
-									}
+									onClick={() => (window.location.href = '/api/auth/steam')}
 									size='huge'
 									style={{ width: '100%', height: '50px' }}
 									disabled={!!user?.steamId}>

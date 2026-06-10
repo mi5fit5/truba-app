@@ -1,14 +1,4 @@
 services:
-  # MongoDB
-  database:
-    container_name: truba_mongo
-    image: mongo:latest
-    volumes:
-      - mongo_data:/data/db
-    networks:
-      - db-network
-    restart: unless-stopped
-
   # Backend
   backend:
     container_name: truba_backend
@@ -17,14 +7,7 @@ services:
       dockerfile: Dockerfile
     env_file:
       - ./backend/.env
-    environment:
-      - DATABASE_URI=mongodb://database:27017/truba_db
-    ports:
-      - "3000:3000"
-    depends_on:
-      - database
     networks:
-      - db-network
       - http-network
     restart: unless-stopped
 
@@ -42,13 +25,7 @@ services:
       - http-network
     restart: unless-stopped
 
-  # Volumes
-volumes:
-  mongo_data:
-
   # Networks
 networks:
-  db-network:
-    driver: bridge
   http-network:
     driver: bridge
