@@ -76,7 +76,10 @@ export const useAudioProcessor = () => {
 	// Выключение шумоподавления
 	const stopNoiseSuppression = useCallback(() => {
 		// Отключаем узлы друг от друга
-		if (workletNodeRef.current) workletNodeRef.current.disconnect();
+		if (workletNodeRef.current) {
+			workletNodeRef.current.port.postMessage({ type: 'destroy' });
+			workletNodeRef.current.disconnect();
+		}
 		if (sourceNodeRef.current) sourceNodeRef.current.disconnect();
 
 		// Закрываем аудио-контекст

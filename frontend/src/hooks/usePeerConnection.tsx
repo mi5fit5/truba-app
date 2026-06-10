@@ -440,21 +440,31 @@ export const usePeerConnection = () => {
 				if (oldTrack && newTrack) {
 					if (peerRef.current.destroyed) return;
 
-					peerRef.current.replaceTrack(
-						oldTrack,
-						newTrack,
-						localStreamRef.current
-					);
-					localStreamRef.current.removeTrack(oldTrack);
-					oldTrack.stop();
-					localStreamRef.current.addTrack(newTrack);
-
-					setLocalStream(new MediaStream(localStreamRef.current.getTracks()));
-
 					if (type === 'audio') {
+						// Сохраняем ссылку на старый сырой трек для последующей остановки
+						const previousRawTrack = rawAudioTrackRef.current;
 						rawAudioTrackRef.current = newTrack;
 
 						await applyNoiseMode(noiseModeRef.current);
+
+						// Останавливаем старый сырой трек микрофона после замены
+						if (previousRawTrack && previousRawTrack !== newTrack) {
+							previousRawTrack.stop();
+						}
+
+						setLocalStream(new MediaStream(localStreamRef.current.getTracks()));
+					} else {
+						// Прямая замена видео-трека
+						peerRef.current.replaceTrack(
+							oldTrack,
+							newTrack,
+							localStreamRef.current
+						);
+						localStreamRef.current.removeTrack(oldTrack);
+						oldTrack.stop();
+						localStreamRef.current.addTrack(newTrack);
+
+						setLocalStream(new MediaStream(localStreamRef.current.getTracks()));
 					}
 				}
 			} catch (err: unknown) {

@@ -10,8 +10,8 @@ class RNNoiseProcessor extends AudioWorkletProcessor {
 		this.rnnoiseState = null;
 		this.wasmHeapPointer = null;
 
-		this.inputBuffer = new Float32Array(FRAME_SIZE * 2);
-		this.outputBuffer = new Float32Array(FRAME_SIZE * 2);
+		this.inputBuffer = new Float32Array(FRAME_SIZE * 4);
+		this.outputBuffer = new Float32Array(FRAME_SIZE * 4);
 		this.inputOffset = 0;
 		this.outputOffset = 0;
 
@@ -29,6 +29,26 @@ class RNNoiseProcessor extends AudioWorkletProcessor {
 			.catch((err) => {
 				console.error('Ошибка загрузки WASM модуля:', err);
 			});
+
+		// Обработка команд из основного потока
+		this.port.onmessage = (event) => {
+			if (event.data.type === 'destroy') {
+				this.cleanup();
+			}
+		};
+	}
+
+	// Освобождение WASM-памяти
+	cleanup() {
+		if (this.model && this.rnnoiseState) {
+			this.model._rnnoise_destroy(this.rnnoiseState);
+			this.rnnoiseState = null;
+		}
+		if (this.model && this.wasmHeapPointer) {
+			this.model._free(this.wasmHeapPointer);
+			this.wasmHeapPointer = null;
+		}
+		this.model = null;
 	}
 
 	process(inputs, outputs) {
@@ -46,6 +66,11 @@ class RNNoiseProcessor extends AudioWorkletProcessor {
 		if (!this.model || !this.rnnoiseState) {
 			outChannel.set(inChannel);
 			return true;
+		}
+
+		// Защита от переполнения входного буфера
+		if (this.inputOffset + workletSize > this.inputBuffer.length) {
+			this.inputOffset = 0;
 		}
 
 		this.inputBuffer.set(inChannel, this.inputOffset);
@@ -71,6 +96,12 @@ class RNNoiseProcessor extends AudioWorkletProcessor {
 				heapIndex,
 				heapIndex + FRAME_SIZE
 			);
+
+			// Защита от переполнения выходного буфера
+			if (this.outputOffset + FRAME_SIZE > this.outputBuffer.length) {
+				this.outputOffset = 0;
+			}
+
 			this.outputBuffer.set(cleanFrame, this.outputOffset);
 			this.outputOffset += FRAME_SIZE;
 
