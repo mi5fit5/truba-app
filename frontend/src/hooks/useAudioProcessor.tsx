@@ -7,6 +7,8 @@ export const useAudioProcessor = () => {
 	const destinationNodeRef = useRef<MediaStreamAudioDestinationNode | null>(
 		null
 	);
+	const highpassFilterRef = useRef<BiquadFilterNode | null>(null);
+	const outputGainRef = useRef<GainNode | null>(null);
 
 	// Запуск шумоподавления
 	const startNoiseSuppression = useCallback(async (rawStream: MediaStream) => {
@@ -38,6 +40,7 @@ export const useAudioProcessor = () => {
 			const highpassFilter = audioContext.createBiquadFilter();
 			highpassFilter.type = 'highpass';
 			highpassFilter.frequency.value = 100;
+			highpassFilterRef.current = highpassFilter;
 
 			// Создаем узел нейросети и передаем ему скачанные байты
 			const workletNode = new AudioWorkletNode(
@@ -51,9 +54,22 @@ export const useAudioProcessor = () => {
 			);
 			workletNodeRef.current = workletNode;
 
+			// Ожидаем готовность WASM-модуля в AudioWorklet
+			await new Promise<void>((resolve) => {
+				const timeout = setTimeout(() => resolve(), 5000);
+
+				workletNode.port.onmessage = (e: MessageEvent) => {
+					if (e.data.type === 'ready') {
+						clearTimeout(timeout);
+						resolve();
+					}
+				};
+			});
+
 			// Уменьшаем громкость выходного сигнала
 			const outputGain = audioContext.createGain();
 			outputGain.gain.value = 0.9;
+			outputGainRef.current = outputGain;
 
 			// Получаем очищенный звук
 			const destinationNode = audioContext.createMediaStreamDestination();
@@ -75,12 +91,14 @@ export const useAudioProcessor = () => {
 
 	// Выключение шумоподавления
 	const stopNoiseSuppression = useCallback(() => {
-		// Отключаем узлы друг от друга
+		// Отключаем все узлы друг от друга
 		if (workletNodeRef.current) {
 			workletNodeRef.current.port.postMessage({ type: 'destroy' });
 			workletNodeRef.current.disconnect();
 		}
 		if (sourceNodeRef.current) sourceNodeRef.current.disconnect();
+		if (highpassFilterRef.current) highpassFilterRef.current.disconnect();
+		if (outputGainRef.current) outputGainRef.current.disconnect();
 
 		// Закрываем аудио-контекст
 		if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
@@ -92,6 +110,8 @@ export const useAudioProcessor = () => {
 		sourceNodeRef.current = null;
 		audioContextRef.current = null;
 		destinationNodeRef.current = null;
+		highpassFilterRef.current = null;
+		outputGainRef.current = null;
 	}, []);
 
 	return { startNoiseSuppression, stopNoiseSuppression };

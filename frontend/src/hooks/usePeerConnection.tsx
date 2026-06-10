@@ -620,10 +620,13 @@ export const usePeerConnection = () => {
 			screenStreamRef.current = null;
 		}
 
-		if (rawAudioTrackRef.current) {
+		if (
+			rawAudioTrackRef.current &&
+			rawAudioTrackRef.current.readyState === 'live'
+		) {
 			rawAudioTrackRef.current.stop();
-			rawAudioTrackRef.current = null;
 		}
+		rawAudioTrackRef.current = null;
 
 		if (localStreamRef.current) {
 			localStreamRef.current.getTracks().forEach((track) => track.stop());

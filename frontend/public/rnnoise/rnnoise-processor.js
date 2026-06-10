@@ -23,8 +23,10 @@ class RNNoiseProcessor extends AudioWorkletProcessor {
 		})
 			.then((module) => {
 				this.model = module;
+				this.model._rnnoise_init(); // Явная инициализация нейросети
 				this.rnnoiseState = this.model._rnnoise_create(); // Инстанс нейросети
 				this.wasmHeapPointer = this.model._malloc(FRAME_SIZE * 4); // Выделяем память в WASM
+				this.port.postMessage({ type: 'ready' }); // Уведомляем основной поток
 			})
 			.catch((err) => {
 				console.error('Ошибка загрузки WASM модуля:', err);
@@ -118,7 +120,7 @@ class RNNoiseProcessor extends AudioWorkletProcessor {
 			this.outputBuffer.copyWithin(0, workletSize, this.outputOffset);
 			this.outputOffset -= workletSize;
 		} else {
-			outChannel.fill(0); // Отдаем тишину при задержки
+			outChannel.set(inChannel);
 		}
 
 		return true;
