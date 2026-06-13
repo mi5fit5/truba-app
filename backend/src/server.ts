@@ -18,9 +18,19 @@ dotenv.config();
 
 const PORT = process.env.PORT || 3000;
 
+const allowedOrigins = process.env.CLIENT_URL
+	? process.env.CLIENT_URL.split(',')
+	: ['http://localhost:8080'];
+
 app.use(
 	cors({
-		origin: process.env.CLIENT_URL,
+		origin: function (origin, callback) {
+			if (!origin || allowedOrigins.includes(origin)) {
+				callback(null, true);
+			} else {
+				callback(new Error('Не разрешено CORS'));
+			}
+		},
 		credentials: true,
 	})
 );
