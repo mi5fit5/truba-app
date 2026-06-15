@@ -5,10 +5,11 @@
 	justify-content: center;
 	min-height: 100vh;
 	box-sizing: border-box;
+	padding: 10px;
 }
 
 .authWindow {
-	width: 450px;
+	width: min(450px, 92vw);
 	min-height: 464px;
 }
 

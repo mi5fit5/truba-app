@@ -1,8 +1,8 @@
 .sidebar {
 	display: grid;
-	grid-template-rows: 1fr 216px auto;
+	grid-template-rows: 1fr minmax(150px, 216px) auto;
 	gap: 10px;
-	height: 666px;
+	height: clamp(400px, 70vh, 666px);
 	width: 100%;
 }
 
@@ -33,4 +33,13 @@
 	min-height: 0;
 	display: flex;
 	flex-direction: column;
+}
+
+@media (max-width: 768px) {
+	.sidebar {
+		height: auto;
+		min-height: 0;
+		max-height: calc(100vh - 60px);
+		grid-template-rows: 1fr minmax(120px, 180px) auto;
+	}
 }

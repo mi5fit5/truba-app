@@ -79,11 +79,13 @@ const chatSlice = createSlice({
 	name: 'chat',
 	initialState,
 	reducers: {
-		setActiveFriendId: (state, action: PayloadAction<string>) => {
+		setActiveFriendId: (state, action: PayloadAction<string | null>) => {
 			state.activeFriendId = action.payload;
-			state.unreadSenders = state.unreadSenders.filter(
-				(id) => id !== action.payload
-			);
+			if (action.payload) {
+				state.unreadSenders = state.unreadSenders.filter(
+					(id) => id !== action.payload
+				);
+			}
 		},
 		addMessage: (state, action: PayloadAction<TMessage>) => {
 			const newMessage = action.payload;
