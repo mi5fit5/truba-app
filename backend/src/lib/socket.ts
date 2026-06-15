@@ -160,6 +160,13 @@ io.on('connection', (socket) => {
 		if (targetSocketId.length > 0) {
 			io.to(targetSocketId).emit('acceptedCall', { signal, mediaState });
 		}
+
+		const otherSockets = getReceiverSocketId(userId).filter(
+			(id) => id !== socket.id
+		);
+		if (otherSockets.length > 0) {
+			io.to(otherSockets).emit('callAnsweredSomewhereElse');
+		}
 	});
 
 	// Переключение медиа-устройств во время звонка
@@ -229,6 +236,14 @@ io.on('connection', (socket) => {
 		// Отправляем сигнал о завершении собеседнику
 		if (targetSocketId.length > 0) {
 			io.to(targetSocketId).emit('completedCall');
+		}
+
+		// Уведомляем другие сессии текущего пользователя о завершении звонка
+		const myOtherSockets = getReceiverSocketId(userId).filter(
+			(id) => id !== socket.id
+		);
+		if (myOtherSockets.length > 0) {
+			io.to(myOtherSockets).emit('completedCall');
 		}
 	});
 

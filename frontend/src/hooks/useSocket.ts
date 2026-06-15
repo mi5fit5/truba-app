@@ -8,6 +8,7 @@ import {
 	setOnlineUsers,
 	addMessage,
 	receiveCall,
+	endCall,
 	selectCallStatus,
 	updatePeerMedia,
 	selectActiveFriendId,
@@ -132,6 +133,11 @@ export const useSocket = () => {
 		// Входящий звонок
 		newSocket.on('incomingCall', (data: TIncomingCall) => {
 			dispatch(receiveCall(data));
+		});
+
+		// Звонок принят на другом устройстве/вкладке
+		newSocket.on('callAnsweredSomewhereElse', () => {
+			dispatch(endCall());
 		});
 
 		// Пришла заявка в друзья
