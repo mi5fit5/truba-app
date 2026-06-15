@@ -25,7 +25,8 @@ export const AppLayout = () => {
 					<div className={activeFriendId ? styles.sidebarHidden : ''}>
 						<Sidebar />
 					</div>
-					<div className={!activeFriendId ? styles.chatHidden : ''}>
+					<div
+						className={`${styles.chatWrapper} ${!activeFriendId ? styles.chatHidden : ''}`}>
 						{activeFriendId && (
 							<Button
 								size='small'
