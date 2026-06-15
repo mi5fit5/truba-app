@@ -85,39 +85,56 @@ export const ChatHeader = ({ friend }: ChatHeaderProps) => {
 
 	return (
 		<div className={styles.container}>
-			<div
-				className={styles.friendInfoWrapper}
-				onClick={(e) => {
-					e.stopPropagation();
-					setIsPopoverOpen(!isPopoverOpen);
-				}}
-				onMouseDown={(e) => e.stopPropagation()}>
-				<div className={styles.friendInfo} title='Посмотреть профиль'>
-					<Avatar
-						src={friend.avatar || ''}
-						name={friend.username}
-						size='medium'
-					/>
-					<div className={styles.textWrapper}>
-						<Text as='p' size={22} align='left' className={styles.username}>
-							{friend.username}
-						</Text>
-						<div className={styles.statusContainer}>
-							<div
-								className={`${styles.status} ${isOnline ? styles.online : styles.offline}`}></div>
-							<Text
-								as='p'
-								size={12}
-								align='left'
-								className={friend.currentGame ? styles.playingText : ''}>
-								{friend.currentGame
-									? `играет в ${friend.currentGame}`
-									: isOnline
-										? 'онлайн'
-										: 'офлайн'}
+			<div className={styles.topRow}>
+				<div
+					className={styles.friendInfoWrapper}
+					onClick={(e) => {
+						e.stopPropagation();
+						setIsPopoverOpen(!isPopoverOpen);
+					}}
+					onMouseDown={(e) => e.stopPropagation()}>
+					<div className={styles.friendInfo} title='Посмотреть профиль'>
+						<Avatar
+							src={friend.avatar || ''}
+							name={friend.username}
+							size='medium'
+						/>
+						<div className={styles.textWrapper}>
+							<Text as='p' size={22} align='left' className={styles.username}>
+								{friend.username}
 							</Text>
+							<div className={styles.statusContainer}>
+								<div
+									className={`${styles.status} ${isOnline ? styles.online : styles.offline}`}></div>
+								<Text
+									as='p'
+									size={12}
+									align='left'
+									className={friend.currentGame ? styles.playingText : ''}>
+									{friend.currentGame
+										? `играет в ${friend.currentGame}`
+										: isOnline
+											? 'онлайн'
+											: 'офлайн'}
+								</Text>
+							</div>
 						</div>
 					</div>
+				</div>
+
+				<div className={styles.callButtons}>
+					<Button
+						size='small'
+						title='Голосовой звонок'
+						onClick={() => handleCall('audio')}>
+						<img src={phoneCallIcon} alt='Иконка: голосовой звонок' />
+					</Button>
+					<Button
+						size='small'
+						title='Видеозвонок'
+						onClick={() => handleCall('video')}>
+						<img src={videoCallIcon} alt='Иконка: видеозвонок' />
+					</Button>
 				</div>
 			</div>
 
@@ -141,33 +158,17 @@ export const ChatHeader = ({ friend }: ChatHeaderProps) => {
 				</div>
 			)}
 
-			<div className={styles.chatTools}>
-				<div className={styles.callButtons}>
-					<Button
-						size='small'
-						title='Голосовой звонок'
-						onClick={() => handleCall('audio')}>
-						<img src={phoneCallIcon} alt='Иконка: голосовой звонок' />
-					</Button>
-					<Button
-						size='small'
-						title='Видеозвонок'
-						onClick={() => handleCall('video')}>
-						<img src={videoCallIcon} alt='Иконка: видеозвонок' />
-					</Button>
-				</div>
-				<ActionInput
-					className={styles.searchBlock}
-					value={searchQuery}
-					onChange={handleSearchChange}
-					placeholder='найти...'
-					iconSrc={findMessageIcon}
-					iconAlt='Иконка: поиск по чату'
-					buttonTitle='Поиск сообщений по истории чата'
-					buttonSize='small'
-					onAction={handleSearchSubmit}
-				/>
-			</div>
+			<ActionInput
+				className={styles.searchBlock}
+				value={searchQuery}
+				onChange={handleSearchChange}
+				placeholder='найти...'
+				iconSrc={findMessageIcon}
+				iconAlt='Иконка: поиск по чату'
+				buttonTitle='Поиск сообщений по истории чата'
+				buttonSize='small'
+				onAction={handleSearchSubmit}
+			/>
 
 			<DialogModal
 				isOpen={isDeleteModalOpen}

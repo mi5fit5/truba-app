@@ -90,3 +90,12 @@
 		aspect-ratio: 1;
 	}
 }
+
+@media (max-width: 768px) {
+	.huge,
+	.large,
+	.medium {
+		width: auto;
+		padding: 0 15px;
+	}
+}

@@ -1,8 +1,15 @@
 .container {
 	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	position: relative;
+}
+
+.topRow {
+	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	position: relative;
+	width: 100%;
 }
 
 .friendInfoWrapper {
@@ -92,13 +99,6 @@
 	white-space: nowrap;
 }
 
-.chatTools {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	min-width: 0;
-}
-
 .callButtons {
 	display: flex;
 	gap: 6px;
@@ -107,7 +107,6 @@
 
 .searchBlock {
 	width: 100%;
-	max-width: 260px;
 }
 
 .popoverCenterBottom {

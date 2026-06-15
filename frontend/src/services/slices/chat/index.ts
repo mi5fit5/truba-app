@@ -81,6 +81,7 @@ const chatSlice = createSlice({
 	reducers: {
 		setActiveFriendId: (state, action: PayloadAction<string | null>) => {
 			state.activeFriendId = action.payload;
+
 			if (action.payload) {
 				state.unreadSenders = state.unreadSenders.filter(
 					(id) => id !== action.payload

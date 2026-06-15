@@ -18,12 +18,13 @@
 	outline: none;
 	color: #000;
 	background-color: #fff;
+	width: 100%;
+	min-width: 0;
 
 	font-family: inherit;
 	resize: none;
 	min-height: 100px;
 
-	&:focus,
 	&:disabled {
 		background-color: #e4e4e4;
 	}

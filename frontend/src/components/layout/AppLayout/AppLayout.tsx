@@ -22,7 +22,8 @@ export const AppLayout = () => {
 				icon={<img src={mainAppLogo} alt='Лого: Трубка телефона и Земля' />}
 				className={styles.appWindow}>
 				<div className={styles.mainArea}>
-					<div className={activeFriendId ? styles.sidebarHidden : ''}>
+					<div
+						className={`${styles.sidebarWrapper} ${activeFriendId ? styles.sidebarHidden : ''}`}>
 						<Sidebar />
 					</div>
 					<div
@@ -32,7 +33,7 @@ export const AppLayout = () => {
 								size='small'
 								className={styles.mobileBackBtn}
 								onClick={handleMobileBack}>
-								← назад
+								вернуться к списку друзей и профилю
 							</Button>
 						)}
 						<ChatArea />
