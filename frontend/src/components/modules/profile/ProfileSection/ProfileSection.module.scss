@@ -14,19 +14,21 @@
 
 .userInfoWrapper {
 	position: relative;
+	z-index: 1;
+	min-width: 0;
+	overflow: hidden;
 	cursor: pointer;
 	user-select: none;
-	z-index: 1;
 
 	&::before {
 		content: '';
-		color: #fff;
 		position: absolute;
 		top: -4px;
+		right: -4px;
 		bottom: -4px;
 		left: -4px;
-		right: -4px;
 		z-index: -1;
+		color: #fff;
 	}
 
 	&:hover {
@@ -71,11 +73,12 @@
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
+	min-width: 0;
 	overflow: hidden;
 }
 
 .username {
-	width: 70px;
+	max-width: 100%;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -85,8 +88,10 @@
 	display: flex;
 	align-items: center;
 	gap: 6px;
+	min-width: 0;
 
 	.status {
+		flex-shrink: 0;
 		width: 8px;
 		border: 1px solid #000;
 		background-color: #33ff00;
@@ -95,7 +100,7 @@
 }
 
 .playingText {
-	width: 70px;
+	max-width: 100%;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -114,4 +119,15 @@
 	z-index: 2;
 	transform: translateX(-50%);
 	cursor: default;
+}
+
+@media (max-width: 768px) {
+	.popoverCenterTop {
+		position: fixed;
+		top: 50%;
+		bottom: auto;
+		left: 50%;
+		z-index: 100;
+		transform: translate(-50%, -50%);
+	}
 }

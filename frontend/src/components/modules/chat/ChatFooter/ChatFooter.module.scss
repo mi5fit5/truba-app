@@ -9,3 +9,15 @@
 	flex: 1;
 	min-width: 0;
 }
+
+@media (max-width: 768px) {
+	.container {
+		button {
+			width: auto;
+			min-width: auto;
+			height: 36px;
+			padding: 0 10px;
+			font-size: 12px;
+		}
+	}
+}

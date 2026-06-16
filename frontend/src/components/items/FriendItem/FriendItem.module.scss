@@ -33,12 +33,21 @@
 	flex-direction: column;
 	justify-content: center;
 	gap: 2px;
+	min-width: 0;
+	overflow: hidden;
+
+	p {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
 }
 
 .statusWrapper {
 	display: flex;
 	align-items: center;
 	gap: 6px;
+	min-width: 0;
 }
 
 .statusIndicator {

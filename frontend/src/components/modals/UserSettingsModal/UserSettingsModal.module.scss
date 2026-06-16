@@ -1,16 +1,24 @@
 .settingsWindow {
-	width: 450px;
+	width: min(100%, 450px);
+	max-height: 90vh;
+	display: flex;
+	flex-direction: column;
 }
 
 .container {
 	padding: 10px;
 	background-color: #c0c0c0;
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
 }
 
 .tabsHeader {
 	position: relative;
 	z-index: 2;
 	display: flex;
+	flex-wrap: wrap;
 	gap: 2px;
 	margin-bottom: -2px;
 	padding-left: 2px;
@@ -52,6 +60,7 @@
 		inset -2px -2px #7e7e7e;
 	overflow-y: auto;
 	background-color: #c0c0c0;
+	flex: 1;
 }
 
 .contentSection {
@@ -69,12 +78,14 @@
 .footer {
 	display: flex;
 	justify-content: flex-end;
+	flex-wrap: wrap;
 	gap: 6px;
 	margin-top: 10px;
 }
 
 .changePasswordActions {
 	display: flex;
+	flex-wrap: wrap;
 	gap: 6px;
 	margin-top: 10px;
 }
@@ -132,6 +143,7 @@
 	align-items: center;
 	gap: 10px;
 	user-select: none;
+	min-width: 0;
 }
 
 .steamUserInfo {
@@ -139,6 +151,7 @@
 	flex-direction: column;
 	justify-content: center;
 	gap: 2px;
+	min-width: 0;
 
 	p {
 		max-width: 200px;
@@ -155,6 +168,7 @@
 	outline: none;
 	background: transparent;
 	cursor: var(--cursor-pointer, pointer);
+	flex-shrink: 0;
 
 	img {
 		width: 20px;
@@ -179,5 +193,30 @@
 		opacity: 0.5;
 		filter: grayscale(100%);
 		cursor: not-allowed;
+	}
+}
+
+@media (max-width: 768px) {
+	.settingsWindow {
+		width: 100vw;
+		height: 100vh;
+		max-height: none;
+	}
+
+	.tabsHeader {
+		justify-content: center;
+	}
+
+	.tabContent {
+		min-height: auto;
+		flex: 1;
+	}
+
+	.changePasswordActions {
+		justify-content: center;
+	}
+
+	.footer {
+		justify-content: center;
 	}
 }

@@ -2,7 +2,8 @@
 	display: grid;
 	grid-template-rows: 1fr minmax(150px, 216px) auto;
 	gap: 10px;
-	height: clamp(400px, 70vh, 666px);
+	height: 100%;
+	min-height: 0;
 	width: 100%;
 }
 

@@ -96,12 +96,6 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		}
 	}
 
-	useEffect(() => {
-		if (isChatOpen) {
-			setFocusedParticipant(null);
-		}
-	}, [isChatOpen]);
-
 	// Привязка локального видео
 	useEffect(() => {
 		const videoNode = localVideoRef.current;
@@ -200,6 +194,8 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		if (!isChatOpen && participant) {
 			dispatch(setActiveFriendId(participant._id));
 			dispatch(fetchChatHistory(participant._id));
+
+			setFocusedParticipant(null);
 		}
 		dispatch(setChatOpen(!isChatOpen));
 	};
