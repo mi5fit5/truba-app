@@ -8,10 +8,14 @@
 		inset -2px -2px #7e7e7e;
 	color: #000;
 	background-color: #c0c0c0;
+	min-height: 0;
+	min-width: 0;
 
 	.windowBody {
 		display: flex;
 		flex-direction: column;
 		flex: 1;
+		min-height: 0;
+		min-width: 0;
 	}
 }

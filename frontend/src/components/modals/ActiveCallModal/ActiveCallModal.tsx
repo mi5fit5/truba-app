@@ -18,6 +18,7 @@ import {
 	setChatOpen,
 	selectIsScreenSharing,
 } from '@slices';
+import { useMediaQuery } from '@hooks';
 
 import { MessageList, ChatFooter } from '@components';
 import { CallSettingsPopover } from '@modals';
@@ -28,6 +29,7 @@ import {
 	mutedSoundIcon,
 	networkModalIcon,
 	newMessageIcon,
+	phoneCallIcon,
 	rejectIcon,
 	settingsIcon,
 	shareScreenIcon,
@@ -65,12 +67,17 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		toggleLocalVideo,
 	} = usePeerContext();
 
+	const isMobile = useMediaQuery('(max-width: 1120px)');
+	const isHugeButton = useMediaQuery('(max-width: 430px)');
+
 	// Стейты для настроек звонка
 	const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 	const [remoteVolume, setRemoteVolume] = useState(100);
-	const [focusedParticipant, setFocusedParticipant] = useState<
+
+	const [rawFocusedParticipant, setFocusedParticipant] = useState<
 		'local' | 'remote' | null
 	>(null);
+	const focusedParticipant = isMobile ? null : rawFocusedParticipant;
 
 	// Данные собеседника
 	const remoteMedia = useSelector(selectRemoteMedia);
@@ -241,7 +248,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 					className={clsx(
 						styles.leftColumn,
 						isChatOpen && styles.chatOpen,
-						focusedParticipant && !isChatOpen && styles.withPadding
+						!isChatOpen && styles.withPadding
 					)}>
 					<div
 						className={clsx(
@@ -256,6 +263,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								focusedParticipant === 'remote' && styles.unfocused
 							)}
 							onClick={() =>
+								!isMobile &&
 								!isChatOpen &&
 								setFocusedParticipant((p) => (p === 'local' ? null : 'local'))
 							}>
@@ -306,6 +314,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								focusedParticipant === 'local' && styles.unfocused
 							)}
 							onClick={() =>
+								!isMobile &&
 								!isChatOpen &&
 								setFocusedParticipant((p) => (p === 'remote' ? null : 'remote'))
 							}>
@@ -423,14 +432,17 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 								size='small'
 								onClick={() => setIsSettingsOpen(!isSettingsOpen)}>
 								<img src={settingsIcon} alt='Настройки' />
-								{/* настройки */}
 							</Button>
 							<Button
 								title='Завершить звонок'
 								variant='red'
-								size='huge'
+								size={isHugeButton ? 'small' : 'huge'}
 								onClick={onEndCall}>
-								завершить звонок
+								{isHugeButton ? (
+									<img src={phoneCallIcon} alt='Завершить звонок' />
+								) : (
+									'завершить звонок'
+								)}
 							</Button>
 						</div>
 

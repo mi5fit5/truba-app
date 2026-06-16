@@ -2,9 +2,9 @@
 	display: grid;
 	grid-template-rows: 1fr minmax(150px, 216px) auto;
 	gap: 10px;
-	height: 100%;
-	min-height: 0;
+	height: clamp(400px, 70vh, 666px);
 	width: 100%;
+	min-width: 0;
 }
 
 .panel {

@@ -1,10 +1,12 @@
 .chatArea {
 	display: grid;
-	grid-template-rows: minmax(0, 1fr) auto;
+	flex: 1;
 	grid-template-columns: minmax(0, 1fr);
+	grid-template-rows: minmax(0, 1fr) auto;
 	gap: 10px;
-	height: 100%;
+	min-width: 0;
 	min-height: 0;
+	max-height: clamp(400px, 70vh, 666px);
 }
 
 .emptyArea {
@@ -26,9 +28,9 @@
 .panel {
 	display: flex;
 	flex-direction: column;
-	min-height: 0;
-	min-width: 0;
 	gap: 10px;
+	min-width: 0;
+	min-height: 0;
 	border: 2px solid;
 	border-color: #fff #262626 #262626 #fff;
 	padding: 10px;
@@ -42,8 +44,8 @@
 	display: flex;
 	flex-direction: column;
 	flex: 1;
-	min-height: 0;
 	min-width: 0;
+	min-height: 0;
 	border: 2px solid;
 	border-color: #262626 #f0f0f0 #f0f0f0 #262626;
 	box-shadow:
@@ -51,4 +53,10 @@
 		inset -2px -2px #c3c3c3;
 	overflow-y: auto;
 	background-color: #fff;
+}
+
+@media (max-width: 768px) {
+	.chatArea {
+		max-height: none;
+	}
 }

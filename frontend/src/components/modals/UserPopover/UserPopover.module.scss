@@ -1,8 +1,9 @@
 .popoverWrapper {
 	display: flex;
 	flex-direction: column;
+
 	gap: 12px;
-	width: 280px;
+	width: 100%;
 	border: 2px solid;
 	border-color: #fff #262626 #262626 #fff;
 	padding: 12px;
@@ -147,10 +148,4 @@
 .actionsSection {
 	display: flex;
 	width: 100%;
-}
-
-@media (max-width: 768px) {
-	.popoverWrapper {
-		width: min(90vw, 280px);
-	}
 }

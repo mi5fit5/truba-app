@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from '@store';
 import { selectIsSending, sendMessage } from '@slices';
+import { useMediaQuery } from '@hooks';
 
 import { ActionInput } from '@ui';
 
@@ -17,6 +18,8 @@ export const MessageInput = ({
 	const [message, setMessage] = useState('');
 
 	const isSending = useSelector(selectIsSending);
+
+	const isMobile = useMediaQuery('(max-width: 768px)');
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setMessage(e.target.value);
@@ -35,8 +38,8 @@ export const MessageInput = ({
 			onChange={handleChange}
 			placeholder='введите сообщение...'
 			buttonTitle='Отправить сообщение'
-			buttonSize={buttonSize}
-			buttonText={isSending ? 'отправка...' : 'отправить'}
+			buttonSize={isMobile ? 'small' : buttonSize}
+			buttonText={isMobile ? '⭢' : isSending ? 'отправка...' : 'отправить'}
 			onAction={handleSend}
 			disabled={isSending}
 		/>

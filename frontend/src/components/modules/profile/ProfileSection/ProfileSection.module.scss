@@ -115,19 +115,8 @@
 .popoverCenterTop {
 	position: absolute;
 	bottom: calc(100% + 10px);
-	left: 50%;
+	left: -2px;
 	z-index: 2;
-	transform: translateX(-50%);
+	width: calc(100% + 4px);
 	cursor: default;
-}
-
-@media (max-width: 768px) {
-	.popoverCenterTop {
-		position: fixed;
-		top: 50%;
-		bottom: auto;
-		left: 50%;
-		z-index: 100;
-		transform: translate(-50%, -50%);
-	}
 }
