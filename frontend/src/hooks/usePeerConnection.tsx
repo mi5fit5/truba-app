@@ -204,7 +204,7 @@ export const usePeerConnection = () => {
 			const { data } = await peerRequests.getIceServers();
 
 			if (Array.isArray(data) && data.length > 0) {
-				iceServersRef.current = [...FALLBACK_ICE_SERVERS, ...data];
+				iceServersRef.current = data;
 			}
 		} catch (err: unknown) {
 			console.warn('Не удалось получить ICE-серверы, используем фолбэк:', err);
