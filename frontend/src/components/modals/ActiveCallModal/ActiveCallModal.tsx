@@ -65,6 +65,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		toggleScreenShare,
 		toggleLocalAudio,
 		toggleLocalVideo,
+		isScreenShareSupported,
 	} = usePeerContext();
 
 	const isMobile = useMediaQuery('(max-width: 1023px)');
@@ -412,20 +413,22 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 									/>
 								</div>
 							</Button>
-							<Button
-								title={
-									isScreenSharing
-										? 'Остановить демонстрацию экрана'
-										: 'Демонстрация экрана'
-								}
-								size='small'
-								className={clsx(
-									styles.toggleBtn,
-									isScreenSharing && styles.activeControl
-								)}
-								onClick={handleToggleScreenShare}>
-								<img src={shareScreenIcon} alt='Демонстрация экрана' />
-							</Button>
+							{isScreenShareSupported && (
+								<Button
+									title={
+										isScreenSharing
+											? 'Остановить демонстрацию экрана'
+											: 'Демонстрация экрана'
+									}
+									size='small'
+									className={clsx(
+										styles.toggleBtn,
+										isScreenSharing && styles.activeControl
+									)}
+									onClick={handleToggleScreenShare}>
+									<img src={shareScreenIcon} alt='Демонстрация экрана' />
+								</Button>
+							)}
 							<Button
 								id='settings-button'
 								title='Настройки'

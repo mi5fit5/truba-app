@@ -491,6 +491,15 @@ export const usePeerConnection = () => {
 		}
 	}, []);
 
+	// Проверка поддержки демонстрации экрана на устройстве
+	const isScreenShareSupported = useMemo(() => {
+		return (
+			typeof navigator !== 'undefined' &&
+			!!navigator.mediaDevices &&
+			typeof navigator.mediaDevices.getDisplayMedia === 'function'
+		);
+	}, []);
+
 	// Демонстрация экрана
 	const toggleScreenShare = useCallback(
 		async function performToggleScreenShare(): Promise<boolean> {
@@ -824,6 +833,7 @@ export const usePeerConnection = () => {
 			toggleLocalAudio,
 			switchDevice,
 			switchSpeaker,
+			isScreenShareSupported,
 			availableMics,
 			availableCams,
 			availableSpeakers,
@@ -848,6 +858,7 @@ export const usePeerConnection = () => {
 			toggleLocalAudio,
 			switchDevice,
 			switchSpeaker,
+			isScreenShareSupported,
 			availableMics,
 			availableCams,
 			availableSpeakers,
