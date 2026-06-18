@@ -124,16 +124,18 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		const audioNode = remoteAudioRef.current;
 
 		if (videoNode && remoteStream) {
-			videoNode.srcObject = null;
-			videoNode.srcObject = remoteStream;
+			if (videoNode.srcObject !== remoteStream) {
+				videoNode.srcObject = remoteStream;
+			}
 			videoNode
 				.play()
 				.catch((e) => console.warn('Ошибка удаленного видео:', e));
 		}
 
 		if (audioNode && remoteStream) {
-			audioNode.srcObject = null;
-			audioNode.srcObject = remoteStream;
+			if (audioNode.srcObject !== remoteStream) {
+				audioNode.srcObject = remoteStream;
+			}
 			audioNode
 				.play()
 				.catch((e) => console.warn('Ошибка удаленного аудио:', e));

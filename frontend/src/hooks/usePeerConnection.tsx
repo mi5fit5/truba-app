@@ -748,15 +748,12 @@ export const usePeerConnection = () => {
 			peer.on('error', () => cleanupMedia());
 			peer.on('close', () => cleanupMedia());
 
-			// Мониторинг ICE-состояния — ловим провал NAT-traversal
 			peer.on('iceStateChange', (iceConnectionState: string) => {
-				if (
-					iceConnectionState === 'failed' ||
-					iceConnectionState === 'disconnected'
-				) {
+				if (iceConnectionState === 'failed') {
 					console.warn(
 						`ICE-соединение: ${iceConnectionState}, разрываем звонок`
 					);
+					socket.emit('endCall', { to: friendToCallId });
 					cleanupMedia();
 				}
 			});
@@ -842,11 +839,9 @@ export const usePeerConnection = () => {
 
 		// Мониторинг ICE-состояния
 		peer.on('iceStateChange', (iceConnectionState: string) => {
-			if (
-				iceConnectionState === 'failed' ||
-				iceConnectionState === 'disconnected'
-			) {
+			if (iceConnectionState === 'failed') {
 				console.warn(`ICE-соединение: ${iceConnectionState}, разрываем звонок`);
+				socket.emit('endCall', { to: participant._id });
 				cleanupMedia();
 			}
 		});
