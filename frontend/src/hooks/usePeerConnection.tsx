@@ -18,6 +18,7 @@ import { useAudioProcessor } from '@hooks';
 
 import { truncateOptionsText } from '@utils/textUtils';
 import { playSystemSound } from '@utils/audioUtils';
+import { peerRequests } from '@utils/api';
 import { declineCallSound } from '@audio';
 
 interface IDummyMediaTrack extends MediaStreamTrack {
@@ -50,17 +51,22 @@ const createDummyVideoTrack = (): IDummyMediaTrack => {
 	return track;
 };
 
+// Публичные STUN-сервера для фолбэка
+const FALLBACK_ICE_SERVERS = [
+	{ urls: 'stun:stun.l.google.com:19302' },
+	{ urls: 'stun:global.stun.twilio.com:3478' },
+];
+
 // Функция для получения конфигурации WebRTC-соединения
-const getPeerConfig = (initiator: boolean, stream: MediaStream) => ({
+const getPeerConfig = (
+	initiator: boolean,
+	stream: MediaStream,
+	iceServers: RTCIceServer[]
+) => ({
 	initiator,
-	trickle: false,
+	trickle: true,
 	stream,
-	config: {
-		iceServers: [
-			{ urls: 'stun:stun.l.google.com:19302' },
-			{ urls: 'stun:global.stun.twilio.com:3478' },
-		],
-	},
+	config: { iceServers },
 });
 
 // Хук для управления WebRTC-соединением
@@ -106,8 +112,8 @@ export const usePeerConnection = () => {
 			'standard'
 	);
 
-	// Рефы для работы с DOM-элементами; хранения соединения и потока;
-	// активности звонка; демонстрации экрана; для актуальных значений устройств, шумодава и статуса
+	// Рефы для работы с DOM-элементами; хранения соединения и потока; активности звонка;
+	// демонстрации экрана; актуальных значений устройств, шумодава и статуса; ICE-серверы
 	const localVideoRef = useRef<HTMLVideoElement>(null);
 	const remoteVideoRef = useRef<HTMLVideoElement>(null);
 	const remoteAudioRef = useRef<HTMLAudioElement>(null);
@@ -121,6 +127,7 @@ export const usePeerConnection = () => {
 	const noiseModeRef = useRef(noiseMode);
 	const callStatusRef = useRef(callStatus);
 	const isScreenSharingRef = useRef(isScreenSharing);
+	const iceServersRef = useRef<RTCIceServer[]>(FALLBACK_ICE_SERVERS);
 
 	useEffect(() => {
 		selectedMicRef.current = selectedMic;
@@ -187,6 +194,24 @@ export const usePeerConnection = () => {
 				console.error('Ошибка получения списка доступных устройств:', err)
 			);
 	}, []);
+
+	// Получение ICE-конфигурации (STUN/TURN) с сервера
+	const fetchIceServers = useCallback(async () => {
+		try {
+			const { data } = await peerRequests.getIceServers();
+
+			if (Array.isArray(data) && data.length > 0) {
+				iceServersRef.current = data;
+			}
+		} catch (err: unknown) {
+			console.warn('Не удалось получить ICE-серверы, используем фолбэк:', err);
+		}
+	}, []);
+
+	// Загружаем ICE-конфигурацию при монтировании
+	useEffect(() => {
+		fetchIceServers();
+	}, [fetchIceServers]);
 
 	// Управление шумоподавлением (пропускать звук через нейросеть или нет)
 	const applyNoiseMode = useCallback(
@@ -681,6 +706,9 @@ export const usePeerConnection = () => {
 			if (!socket || isConnectingRef.current) return;
 			isConnectingRef.current = true;
 
+			// Обновляем ICE-конфигурацию перед звонком
+			await fetchIceServers();
+
 			const stream = await startMedia(type);
 
 			if (!stream) {
@@ -688,7 +716,7 @@ export const usePeerConnection = () => {
 				return;
 			}
 
-			const peer = new Peer(getPeerConfig(true, stream));
+			const peer = new Peer(getPeerConfig(true, stream, iceServersRef.current));
 
 			let initialSignalSent = false;
 
@@ -720,6 +748,19 @@ export const usePeerConnection = () => {
 			peer.on('error', () => cleanupMedia());
 			peer.on('close', () => cleanupMedia());
 
+			// Мониторинг ICE-состояния — ловим провал NAT-traversal
+			peer.on('iceStateChange', (iceConnectionState: string) => {
+				if (
+					iceConnectionState === 'failed' ||
+					iceConnectionState === 'disconnected'
+				) {
+					console.warn(
+						`ICE-соединение: ${iceConnectionState}, разрываем звонок`
+					);
+					cleanupMedia();
+				}
+			});
+
 			socket.once(
 				'acceptedCall',
 				(data: {
@@ -735,7 +776,14 @@ export const usePeerConnection = () => {
 
 			peerRef.current = peer;
 		},
-		[socket, startMedia, getCurrentMediaState, dispatch, cleanupMedia]
+		[
+			socket,
+			startMedia,
+			getCurrentMediaState,
+			dispatch,
+			cleanupMedia,
+			fetchIceServers,
+		]
 	);
 
 	// Входящий звонок
@@ -751,6 +799,9 @@ export const usePeerConnection = () => {
 
 		isConnectingRef.current = true;
 
+		// Обновляем ICE-конфигурацию перед ответом
+		await fetchIceServers();
+
 		const stream = await startMedia(callType);
 
 		if (!stream) {
@@ -760,7 +811,7 @@ export const usePeerConnection = () => {
 
 		dispatch(acceptCall());
 
-		const peer = new Peer(getPeerConfig(false, stream));
+		const peer = new Peer(getPeerConfig(false, stream, iceServersRef.current));
 
 		let initialSignalSent = false;
 
@@ -789,6 +840,17 @@ export const usePeerConnection = () => {
 		peer.on('error', () => cleanupMedia());
 		peer.on('close', () => cleanupMedia());
 
+		// Мониторинг ICE-состояния
+		peer.on('iceStateChange', (iceConnectionState: string) => {
+			if (
+				iceConnectionState === 'failed' ||
+				iceConnectionState === 'disconnected'
+			) {
+				console.warn(`ICE-соединение: ${iceConnectionState}, разрываем звонок`);
+				cleanupMedia();
+			}
+		});
+
 		peer.signal(incomingSignal);
 		peerRef.current = peer;
 	}, [
@@ -798,6 +860,7 @@ export const usePeerConnection = () => {
 		callType,
 		startMedia,
 		dispatch,
+		fetchIceServers,
 		getCurrentMediaState,
 		cleanupMedia,
 	]);
