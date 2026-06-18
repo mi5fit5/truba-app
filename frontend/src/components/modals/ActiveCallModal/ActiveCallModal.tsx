@@ -220,7 +220,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 			prevCamMutedRef.current = isCamMuted;
 			setIsCamMuted(true);
 		} else {
-			setIsCamMuted(prevCamMutedRef.current);
+			setIsCamMuted(true);
 		}
 	};
 
