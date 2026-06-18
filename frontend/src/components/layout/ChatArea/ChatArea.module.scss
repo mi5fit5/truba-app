@@ -6,7 +6,7 @@
 	gap: 10px;
 	min-width: 0;
 	min-height: 0;
-	height: clamp(540px, 70vh, 666px);
+	height: 100%;
 }
 
 .emptyArea {
@@ -15,7 +15,7 @@
 	box-shadow:
 		inset 1px 1px #262626,
 		inset -2px -2px #c3c3c3;
-	height: clamp(540px, 70vh, 666px);
+	height: 100%;
 }
 
 .emptyText {
@@ -52,7 +52,7 @@
 	box-shadow:
 		inset 1px 1px #262626,
 		inset -2px -2px #c3c3c3;
-	overflow-y: auto;
+	overflow-y: hidden;
 	background-color: #fff;
 }
 

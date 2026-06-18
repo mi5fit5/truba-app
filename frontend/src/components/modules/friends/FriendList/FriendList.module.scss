@@ -12,6 +12,8 @@
 	gap: 8px;
 	margin-right: -8px;
 	padding-right: 4px;
+	flex: 1;
+	min-height: 0;
 	overflow-y: auto;
 	scrollbar-gutter: stable;
 }
