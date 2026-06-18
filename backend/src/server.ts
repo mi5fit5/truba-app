@@ -13,6 +13,7 @@ import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
 import messageRoutes from './routes/messageRoutes';
 import steamRoutes from './routes/steamRoutes';
+import peerRoutes from './routes/peerRoutes';
 
 dotenv.config();
 
@@ -61,6 +62,7 @@ app.use('/api/auth/steam', steamRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/peer', peerRoutes);
 
 if (process.env.NODE_ENV !== 'test') {
 	connectDB().then(() => {
