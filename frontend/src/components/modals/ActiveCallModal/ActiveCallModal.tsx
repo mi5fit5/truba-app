@@ -219,7 +219,12 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 	const isLocalVideoActive =
 		(!isCamMuted || isScreenSharing) && !!localStream?.getVideoTracks().length;
 	const isRemoteVideoActive =
-		!remoteMedia.isCamMuted && !!remoteStream?.getVideoTracks().length;
+		!remoteMedia.isCamMuted &&
+		!!remoteStream
+			?.getVideoTracks()
+			.some(
+				(track) => track.enabled && !track.muted && track.readyState === 'live'
+			);
 
 	return (
 		<Modal onClose={onEndCall}>
