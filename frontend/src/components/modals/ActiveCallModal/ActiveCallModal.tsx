@@ -67,7 +67,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		toggleLocalVideo,
 	} = usePeerContext();
 
-	const isMobile = useMediaQuery('(max-width: 1120px)');
+	const isMobile = useMediaQuery('(max-width: 1023px)');
 	const isHugeButton = useMediaQuery('(max-width: 430px)');
 
 	// Стейты для настроек звонка

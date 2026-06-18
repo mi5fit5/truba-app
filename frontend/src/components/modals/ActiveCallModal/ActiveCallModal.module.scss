@@ -34,10 +34,14 @@
 
 	.videoGrid {
 		flex-direction: column;
+		width: 100%;
+		max-width: 513px;
 	}
 
 	.videoWrapper {
 		cursor: default;
+		width: 100%;
+		max-height: none;
 	}
 }
 
@@ -330,7 +334,7 @@
 	background-color: rgba(0, 0, 0, 0.65);
 }
 
-@media (max-width: 1120px) {
+@media (max-width: 1023px) {
 	.modalWindow {
 		width: 100vw;
 		height: 100vh;
@@ -355,6 +359,8 @@
 
 	.videoWrapper {
 		max-width: none;
+		width: 100%;
+		max-height: none;
 		cursor: default;
 		-webkit-tap-highlight-color: transparent;
 
@@ -371,6 +377,10 @@
 		width: 100%;
 		padding: 10px;
 		background-color: #c0c0c0;
+	}
+
+	.controlsWrapper {
+		max-width: none;
 	}
 
 	.controlsBar {

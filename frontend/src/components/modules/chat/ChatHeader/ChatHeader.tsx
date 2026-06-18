@@ -110,7 +110,7 @@ export const ChatHeader = ({ friend }: ChatHeaderProps) => {
 									as='p'
 									size={12}
 									align='left'
-									className={friend.currentGame ? styles.playingText : ''}>
+									className={styles.statusText}>
 									{friend.currentGame
 										? `играет в ${friend.currentGame}`
 										: isOnline

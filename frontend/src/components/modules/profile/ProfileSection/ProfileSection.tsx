@@ -62,7 +62,7 @@ export const ProfileSection = () => {
 									as='p'
 									size={12}
 									align='left'
-									className={userData?.currentGame ? styles.playingText : ''}>
+									className={styles.statusText}>
 									{userData?.currentGame ? `${userData.currentGame}` : 'онлайн'}
 								</Text>
 							</div>
