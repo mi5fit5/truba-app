@@ -111,9 +111,10 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		if (videoNode && localStream) {
 			if (videoNode.srcObject !== localStream) {
 				videoNode.srcObject = localStream;
-				videoNode
-					.play()
-					.catch((err) => console.warn('Ошибка локального видео', err));
+				videoNode.play().catch((err) => {
+					if (err.name !== 'AbortError')
+						console.warn('Ошибка локального видео', err);
+				});
 			}
 		}
 	}, [localStream, localVideoRef, callStatus]);
@@ -126,27 +127,23 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		if (videoNode && remoteStream) {
 			if (videoNode.srcObject !== remoteStream) {
 				videoNode.srcObject = remoteStream;
+				videoNode.play().catch((err) => {
+					if (err.name !== 'AbortError')
+						console.warn('Ошибка удаленного видео:', err);
+				});
 			}
-			videoNode
-				.play()
-				.catch((e) => console.warn('Ошибка удаленного видео:', e));
 		}
 
 		if (audioNode && remoteStream) {
 			if (audioNode.srcObject !== remoteStream) {
 				audioNode.srcObject = remoteStream;
+				audioNode.play().catch((err) => {
+					if (err.name !== 'AbortError')
+						console.warn('Ошибка удаленного аудио:', err);
+				});
 			}
-			audioNode
-				.play()
-				.catch((e) => console.warn('Ошибка удаленного аудио:', e));
 		}
-	}, [
-		remoteStream,
-		callStatus,
-		remoteStreamRevision,
-		remoteVideoRef,
-		remoteAudioRef,
-	]);
+	}, [remoteStream, remoteVideoRef, remoteAudioRef]);
 
 	// Громкость собеседника
 	useEffect(() => {

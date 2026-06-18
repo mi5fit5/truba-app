@@ -719,6 +719,8 @@ export const usePeerConnection = () => {
 			const peer = new Peer(getPeerConfig(true, stream, iceServersRef.current));
 
 			let initialSignalSent = false;
+			let callAccepted = false;
+			const pendingSignals: SignalData[] = [];
 
 			// Отправляем сигнал собеседнику через сервер
 			peer.on('signal', (data) => {
@@ -731,8 +733,10 @@ export const usePeerConnection = () => {
 					});
 
 					initialSignalSent = true;
-				} else {
+				} else if (callAccepted) {
 					socket.emit('silentSignal', { to: friendToCallId, signal: data });
+				} else {
+					pendingSignals.push(data);
 				}
 			});
 
@@ -766,8 +770,14 @@ export const usePeerConnection = () => {
 				}) => {
 					if (peer.destroyed) return;
 
+					callAccepted = true;
 					peer.signal(data.signal);
 					dispatch(acceptCall({ mediaState: data.mediaState }));
+
+					pendingSignals.forEach((signal) => {
+						socket.emit('silentSignal', { to: friendToCallId, signal });
+					});
+					pendingSignals.length = 0;
 				}
 			);
 
