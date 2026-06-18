@@ -124,25 +124,52 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		const videoNode = remoteVideoRef.current;
 		const audioNode = remoteAudioRef.current;
 
+		const playVideo = () => {
+			if (videoNode) videoNode.play().catch(() => {});
+		};
+
+		const playAudio = () => {
+			if (audioNode) audioNode.play().catch(() => {});
+		};
+
 		if (videoNode && remoteStream) {
 			if (videoNode.srcObject !== remoteStream) {
 				videoNode.srcObject = remoteStream;
-				videoNode.play().catch((err) => {
-					if (err.name !== 'AbortError')
-						console.warn('Ошибка удаленного видео:', err);
-				});
 			}
+			videoNode.play().catch((err) => {
+				if (err.name !== 'AbortError')
+					console.warn('Ошибка удаленного видео:', err);
+			});
+
+			remoteStream.getVideoTracks().forEach((track) => {
+				track.addEventListener('unmute', playVideo);
+			});
 		}
 
 		if (audioNode && remoteStream) {
 			if (audioNode.srcObject !== remoteStream) {
 				audioNode.srcObject = remoteStream;
-				audioNode.play().catch((err) => {
-					if (err.name !== 'AbortError')
-						console.warn('Ошибка удаленного аудио:', err);
+			}
+			audioNode.play().catch((err) => {
+				if (err.name !== 'AbortError')
+					console.warn('Ошибка удаленного аудио:', err);
+			});
+
+			remoteStream.getAudioTracks().forEach((track) => {
+				track.addEventListener('unmute', playAudio);
+			});
+		}
+
+		return () => {
+			if (remoteStream) {
+				remoteStream.getVideoTracks().forEach((track) => {
+					track.removeEventListener('unmute', playVideo);
+				});
+				remoteStream.getAudioTracks().forEach((track) => {
+					track.removeEventListener('unmute', playAudio);
 				});
 			}
-		}
+		};
 	}, [remoteStream, remoteVideoRef, remoteAudioRef]);
 
 	// Громкость собеседника
@@ -218,12 +245,7 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 	const isLocalVideoActive =
 		(!isCamMuted || isScreenSharing) && !!localStream?.getVideoTracks().length;
 	const isRemoteVideoActive =
-		!remoteMedia.isCamMuted &&
-		!!remoteStream
-			?.getVideoTracks()
-			.some(
-				(track) => track.enabled && !track.muted && track.readyState === 'live'
-			);
+		!remoteMedia.isCamMuted && !!remoteStream?.getVideoTracks().length;
 
 	return (
 		<Modal onClose={onEndCall}>

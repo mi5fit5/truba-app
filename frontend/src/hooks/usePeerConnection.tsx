@@ -39,10 +39,13 @@ const createDummyVideoTrack = (): IDummyMediaTrack => {
 		if (ctx) {
 			ctx.fillStyle = '#000000';
 			ctx.fillRect(0, 0, dummyCanvas.width, dummyCanvas.height);
+			setInterval(() => {
+				ctx.fillRect(0, 0, 1, 1);
+			}, 1000);
 		}
 	}
 
-	const stream = dummyCanvas.captureStream(0);
+	const stream = dummyCanvas.captureStream(15);
 	const track = stream.getVideoTracks()[0] as IDummyMediaTrack;
 
 	track.enabled = false;
