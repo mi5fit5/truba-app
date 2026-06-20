@@ -29,10 +29,12 @@ router.get(
 	'/return',
 	passport.authenticate('steam', {
 		session: false,
-		failureRedirect: `${process.env.CLIENT_URL}`,
+		failureRedirect: `${process.env.CLIENT_URL?.split(',')[0] || 'http://localhost:8080'}`,
 	}),
 	(req, res) => {
-		res.redirect(`${process.env.CLIENT_URL}/?steam=success`); // Перенаправление на фронт
+		res.redirect(
+			`${process.env.CLIENT_URL?.split(',')[0] || 'http://localhost:8080'}/?steam=success`
+		);
 	}
 );
 

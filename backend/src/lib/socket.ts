@@ -310,6 +310,18 @@ io.on('connection', (socket) => {
 			if (userSocketMap[userId].size === 0) {
 				delete userSocketMap[userId];
 
+				// Очищаем статус игры и оповещаем остальных пользователей
+				if (gameStatusCache.has(userId)) {
+					gameStatusCache.delete(userId);
+					io.emit('gameStatusChanged', {
+						userId: userId,
+						currentGame: null,
+						appId: null,
+						lobbyId: null,
+						gameAvatarUrl: null,
+					});
+				}
+
 				// Если у пользователя не осталось активных вкладок -> удаляем его активные звонки
 				for (const [key, call] of activeCallsMap.entries()) {
 					if (call.initiatorId === userId || call.recipientId === userId) {

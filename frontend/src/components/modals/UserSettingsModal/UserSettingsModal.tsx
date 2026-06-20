@@ -87,6 +87,7 @@ export const UserSettingsModal = ({
 	};
 
 	const [activeTab, setActiveTab] = useState<TUserSettingsTab>('profile');
+	const [isSteamRedirecting, setIsSteamRedirecting] = useState(false);
 
 	// Подтягиваем профиль Steam при активной вкладке привязки
 	useEffect(() => {
@@ -440,13 +441,18 @@ export const UserSettingsModal = ({
 									привязка steam-аккаунта:
 								</Text>
 								<Button
-									onClick={() => (window.location.href = '/api/auth/steam')}
+									onClick={() => {
+										setIsSteamRedirecting(true);
+										window.location.href = '/api/auth/steam';
+									}}
 									size='huge'
 									style={{ width: '100%', height: '50px' }}
-									disabled={!!user?.steamId}>
+									disabled={!!user?.steamId || isSteamRedirecting}>
 									{user?.steamId
 										? 'аккаунт steam привязан'
-										: 'подключить steam'}
+										: isSteamRedirecting
+											? 'перенаправление...'
+											: 'подключить steam'}
 								</Button>
 							</div>
 							<div className={styles.profilePanel}>

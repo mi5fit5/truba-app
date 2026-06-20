@@ -37,6 +37,16 @@ passport.use(
 
 				const steamId = String(profile.id);
 
+				// Проверка, что этот Steam аккаунт не привязан к другому пользователю
+				const existingUser = await User.findOne({ steamId });
+
+				if (existingUser && existingUser._id.toString() !== userId) {
+					return done(
+						new Error('Этот Steam аккаунт уже привязан к другому профилю'),
+						null
+					);
+				}
+
 				const updatedUser = await User.findByIdAndUpdate(
 					userId,
 					{ steamId: steamId },
