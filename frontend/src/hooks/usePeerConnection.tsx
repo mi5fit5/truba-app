@@ -231,7 +231,7 @@ export const usePeerConnection = () => {
 				await rawTrack.applyConstraints({
 					echoCancellation: true,
 					noiseSuppression: mode === 'standard',
-					autoGainControl: false,
+					autoGainControl: true,
 				});
 			} catch (err: unknown) {
 				console.error('Ошибка применения ограничений аудио:', err);
@@ -288,7 +288,7 @@ export const usePeerConnection = () => {
 						: undefined,
 					echoCancellation: true,
 					noiseSuppression: noiseModeRef.current === 'standard',
-					autoGainControl: false,
+					autoGainControl: true,
 				};
 
 				const videoConstraints =
