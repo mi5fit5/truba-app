@@ -752,7 +752,10 @@ export const usePeerConnection = () => {
 				setRemoteStreamRevision((r) => r + 1);
 			});
 
-			peer.on('error', () => cleanupMedia());
+			peer.on('error', (err) => {
+				console.error('Ошибка соединения:', err);
+				cleanupMedia();
+			});
 			peer.on('close', () => cleanupMedia());
 
 			peer.on('iceStateChange', (iceConnectionState: string) => {
@@ -847,7 +850,10 @@ export const usePeerConnection = () => {
 			setRemoteStreamRevision((r) => r + 1);
 		});
 
-		peer.on('error', () => cleanupMedia());
+		peer.on('error', (err) => {
+			console.error('Ошибка соединения:', err);
+			cleanupMedia();
+		});
 		peer.on('close', () => cleanupMedia());
 
 		// Мониторинг ICE-состояния

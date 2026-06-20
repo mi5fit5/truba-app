@@ -216,12 +216,13 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 	};
 
 	const handleToggleScreenShare = async () => {
+		const wasSharing = isScreenSharing;
 		const isSharingNow = await toggleScreenShare();
 
 		if (isSharingNow) {
 			prevCamMutedRef.current = isCamMuted;
 			setIsCamMuted(true);
-		} else {
+		} else if (wasSharing) {
 			setIsCamMuted(true);
 		}
 	};
