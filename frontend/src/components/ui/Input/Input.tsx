@@ -1,4 +1,4 @@
-import { type InputHTMLAttributes, useId } from 'react';
+import { type InputHTMLAttributes, useId, useState } from 'react';
 import { clsx } from 'clsx';
 
 import styles from './Input.module.scss';
@@ -13,10 +13,15 @@ export const Input = ({
 	className,
 	containerClassName,
 	id,
+	type,
 	...rest
 }: InputProps) => {
 	const generatedId = useId();
 	const inputId = id || generatedId;
+	const [showPassword, setShowPassword] = useState(false);
+
+	const isPassword = type === 'password';
+	const inputType = isPassword ? (showPassword ? 'text' : 'password') : type;
 
 	return (
 		<div className={clsx(styles.fieldGroup, containerClassName)}>
@@ -25,7 +30,26 @@ export const Input = ({
 					{label}
 				</label>
 			)}
-			<input id={inputId} className={clsx(styles.input, className)} {...rest} />
+			<div className={styles.inputWrapper}>
+				<input
+					id={inputId}
+					type={inputType}
+					className={clsx(
+						styles.input,
+						isPassword && styles.hasToggle,
+						className
+					)}
+					{...rest}
+				/>
+				{isPassword && (
+					<button
+						type='button'
+						className={clsx(styles.toggleBtn, showPassword && styles.toggled)}
+						onClick={() => setShowPassword(!showPassword)}
+						title={showPassword ? 'Скрыть пароль' : 'Показать пароль'}
+					/>
+				)}
+			</div>
 		</div>
 	);
 };

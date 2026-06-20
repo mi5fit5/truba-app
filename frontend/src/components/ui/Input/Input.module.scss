@@ -8,6 +8,12 @@
 	margin-bottom: 4px;
 }
 
+.inputWrapper {
+	position: relative;
+	display: flex;
+	width: 100%;
+}
+
 .input {
 	flex-shrink: 0;
 	width: 100%;
@@ -23,6 +29,10 @@
 	color: #000;
 	background-color: #fff;
 
+	&.hasToggle {
+		padding-right: 40px;
+	}
+
 	&:disabled {
 		background-color: #e4e4e4;
 		cursor: not-allowed;
@@ -31,5 +41,27 @@
 	&:disabled::placeholder {
 		color: #808080;
 		text-shadow: 1px 1px 0 #fff;
+	}
+}
+
+.toggleBtn {
+	position: absolute;
+	right: 14px;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 14px;
+	height: 14px;
+	padding: 0;
+	border: 2px solid #000;
+	background-color: transparent;
+	cursor: var(--cursor-pointer, pointer);
+
+	&.toggled {
+		background-color: #000;
+	}
+
+	&:focus-visible {
+		outline: 2px dotted #000;
+		outline-offset: 2px;
 	}
 }

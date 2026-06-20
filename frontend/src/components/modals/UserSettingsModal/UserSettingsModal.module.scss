@@ -2,7 +2,7 @@
 	display: flex;
 	flex-direction: column;
 	width: min(100%, 450px);
-	max-height: 90vh;
+	height: min(660px, 90vh);
 }
 
 .container {
