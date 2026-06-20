@@ -246,7 +246,6 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 
 	if (isLocalVideoActive !== prevLocalVideoActive) {
 		setPrevLocalVideoActive(isLocalVideoActive);
-		if (!isLocalVideoActive) setIsLocalVideoLoaded(false);
 	}
 
 	const [prevRemoteVideoActive, setPrevRemoteVideoActive] =
@@ -254,7 +253,6 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 
 	if (isRemoteVideoActive !== prevRemoteVideoActive) {
 		setPrevRemoteVideoActive(isRemoteVideoActive);
-		if (!isRemoteVideoActive) setIsRemoteVideoLoaded(false);
 	}
 
 	if (

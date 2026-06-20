@@ -51,8 +51,7 @@
 
 .tabContent {
 	flex: 1;
-	height: 100%;
-	min-height: 482px;
+	min-height: 0;
 	border: 2px solid;
 	border-color: #fff #262626 #262626 #fff;
 	padding: 20px 10px;
