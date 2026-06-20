@@ -90,6 +90,9 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 	const [isMicMuted, setIsMicMuted] = useState(false);
 	const [isCamMuted, setIsCamMuted] = useState(callType === 'audio');
 
+	const [isLocalVideoLoaded, setIsLocalVideoLoaded] = useState(false);
+	const [isRemoteVideoLoaded, setIsRemoteVideoLoaded] = useState(false);
+
 	const outgoingAudioRef = useRef<HTMLAudioElement | null>(null);
 	const prevCallStatusAudioRef = useRef<string | null>(null);
 	const prevCamMutedRef = useRef(isCamMuted);
@@ -247,6 +250,14 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 	const isRemoteVideoActive =
 		!remoteMedia.isCamMuted && !!remoteStream?.getVideoTracks().length;
 
+	useEffect(() => {
+		if (!isLocalVideoActive) setIsLocalVideoLoaded(false);
+	}, [isLocalVideoActive]);
+
+	useEffect(() => {
+		if (!isRemoteVideoActive) setIsRemoteVideoLoaded(false);
+	}, [isRemoteVideoActive]);
+
 	return (
 		<Modal onClose={onEndCall}>
 			<audio ref={remoteAudioRef} autoPlay style={{ display: 'none' }} />
@@ -302,23 +313,29 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 									className={styles.avatarFallback}
 								/>
 							)}
+							{isLocalVideoActive && !isLocalVideoLoaded && (
+								<div className={styles.callingOverlay}>
+									<Preloader />
+								</div>
+							)}
 							<video
 								ref={localVideoRef}
 								autoPlay
 								playsInline
 								muted
+								onLoadedData={() => setIsLocalVideoLoaded(true)}
 								className={clsx(
 									styles.videoElement,
 									isScreenSharing && styles.containVideo
 								)}
 								style={{
-									opacity: isLocalVideoActive ? 1 : 0,
+									opacity: isLocalVideoActive && isLocalVideoLoaded ? 1 : 0,
 									position: 'absolute',
 									pointerEvents: isLocalVideoActive ? 'auto' : 'none',
 								}}
 							/>
 							<div className={styles.usernameBadge}>
-								<Text as='span' size={30} lowercase>
+								<Text as='span' size={30}>
 									{currentUser.username}
 								</Text>
 								<img
@@ -358,20 +375,28 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 									className={styles.avatarFallback}
 								/>
 							)}
+							{isRemoteVideoActive &&
+								!isRemoteVideoLoaded &&
+								callStatus !== 'calling' && (
+									<div className={styles.callingOverlay}>
+										<Preloader />
+									</div>
+								)}
 							<video
 								ref={remoteVideoRef}
 								autoPlay
 								playsInline
 								muted
+								onLoadedData={() => setIsRemoteVideoLoaded(true)}
 								className={styles.videoElement}
 								style={{
-									opacity: isRemoteVideoActive ? 1 : 0,
+									opacity: isRemoteVideoActive && isRemoteVideoLoaded ? 1 : 0,
 									position: 'absolute',
 									pointerEvents: isRemoteVideoActive ? 'auto' : 'none',
 								}}
 							/>
 							<div className={styles.usernameBadge}>
-								<Text as='span' size={30} lowercase>
+								<Text as='span' size={30}>
 									{participant.username}
 								</Text>
 								<img

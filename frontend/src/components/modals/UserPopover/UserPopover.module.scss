@@ -4,6 +4,7 @@
 
 	gap: 12px;
 	width: 100%;
+	min-width: 280px;
 	border: 2px solid;
 	border-color: #fff #262626 #262626 #fff;
 	padding: 12px;
@@ -130,6 +131,9 @@
 
 .bioText {
 	font-style: italic;
+	word-wrap: break-word;
+	word-break: break-word;
+	white-space: pre-wrap;
 }
 
 .emptyText {
