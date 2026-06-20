@@ -12,7 +12,6 @@ import type {
 	TUser,
 } from '@types';
 import { authRequests } from '@utils-api';
-import { deleteCookie, setCookie } from '@utils/cookie';
 import { getErrorMessage } from '@utils/getErrorMessage';
 
 // Типизация стейта

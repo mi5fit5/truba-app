@@ -61,7 +61,6 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		remoteAudioRef,
 		localStream,
 		remoteStream,
-		remoteStreamRevision,
 		toggleScreenShare,
 		toggleLocalAudio,
 		toggleLocalVideo,
@@ -237,6 +236,27 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 		dispatch(setChatOpen(!isChatOpen));
 	};
 
+	const isLocalVideoActive =
+		(!isCamMuted || isScreenSharing) && !!localStream?.getVideoTracks().length;
+	const isRemoteVideoActive =
+		!remoteMedia.isCamMuted && !!remoteStream?.getVideoTracks().length;
+
+	const [prevLocalVideoActive, setPrevLocalVideoActive] =
+		useState(isLocalVideoActive);
+
+	if (isLocalVideoActive !== prevLocalVideoActive) {
+		setPrevLocalVideoActive(isLocalVideoActive);
+		if (!isLocalVideoActive) setIsLocalVideoLoaded(false);
+	}
+
+	const [prevRemoteVideoActive, setPrevRemoteVideoActive] =
+		useState(isRemoteVideoActive);
+
+	if (isRemoteVideoActive !== prevRemoteVideoActive) {
+		setPrevRemoteVideoActive(isRemoteVideoActive);
+		if (!isRemoteVideoActive) setIsRemoteVideoLoaded(false);
+	}
+
 	if (
 		(callStatus !== 'calling' && callStatus !== 'connected') ||
 		!participant ||
@@ -244,19 +264,6 @@ export const ActiveCallModal = ({ onEndCall }: ActiveCallModalProps) => {
 	) {
 		return null;
 	}
-
-	const isLocalVideoActive =
-		(!isCamMuted || isScreenSharing) && !!localStream?.getVideoTracks().length;
-	const isRemoteVideoActive =
-		!remoteMedia.isCamMuted && !!remoteStream?.getVideoTracks().length;
-
-	useEffect(() => {
-		if (!isLocalVideoActive) setIsLocalVideoLoaded(false);
-	}, [isLocalVideoActive]);
-
-	useEffect(() => {
-		if (!isRemoteVideoActive) setIsRemoteVideoLoaded(false);
-	}, [isRemoteVideoActive]);
 
 	return (
 		<Modal onClose={onEndCall}>
